@@ -11,7 +11,7 @@ const PgSession = connectPgSimple(session);
 const app = express();
 const httpServer = createServer(app);
 
-const DB_URL = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL!;
+const DB_URL = process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL!;
 const sessionPool = new Pool({
   connectionString: DB_URL,
   ssl: { rejectUnauthorized: false },

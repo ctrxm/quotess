@@ -19,8 +19,10 @@ __export(schema_exports, {
   POPULAR_TAGS: () => POPULAR_TAGS,
   betaCodes: () => betaCodes,
   flowerTransactions: () => flowerTransactions,
+  giftRoleApplications: () => giftRoleApplications,
   giftTransactions: () => giftTransactions,
   giftTypes: () => giftTypes,
+  insertGiftRoleApplicationSchema: () => insertGiftRoleApplicationSchema,
   insertQuoteSchema: () => insertQuoteSchema,
   insertTagSchema: () => insertTagSchema,
   insertUserSchema: () => insertUserSchema,
@@ -43,7 +45,7 @@ import { sql } from "drizzle-orm";
 import { pgTable, text, uuid, timestamp, integer, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-var users, insertUserSchema, registerSchema, loginSchema, waitlist, settings, quotes, tags, quoteTags, quoteLikes, giftTypes, giftTransactions, flowerTransactions, withdrawalMethods, withdrawalRequests, topupPackages, topupRequests, betaCodes, insertQuoteSchema, submitQuoteSchema, insertTagSchema, MOODS, MOOD_LABELS, MOOD_COLORS, POPULAR_TAGS, FLOWERS_TO_IDR_RATE, MIN_WITHDRAWAL_FLOWERS;
+var users, insertUserSchema, registerSchema, loginSchema, waitlist, settings, quotes, tags, quoteTags, quoteLikes, giftTypes, giftTransactions, flowerTransactions, withdrawalMethods, withdrawalRequests, topupPackages, topupRequests, giftRoleApplications, insertGiftRoleApplicationSchema, betaCodes, insertQuoteSchema, submitQuoteSchema, insertTagSchema, MOODS, MOOD_LABELS, MOOD_COLORS, POPULAR_TAGS, FLOWERS_TO_IDR_RATE, MIN_WITHDRAWAL_FLOWERS;
 var init_schema = __esm({
   "shared/schema.ts"() {
     "use strict";
@@ -173,6 +175,20 @@ var init_schema = __esm({
       createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
       updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`)
     });
+    giftRoleApplications = pgTable("gift_role_applications", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+      type: text("type").notNull().default("both"),
+      // "giver", "receiver", "both"
+      reason: text("reason").notNull(),
+      socialLink: text("social_link"),
+      status: text("status").notNull().default("pending"),
+      // "pending", "approved", "rejected"
+      adminNote: text("admin_note"),
+      createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+      updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`)
+    });
+    insertGiftRoleApplicationSchema = createInsertSchema(giftRoleApplications).omit({ id: true, userId: true, status: true, adminNote: true, createdAt: true, updatedAt: true });
     betaCodes = pgTable("beta_codes", {
       id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
       code: text("code").notNull().unique(),
@@ -518,6 +534,31 @@ async function updateTopupStatus(id, status, adminNote) {
     }
   }
 }
+async function applyForGiftRole(userId, type, reason, socialLink) {
+  const existing = await db.select().from(giftRoleApplications).where(and(eq(giftRoleApplications.userId, userId), eq(giftRoleApplications.status, "pending"))).limit(1);
+  if (existing.length > 0) throw new Error("Kamu sudah punya pengajuan yang sedang menunggu review");
+  const [app2] = await db.insert(giftRoleApplications).values({
+    userId,
+    type,
+    reason,
+    socialLink: socialLink || null
+  }).returning();
+  return app2;
+}
+async function getMyGiftRoleApplication(userId) {
+  const rows = await db.select().from(giftRoleApplications).where(eq(giftRoleApplications.userId, userId)).orderBy(desc(giftRoleApplications.createdAt)).limit(1);
+  return rows[0] || null;
+}
+async function getAllGiftRoleApplications() {
+  return db.select().from(giftRoleApplications).orderBy(desc(giftRoleApplications.createdAt));
+}
+async function updateGiftRoleApplication(id, status, adminNote) {
+  await db.update(giftRoleApplications).set({ status, adminNote: adminNote || null, updatedAt: /* @__PURE__ */ new Date() }).where(eq(giftRoleApplications.id, id));
+  if (status === "approved") {
+    const [app2] = await db.select().from(giftRoleApplications).where(eq(giftRoleApplications.id, id)).limit(1);
+    if (app2) await db.update(users).set({ isGiveEnabled: true }).where(eq(users.id, app2.userId));
+  }
+}
 async function generateBetaCode() {
   const code = Math.random().toString(36).slice(2, 6).toUpperCase() + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
   const [bc] = await db.insert(betaCodes).values({ id: randomUUID(), code }).returning();
@@ -540,7 +581,7 @@ var init_storage = __esm({
   "server/storage.ts"() {
     "use strict";
     init_schema();
-    DB_URL = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
+    DB_URL = process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL;
     pool = new Pool({ connectionString: DB_URL, ssl: { rejectUnauthorized: false } });
     db = drizzle(pool);
     storage = {
@@ -589,7 +630,11 @@ var init_storage = __esm({
       generateBetaCode,
       getBetaCodes,
       validateBetaCodeStandalone,
-      markBetaCodeUsed
+      markBetaCodeUsed,
+      applyForGiftRole,
+      getMyGiftRoleApplication,
+      getAllGiftRoleApplications,
+      updateGiftRoleApplication
     };
   }
 });
@@ -1199,6 +1244,40 @@ async function registerRoutes(httpServer2, app2) {
       res.status(500).json({ error: e.message });
     }
   });
+  app2.post("/api/gift-role/apply", requireAuth, async (req, res) => {
+    try {
+      const { type, reason, socialLink } = req.body;
+      if (!reason || reason.trim().length < 10) return res.status(400).json({ error: "Alasan minimal 10 karakter" });
+      const result = await storage.applyForGiftRole(req.user.id, type || "both", reason.trim(), socialLink);
+      res.status(201).json(result);
+    } catch (e) {
+      res.status(400).json({ error: e.message });
+    }
+  });
+  app2.get("/api/gift-role/my", requireAuth, async (req, res) => {
+    try {
+      res.json(await storage.getMyGiftRoleApplication(req.user.id));
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+  app2.get("/api/admin/gift-role", requireAdmin, async (_req, res) => {
+    try {
+      res.json(await storage.getAllGiftRoleApplications());
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+  app2.patch("/api/admin/gift-role/:id", requireAdmin, async (req, res) => {
+    try {
+      const { status, adminNote } = req.body;
+      if (status !== "approved" && status !== "rejected") return res.status(400).json({ error: "Status tidak valid" });
+      await storage.updateGiftRoleApplication(req.params.id, status, adminNote);
+      res.json({ success: true });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
   app2.get("/api/admin/beta-codes", requireAdmin, async (_req, res) => {
     try {
       res.json(await storage.getBetaCodes());
@@ -1220,7 +1299,7 @@ async function registerRoutes(httpServer2, app2) {
 var PgSession = connectPgSimple(session);
 var app = express();
 var httpServer = createServer(app);
-var DB_URL2 = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
+var DB_URL2 = process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL;
 var sessionPool = new Pool2({
   connectionString: DB_URL2,
   ssl: { rejectUnauthorized: false }

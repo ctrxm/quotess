@@ -57,7 +57,13 @@ export default function Profile() {
 
   const { data: application } = useQuery<GiftRoleApp | null>({
     queryKey: ["/api/gift-role/my"],
-    queryFn: () => fetch("/api/gift-role/my", { credentials: "include" }).then((r) => r.json()),
+    queryFn: async () => {
+      const r = await fetch("/api/gift-role/my", { credentials: "include" });
+      if (!r.ok) return null;
+      const data = await r.json();
+      if (!data || !data.id) return null;
+      return data as GiftRoleApp;
+    },
     enabled: !!user && !user.isGiveEnabled,
   });
 
