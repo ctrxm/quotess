@@ -16,7 +16,12 @@ import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 
 const DB_URL = process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL!;
-const pool = new Pool({ connectionString: DB_URL, ssl: { rejectUnauthorized: false } });
+const isSupabase = DB_URL.includes("supabase");
+const pool = new Pool({
+  connectionString: DB_URL,
+  ssl: { rejectUnauthorized: false },
+  ...(isSupabase ? { options: "-c search_path=public" } : {}),
+});
 export const db = drizzle(pool);
 
 // ─── HELPERS ──────────────────────────────────────────────

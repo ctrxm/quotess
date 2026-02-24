@@ -111,12 +111,19 @@ The `/api/*` routes go to the serverless function; all other routes serve the SP
 
 - **Admin**: admin@kataviral.id / admin123
 
+## Database Configuration
+
+- **Dev (Replit)**: Uses `DATABASE_URL` (Replit PostgreSQL)
+- **Production (Vercel)**: Set `DATABASE_URL` to Supabase connection string
+- Auto-detects Supabase URLs and adds `search_path=public` for pooler compatibility
+- Connection string format: `postgresql://user:pass@host:6543/postgres`
+
 ## Design System
 
-- Neobrutalism: thick black borders, bold shadows, flat bold typography
-- Primary color: #FFE34D (yellow)
-- Accent colors: #A8FF78 (green), #78C1FF (blue), #FF9F78 (orange)
-- Background: #FFFDF0
+- Neobrutalism + Playful Pastel: thick black borders, bold shadows, flat bold typography
+- Primary lemon: #FFF3B0, Mint: #C1F0C1, Baby blue: #B8DBFF
+- Peach: #FFD1A9, Lavender: #DDB8FF, Rose: #FFB3B3
+- Background cream: #FFF8F0, Apricot: #FFD6A5
 
 ## API Endpoints
 
