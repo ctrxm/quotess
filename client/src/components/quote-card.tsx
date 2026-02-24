@@ -127,7 +127,7 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
 
   return (
     <>
-      {showGive && <GiveModal quoteId={quote.id} quoteAuthorId={undefined} onClose={() => setShowGive(false)} />}
+      {showGive && <GiveModal quoteId={quote.id} onClose={() => setShowGive(false)} />}
       {variant === "feed" ? (
         <Link href={`/q/${quote.id}`}><div className="cursor-pointer h-full">{cardContent}</div></Link>
       ) : cardContent}

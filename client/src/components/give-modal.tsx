@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { X, Flower, Star, Diamond } from "lucide-react";
+import { X, Flower, Star, Diamond, Search } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -15,13 +15,20 @@ const GIFT_ICONS: Record<string, React.ReactNode> = {
 
 interface GiveModalProps {
   quoteId: string;
-  quoteAuthorId?: string;
+  receiverId?: string;
+  receiverName?: string;
   onClose: () => void;
 }
 
-export default function GiveModal({ quoteId, quoteAuthorId, onClose }: GiveModalProps) {
+export default function GiveModal({ quoteId, receiverId: initialReceiverId, receiverName: initialReceiverName, onClose }: GiveModalProps) {
   const [selectedGift, setSelectedGift] = useState<string>("");
   const [message, setMessage] = useState("");
+  const [receiverId, setReceiverId] = useState(initialReceiverId || "");
+  const [receiverName, setReceiverName] = useState(initialReceiverName || "");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<{ id: string; username: string }[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -30,13 +37,32 @@ export default function GiveModal({ quoteId, quoteAuthorId, onClose }: GiveModal
     queryFn: () => fetch("/api/gifts/types").then((r) => r.json()),
   });
 
+  useEffect(() => {
+    if (searchQuery.length < 2) { setSearchResults([]); return; }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/users/search?q=${encodeURIComponent(searchQuery)}`);
+        if (res.ok) setSearchResults(await res.json());
+      } catch {}
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setShowDropdown(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const { mutate: sendGift, isPending } = useMutation({
     mutationFn: () => apiRequest("POST", "/api/gifts/send", {
-      receiverId: quoteAuthorId, giftTypeId: selectedGift, quoteId, message,
+      receiverId, giftTypeId: selectedGift, quoteId, message,
     }).then((r) => r.json()),
     onSuccess: (data) => {
       if (data.error) { toast({ title: "Gagal", description: data.error, variant: "destructive" }); return; }
-      toast({ title: "Hadiah terkirim!", description: "Bunga berhasil dikirim" });
+      toast({ title: "Hadiah terkirim!", description: `Bunga berhasil dikirim ke @${receiverName}` });
       onClose();
     },
     onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
@@ -66,6 +92,56 @@ export default function GiveModal({ quoteId, quoteAuthorId, onClose }: GiveModal
               <span className="font-black text-lg">{user.flowersBalance}</span>
               <span className="text-sm font-semibold text-black/70">bunga</span>
             </div>
+          </div>
+
+          <div ref={searchRef} className="relative">
+            <p className="font-black text-sm mb-1">Kirim ke</p>
+            {receiverId ? (
+              <div className="flex items-center justify-between bg-[#78C1FF] border-2 border-black rounded-lg px-3 py-2">
+                <span className="font-bold text-sm">@{receiverName}</span>
+                <button
+                  onClick={() => { setReceiverId(""); setReceiverName(""); setSearchQuery(""); }}
+                  className="w-5 h-5 bg-white border border-black rounded flex items-center justify-center"
+                  data-testid="button-clear-receiver"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 border-2 border-black rounded-lg px-3 py-2 bg-white">
+                  <Search className="w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Cari username..."
+                    value={searchQuery}
+                    onChange={(e) => { setSearchQuery(e.target.value); setShowDropdown(true); }}
+                    onFocus={() => setShowDropdown(true)}
+                    className="flex-1 text-sm font-semibold focus:outline-none bg-transparent"
+                    data-testid="input-search-user"
+                  />
+                </div>
+                {showDropdown && searchResults.length > 0 && (
+                  <div className="absolute left-0 right-0 top-full mt-1 bg-white border-2 border-black rounded-lg shadow-[4px_4px_0px_black] z-20 max-h-40 overflow-y-auto">
+                    {searchResults.map((u) => (
+                      <button
+                        key={u.id}
+                        onClick={() => { setReceiverId(u.id); setReceiverName(u.username); setShowDropdown(false); setSearchQuery(""); }}
+                        className="w-full text-left px-3 py-2 text-sm font-bold hover:bg-[#FFE34D] transition-colors first:rounded-t-md last:rounded-b-md"
+                        data-testid={`button-select-user-${u.username}`}
+                      >
+                        @{u.username}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {showDropdown && searchQuery.length >= 2 && searchResults.length === 0 && (
+                  <div className="absolute left-0 right-0 top-full mt-1 bg-white border-2 border-black rounded-lg shadow-[4px_4px_0px_black] z-20 px-3 py-2 text-sm text-gray-500 font-semibold">
+                    User tidak ditemukan
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           <div>
@@ -101,7 +177,7 @@ export default function GiveModal({ quoteId, quoteAuthorId, onClose }: GiveModal
 
           <button
             onClick={() => sendGift()}
-            disabled={!selectedGift || isPending}
+            disabled={!selectedGift || !receiverId || isPending}
             className="w-full py-3 bg-[#FFE34D] border-3 border-black rounded-lg font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             data-testid="button-send-gift"
           >

@@ -172,6 +172,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
+  // ─── USER SEARCH ────────────────────────────────────
+  app.get("/api/users/search", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const q = (req.query.q as string || "").trim();
+      if (q.length < 2) return res.json([]);
+      res.json(await storage.searchUsers(q, req.user!.id));
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
   // ─── GIFTS ───────────────────────────────────────────
   app.get("/api/gifts/types", async (_req: Request, res: Response) => {
     try { res.json(await storage.getGiftTypes()); }

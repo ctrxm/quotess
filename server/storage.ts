@@ -173,6 +173,14 @@ export async function getAllUsers(limit = 50, offset = 0): Promise<PublicUser[]>
   return rows.map(({ passwordHash: _, ...u }) => u);
 }
 
+export async function searchUsers(query: string, excludeUserId?: string): Promise<Pick<PublicUser, "id" | "username">[]> {
+  const rows = await db.select({ id: users.id, username: users.username })
+    .from(users)
+    .where(sql`lower(username) LIKE ${`%${query.toLowerCase()}%`}`)
+    .limit(10);
+  return excludeUserId ? rows.filter(u => u.id !== excludeUserId) : rows;
+}
+
 export async function updateUser(id: string, data: Partial<Pick<User, "isActive" | "hasBetaAccess" | "isGiveEnabled" | "role" | "flowersBalance">>): Promise<void> {
   await db.update(users).set(data).where(eq(users.id, id));
 }
@@ -488,7 +496,7 @@ export async function markBetaCodeUsed(code: string, userId: string): Promise<vo
 export const storage = {
   getQuotes, getQuoteById, searchQuotes, submitQuote, getPendingQuotes, updateQuoteStatus,
   getTags, getRelatedQuotes, toggleLike,
-  createUser, getUserByEmail, getUserById, getAllUsers, updateUser, verifyPassword,
+  createUser, getUserByEmail, getUserById, getAllUsers, searchUsers, updateUser, verifyPassword,
   addToWaitlist, getWaitlist, updateWaitlistStatus, validateBetaCode,
   getAllSettings, getSetting, setSetting,
   getGiftTypes, getAllGiftTypes, createGiftType, updateGiftType, sendGift, getFlowerHistory,
