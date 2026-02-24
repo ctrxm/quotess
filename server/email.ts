@@ -1,23 +1,26 @@
 import nodemailer from "nodemailer";
 
-function createTransporter() {
-  return nodemailer.createTransport({
+export async function sendBetaCodeEmail(to: string, name: string | null, betaCode: string): Promise<void> {
+  const smtpLogin = process.env.BREVO_SMTP_LOGIN;
+  const smtpKey = process.env.BREVO_SMTP_KEY;
+
+  if (!smtpLogin || !smtpKey) {
+    throw new Error(`SMTP credentials not configured (login=${smtpLogin ? "set" : "missing"}, key=${smtpKey ? "set" : "missing"})`);
+  }
+
+  const displayName = name || "Kamu";
+  const transporter = nodemailer.createTransport({
     host: "smtp-relay.brevo.com",
     port: 587,
     secure: false,
     auth: {
-      user: process.env.BREVO_SMTP_LOGIN,
-      pass: process.env.BREVO_SMTP_KEY,
+      user: smtpLogin,
+      pass: smtpKey,
     },
   });
-}
-
-export async function sendBetaCodeEmail(to: string, name: string | null, betaCode: string): Promise<void> {
-  const displayName = name || "Kamu";
-  const transporter = createTransporter();
 
   await transporter.sendMail({
-    from: `"KataViral" <${process.env.BREVO_SMTP_LOGIN}>`,
+    from: `"KataViral" <${smtpLogin}>`,
     to,
     subject: "Selamat! Kode Beta Akses KataViral Kamu Sudah Siap",
     html: `
