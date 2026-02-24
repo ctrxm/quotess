@@ -46,6 +46,23 @@ shared/
   schema.ts          - Drizzle tables, Zod schemas, types, constants
 ```
 
+## Vercel Deployment
+
+The project is configured for Vercel deployment. Files created:
+- `vercel.json` — build command, output directory, and routing config
+- `api/index.ts` — Vercel serverless entry point (Express wrapped for serverless)
+
+**Deploy steps:**
+1. Push code to GitHub
+2. Import repo at vercel.com
+3. Add environment variables in Vercel dashboard:
+   - `SUPABASE_DATABASE_URL` — your Supabase database URL
+   - `SESSION_SECRET` — secure random string for sessions
+4. Deploy — Vercel runs `npx vite build` and serves `dist/public` from CDN
+
+Sessions are stored in the Supabase `sessions` table (auto-created by connect-pg-simple).
+The `/api/*` routes go to the serverless function; all other routes serve the SPA.
+
 ## Key Features
 
 ### User System
