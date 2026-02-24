@@ -58,6 +58,8 @@ export const quotes = pgTable("quotes", {
   text: text("text").notNull(),
   author: text("author"),
   mood: text("mood").notNull(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+  isAnonymous: boolean("is_anonymous").notNull().default(true),
   status: text("status").notNull().default("approved"),
   likesCount: integer("likes_count").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
@@ -212,11 +214,12 @@ export const betaCodes = pgTable("beta_codes", {
 export type BetaCode = typeof betaCodes.$inferSelect;
 
 // ─── SCHEMAS ─────────────────────────────────────────────
-export const insertQuoteSchema = createInsertSchema(quotes).omit({ id: true, createdAt: true, status: true, likesCount: true });
+export const insertQuoteSchema = createInsertSchema(quotes).omit({ id: true, createdAt: true, status: true, likesCount: true, userId: true });
 export const submitQuoteSchema = insertQuoteSchema.extend({
   text: z.string().min(10, "Quote minimal 10 karakter").max(500, "Quote maksimal 500 karakter"),
   author: z.string().max(100).optional(),
   mood: z.enum(["galau", "semangat", "sindir", "healing", "kerja", "cinta"]),
+  isAnonymous: z.boolean().optional().default(true),
   tags: z.array(z.string()).optional().default([]),
 });
 export const insertTagSchema = createInsertSchema(tags).omit({ id: true });
@@ -226,7 +229,7 @@ export type SubmitQuote = z.infer<typeof submitQuoteSchema>;
 export type Quote = typeof quotes.$inferSelect;
 export type Tag = typeof tags.$inferSelect;
 export type QuoteTag = typeof quoteTags.$inferSelect;
-export type QuoteWithTags = Quote & { tags: Tag[]; likedByMe?: boolean };
+export type QuoteWithTags = Quote & { tags: Tag[]; likedByMe?: boolean; authorUser?: { id: string; username: string } | null };
 
 export const MOODS = ["galau", "semangat", "sindir", "healing", "kerja", "cinta"] as const;
 export type Mood = typeof MOODS[number];

@@ -72,8 +72,11 @@ The `/api/*` routes go to the serverless function; all other routes serve the SP
 
 ### Quote Economy
 - 33 seed quotes in 6 moods (galau, semangat, sindir, healing, kerja, cinta)
+- Quotes linked to user accounts via userId field
+- Submit requires login; choice of anonymous or username display
+- Anonymous posts still track userId internally for gift routing
 - Like system (toggle), share/copy buttons
-- Admin approval workflow
+- Admin approval workflow with auto-approve toggle setting
 
 ### Gift Economy (Flowers)
 - isGiveEnabled flag per user (admin-activated)
@@ -84,7 +87,7 @@ The `/api/*` routes go to the serverless function; all other routes serve the SP
 - Bank/e-wallet withdrawal methods (BCA, BRI, Mandiri, OVO, GoPay, Dana)
 
 ### Admin Panel (protected, admin role required)
-- Quote moderation (approve/reject pending)
+- Quote moderation (approve/reject pending) + auto-approve toggle
 - User management (activate/deactivate, toggle Give feature)
 - Waitlist management (approve with auto-generated beta code / reject)
 - Gift type management

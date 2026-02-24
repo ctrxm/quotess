@@ -98,6 +98,9 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
           &ldquo;{quote.text}&rdquo;
         </blockquote>
         {quote.author && <p className="text-sm font-semibold text-black/70">— {quote.author}</p>}
+        {!quote.isAnonymous && quote.authorUser && !quote.author && (
+          <p className="text-sm font-semibold text-black/70">— @{quote.authorUser.username}</p>
+        )}
         {quote.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {quote.tags.map((tag) => (
@@ -127,7 +130,14 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
 
   return (
     <>
-      {showGive && <GiveModal quoteId={quote.id} onClose={() => setShowGive(false)} />}
+      {showGive && (
+        <GiveModal
+          quoteId={quote.id}
+          receiverId={quote.authorUser?.id}
+          receiverName={quote.authorUser?.username}
+          onClose={() => setShowGive(false)}
+        />
+      )}
       {variant === "feed" ? (
         <Link href={`/q/${quote.id}`}><div className="cursor-pointer h-full">{cardContent}</div></Link>
       ) : cardContent}

@@ -42,7 +42,18 @@ async function attachTags(qs: Quote[], userId?: string): Promise<QuoteWithTags[]
       .where(and(eq(quoteLikes.userId, userId), inArray(quoteLikes.quoteId, qs.map((q) => q.id))));
     likedSet = new Set(liked.map((r) => r.quoteId));
   }
-  return qs.map((q) => ({ ...q, tags: tagMap.get(q.id) || [], likedByMe: likedSet.has(q.id) }));
+  const authorUserIds = qs.map((q) => q.userId).filter(Boolean) as string[];
+  const authorMap = new Map<string, { id: string; username: string }>();
+  if (authorUserIds.length > 0) {
+    const authorUsers = await db.select({ id: users.id, username: users.username }).from(users).where(inArray(users.id, authorUserIds));
+    for (const u of authorUsers) authorMap.set(u.id, u);
+  }
+  return qs.map((q) => ({
+    ...q,
+    tags: tagMap.get(q.id) || [],
+    likedByMe: likedSet.has(q.id),
+    authorUser: q.userId ? authorMap.get(q.userId) || null : null,
+  }));
 }
 
 async function findOrCreateTag(name: string): Promise<Tag> {
@@ -99,9 +110,11 @@ export async function searchQuotes(q: string, userId?: string): Promise<QuoteWit
   return attachTags(rows, userId);
 }
 
-export async function submitQuote(quote: InsertQuote, tagNames: string[]): Promise<Quote> {
+export async function submitQuote(quote: InsertQuote, tagNames: string[], userId?: string): Promise<Quote> {
   const id = randomUUID();
-  const [created] = await db.insert(quotes).values({ ...quote, id, status: "pending" }).returning();
+  const autoApprove = await getSetting("auto_approve_quotes", "false");
+  const status = autoApprove === "true" ? "approved" : "pending";
+  const [created] = await db.insert(quotes).values({ ...quote, id, status, userId: userId || null }).returning();
   for (const name of tagNames) {
     if (!name.trim()) continue;
     const tag = await findOrCreateTag(name.trim());

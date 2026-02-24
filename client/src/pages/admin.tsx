@@ -327,11 +327,13 @@ function SettingsTab({ qc, toast }: any) {
   const isMaintenanceMode = s.maintenance_mode === "true";
   const isBetaMode = s.beta_mode === "true";
   const betaAccessType = s.beta_access_type || "open";
+  const isAutoApprove = s.auto_approve_quotes === "true";
 
   return (
     <div className="flex flex-col gap-4">
       <SettingToggle label="Mode Maintenance" desc="Semua halaman ditampilkan sebagai halaman maintenance" icon={<Lock className="w-5 h-5" />} enabled={isMaintenanceMode} onChange={(v) => save({ key: "maintenance_mode", value: String(v) })} testId="toggle-maintenance" />
       <SettingToggle label="Mode Beta" desc="Aktifkan kontrol akses beta" icon={<Shield className="w-5 h-5" />} enabled={isBetaMode} onChange={(v) => save({ key: "beta_mode", value: String(v) })} testId="toggle-beta" />
+      <SettingToggle label="Auto Approve Quote" desc="Quote yang disubmit langsung tampil tanpa perlu review admin" icon={<Check className="w-5 h-5" />} enabled={isAutoApprove} onChange={(v) => save({ key: "auto_approve_quotes", value: String(v) })} testId="toggle-auto-approve" />
 
       {isBetaMode && (
         <div className="border-4 border-black rounded-xl bg-white p-5 shadow-[6px_6px_0px_black]">

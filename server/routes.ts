@@ -153,7 +153,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const parsed = submitQuoteSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ error: parsed.error.errors[0].message });
       const { tags: tagNames = [], ...quoteData } = parsed.data;
-      const quote = await storage.submitQuote(quoteData, tagNames);
+      if (!quoteData.isAnonymous) {
+        quoteData.author = req.user!.username;
+      }
+      const quote = await storage.submitQuote(quoteData, tagNames, req.user!.id);
       res.status(201).json(quote);
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });

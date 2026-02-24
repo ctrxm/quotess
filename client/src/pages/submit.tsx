@@ -2,16 +2,19 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { CheckCircle, Send, X } from "lucide-react";
+import { CheckCircle, Send, X, LogIn, User, EyeOff } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { submitQuoteSchema, type SubmitQuote, MOODS, MOOD_LABELS, MOOD_COLORS } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/lib/auth";
+import { Link } from "wouter";
 import type { Mood } from "@shared/schema";
 
 export default function Submit() {
+  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [submitted, setSubmitted] = useState(false);
   const [tagInput, setTagInput] = useState("");
@@ -23,9 +26,12 @@ export default function Submit() {
       text: "",
       author: "",
       mood: "semangat",
+      isAnonymous: true,
       tags: [],
     },
   });
+
+  const isAnonymous = form.watch("isAnonymous");
 
   const addTag = () => {
     const t = tagInput.trim();
@@ -55,6 +61,33 @@ export default function Submit() {
       toast({ title: "Gagal submit", description: e.message || "Terjadi kesalahan", variant: "destructive" });
     },
   });
+
+  if (authLoading) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-16">
+        <div className="h-48 border-4 border-black rounded-xl bg-gray-100 animate-pulse shadow-[6px_6px_0px_black]" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-16 text-center">
+        <div className="border-4 border-black rounded-xl bg-[#FFE34D] p-10 shadow-[8px_8px_0px_black]">
+          <LogIn className="w-16 h-16 mx-auto mb-4" />
+          <h2 className="text-2xl font-black mb-2">Login Diperlukan</h2>
+          <p className="font-semibold text-black/70 mb-6">
+            Kamu harus login atau daftar dulu untuk bisa submit quote.
+          </p>
+          <Link href="/auth">
+            <button className="px-8 py-3 bg-black text-[#FFE34D] font-black border-3 border-black rounded-lg shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="button-login-to-submit">
+              Login / Daftar
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
@@ -97,6 +130,43 @@ export default function Submit() {
       <div className="border-4 border-black rounded-xl bg-white p-6 shadow-[6px_6px_0px_black]">
         <Form {...form}>
           <form onSubmit={form.handleSubmit((d) => mutate(d))} className="flex flex-col gap-5">
+            <div className="border-2 border-black rounded-lg p-4 bg-gray-50">
+              <p className="font-black text-sm uppercase tracking-wide mb-3">Tampil Sebagai</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => { form.setValue("isAnonymous", true); form.setValue("author", ""); }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 border-2 border-black rounded-lg font-bold text-sm transition-all ${
+                    isAnonymous
+                      ? "bg-black text-white shadow-[2px_2px_0px_#FFE34D]"
+                      : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"
+                  }`}
+                  data-testid="button-post-anonymous"
+                >
+                  <EyeOff className="w-4 h-4" />
+                  Anonim
+                </button>
+                <button
+                  type="button"
+                  onClick={() => form.setValue("isAnonymous", false)}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 border-2 border-black rounded-lg font-bold text-sm transition-all ${
+                    !isAnonymous
+                      ? "bg-black text-white shadow-[2px_2px_0px_#FFE34D]"
+                      : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"
+                  }`}
+                  data-testid="button-post-username"
+                >
+                  <User className="w-4 h-4" />
+                  @{user.username}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 font-semibold mt-2">
+                {isAnonymous
+                  ? "Quote ditampilkan tanpa nama. User lain tetap bisa mengirim hadiah ke akunmu."
+                  : `Quote ditampilkan sebagai @${user.username}.`}
+              </p>
+            </div>
+
             <FormField
               control={form.control}
               name="text"
@@ -117,24 +187,26 @@ export default function Submit() {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="author"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-black text-sm uppercase tracking-wide">Penulis (opsional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Nama penulis atau sumber..."
-                      className="border-2 border-black rounded-lg font-semibold shadow-[3px_3px_0px_black] focus:shadow-[1px_1px_0px_black] focus-visible:ring-0 focus:translate-x-[2px] focus:translate-y-[2px] transition-all"
-                      data-testid="input-author"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="font-semibold" />
-                </FormItem>
-              )}
-            />
+            {isAnonymous && (
+              <FormField
+                control={form.control}
+                name="author"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-black text-sm uppercase tracking-wide">Penulis / Sumber (opsional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Nama penulis atau sumber asli..."
+                        className="border-2 border-black rounded-lg font-semibold shadow-[3px_3px_0px_black] focus:shadow-[1px_1px_0px_black] focus-visible:ring-0 focus:translate-x-[2px] focus:translate-y-[2px] transition-all"
+                        data-testid="input-author"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="font-semibold" />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
