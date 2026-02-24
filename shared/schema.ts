@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, uuid, timestamp, integer, boolean, decimal, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, uuid, timestamp, integer, boolean, decimal, varchar, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -214,6 +214,128 @@ export const betaCodes = pgTable("beta_codes", {
 });
 export type BetaCode = typeof betaCodes.$inferSelect;
 
+// ─── COMMENTS ───────────────────────────────────────────
+export const quoteComments = pgTable("quote_comments", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  quoteId: uuid("quote_id").notNull().references(() => quotes.id, { onDelete: "cascade" }),
+  text: text("text").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+export type QuoteComment = typeof quoteComments.$inferSelect;
+export type QuoteCommentWithUser = QuoteComment & { username: string };
+
+// ─── BOOKMARKS ──────────────────────────────────────────
+export const quoteBookmarks = pgTable("quote_bookmarks", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  quoteId: uuid("quote_id").notNull().references(() => quotes.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+export type QuoteBookmark = typeof quoteBookmarks.$inferSelect;
+
+// ─── AUTHOR FOLLOWS ─────────────────────────────────────
+export const authorFollows = pgTable("author_follows", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  authorName: text("author_name").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+export type AuthorFollow = typeof authorFollows.$inferSelect;
+
+// ─── COLLECTIONS ────────────────────────────────────────
+export const collections = pgTable("collections", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  description: text("description"),
+  coverColor: text("cover_color").notNull().default("#FFF3B0"),
+  curatorId: uuid("curator_id").references(() => users.id, { onDelete: "set null" }),
+  isPublic: boolean("is_public").notNull().default(true),
+  isPremium: boolean("is_premium").notNull().default(false),
+  priceFlowers: integer("price_flowers").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+export type Collection = typeof collections.$inferSelect;
+export type CollectionWithMeta = Collection & { quoteCount: number; curatorUsername?: string };
+
+export const collectionQuotes = pgTable("collection_quotes", {
+  collectionId: uuid("collection_id").notNull().references(() => collections.id, { onDelete: "cascade" }),
+  quoteId: uuid("quote_id").notNull().references(() => quotes.id, { onDelete: "cascade" }),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
+// ─── QUOTE BATTLES ──────────────────────────────────────
+export const quoteBattles = pgTable("quote_battles", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  quoteAId: uuid("quote_a_id").notNull().references(() => quotes.id, { onDelete: "cascade" }),
+  quoteBId: uuid("quote_b_id").notNull().references(() => quotes.id, { onDelete: "cascade" }),
+  votesA: integer("votes_a").notNull().default(0),
+  votesB: integer("votes_b").notNull().default(0),
+  status: text("status").notNull().default("active"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+  endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+});
+export type QuoteBattle = typeof quoteBattles.$inferSelect;
+export type QuoteBattleWithQuotes = QuoteBattle & { quoteA: QuoteWithTags; quoteB: QuoteWithTags; myVote?: string | null };
+
+export const battleVotes = pgTable("battle_votes", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  battleId: uuid("battle_id").notNull().references(() => quoteBattles.id, { onDelete: "cascade" }),
+  votedQuoteId: uuid("voted_quote_id").notNull().references(() => quotes.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+
+// ─── BADGES ─────────────────────────────────────────────
+export const userBadges = pgTable("user_badges", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  badgeType: text("badge_type").notNull(),
+  earnedAt: timestamp("earned_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+export type UserBadge = typeof userBadges.$inferSelect;
+
+export const BADGE_DEFINITIONS: Record<string, { name: string; icon: string; description: string; requirement: string }> = {
+  first_quote: { name: "Penulis Pertama", icon: "pencil", description: "Submit quote pertama", requirement: "Submit 1 quote" },
+  quote_10: { name: "Penulis Aktif", icon: "book-open", description: "Submit 10 quote", requirement: "Submit 10 quotes" },
+  quote_50: { name: "Penulis Viral", icon: "flame", description: "Submit 50 quote", requirement: "Submit 50 quotes" },
+  first_like: { name: "Apresiator", icon: "heart", description: "Like quote pertama", requirement: "Like 1 quote" },
+  like_100: { name: "Super Fans", icon: "star", description: "Like 100 quote", requirement: "Like 100 quotes" },
+  streak_7: { name: "Setia 7 Hari", icon: "zap", description: "Login 7 hari berturut-turut", requirement: "7 day streak" },
+  streak_30: { name: "Setia 30 Hari", icon: "trophy", description: "Login 30 hari berturut-turut", requirement: "30 day streak" },
+  first_comment: { name: "Komentator", icon: "message-circle", description: "Komentar pertama", requirement: "1 comment" },
+  battle_voter: { name: "Juri Battle", icon: "swords", description: "Vote di 10 battle", requirement: "Vote 10 battles" },
+  collector: { name: "Kolektor", icon: "bookmark", description: "Bookmark 20 quote", requirement: "Bookmark 20 quotes" },
+};
+
+// ─── STREAKS ────────────────────────────────────────────
+export const userStreaks = pgTable("user_streaks", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }).unique(),
+  currentStreak: integer("current_streak").notNull().default(0),
+  longestStreak: integer("longest_streak").notNull().default(0),
+  lastVisitDate: date("last_visit_date"),
+});
+export type UserStreak = typeof userStreaks.$inferSelect;
+
+// ─── REFERRALS ──────────────────────────────────────────
+export const referralCodes = pgTable("referral_codes", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }).unique(),
+  code: text("code").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+
+export const referralUses = pgTable("referral_uses", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  referrerId: uuid("referrer_id").notNull().references(() => users.id),
+  referredId: uuid("referred_id").notNull().references(() => users.id),
+  flowersAmount: integer("flowers_amount").notNull().default(50),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+
+export const REFERRAL_BONUS_FLOWERS = 50;
+
 // ─── SCHEMAS ─────────────────────────────────────────────
 export const insertQuoteSchema = createInsertSchema(quotes).omit({ id: true, createdAt: true, status: true, likesCount: true, userId: true });
 export const submitQuoteSchema = insertQuoteSchema.extend({
@@ -230,7 +352,7 @@ export type SubmitQuote = z.infer<typeof submitQuoteSchema>;
 export type Quote = typeof quotes.$inferSelect;
 export type Tag = typeof tags.$inferSelect;
 export type QuoteTag = typeof quoteTags.$inferSelect;
-export type QuoteWithTags = Quote & { tags: Tag[]; likedByMe?: boolean; authorUser?: { id: string; username: string } | null };
+export type QuoteWithTags = Quote & { tags: Tag[]; likedByMe?: boolean; bookmarkedByMe?: boolean; commentsCount?: number; authorUser?: { id: string; username: string } | null };
 
 export const MOODS = ["galau", "semangat", "sindir", "healing", "kerja", "cinta"] as const;
 export type Mood = typeof MOODS[number];

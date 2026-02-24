@@ -17,6 +17,11 @@ import Topup from "@/pages/topup";
 import QuoteMaker from "@/pages/quote-maker";
 import Trending from "@/pages/trending";
 import AuthorPage from "@/pages/author";
+import CollectionsPage from "@/pages/collections";
+import Battle from "@/pages/battle";
+import Leaderboard from "@/pages/leaderboard";
+import Referral from "@/pages/referral";
+import Embed from "@/pages/embed";
 import Layout from "@/components/layout";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { SettingsProvider } from "@/lib/settings";
@@ -44,6 +49,12 @@ function AppContent() {
           <Route path="/maker" component={QuoteMaker} />
           <Route path="/trending" component={Trending} />
           <Route path="/author/:name" component={AuthorPage} />
+          <Route path="/collections" component={CollectionsPage} />
+          <Route path="/collections/:id" component={CollectionsPage} />
+          <Route path="/battle" component={Battle} />
+          <Route path="/leaderboard" component={Leaderboard} />
+          <Route path="/referral" component={Referral} />
+          <Route path="/embed" component={Embed} />
           <Route path="/admin" component={Admin} />
           <Route path="/auth" component={Auth} />
           <Route path="/waitlist" component={Waitlist} />

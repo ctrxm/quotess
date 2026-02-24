@@ -510,5 +510,157 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
+  // ─── COMMENTS ─────────────────────────────────────────
+  app.get("/api/quotes/:id/comments", async (req: Request, res: Response) => {
+    try { res.json(await storage.getComments(req.params.id)); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/quotes/:id/comments", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { text } = req.body;
+      if (!text || typeof text !== "string" || text.trim().length < 1) return res.status(400).json({ error: "Komentar tidak boleh kosong" });
+      if (text.length > 500) return res.status(400).json({ error: "Komentar maksimal 500 karakter" });
+      const comment = await storage.addComment(req.user!.id, req.params.id, text.trim());
+      res.status(201).json(comment);
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.delete("/api/comments/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      await storage.deleteComment(req.params.id, req.user!.id);
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── BOOKMARKS ────────────────────────────────────────
+  app.post("/api/quotes/:id/bookmark", requireAuth, async (req: Request, res: Response) => {
+    try { res.json(await storage.toggleBookmark(req.user!.id, req.params.id)); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.get("/api/bookmarks", requireAuth, async (req: Request, res: Response) => {
+    try { res.json(await storage.getBookmarkedQuotes(req.user!.id)); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── AUTHOR FOLLOWS ───────────────────────────────────
+  app.post("/api/author/:name/follow", requireAuth, async (req: Request, res: Response) => {
+    try { res.json(await storage.toggleFollow(req.user!.id, decodeURIComponent(req.params.name))); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.get("/api/author/:name/following", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const following = await storage.isFollowing(req.user!.id, decodeURIComponent(req.params.name));
+      const followersCount = await storage.getFollowersCount(decodeURIComponent(req.params.name));
+      res.json({ following, followersCount });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── COLLECTIONS ──────────────────────────────────────
+  app.get("/api/collections", async (_req: Request, res: Response) => {
+    try { res.json(await storage.getCollections()); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.get("/api/collections/:id", async (req: Request, res: Response) => {
+    try {
+      const data = await storage.getCollectionById(req.params.id, req.user?.id);
+      if (!data) return res.status(404).json({ error: "Koleksi tidak ditemukan" });
+      res.json(data);
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/collections", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { name, description, coverColor, isPremium, priceFlowers } = req.body;
+      if (!name) return res.status(400).json({ error: "Nama koleksi wajib diisi" });
+      const col = await storage.createCollection({ name, description, coverColor, curatorId: req.user!.id, isPremium, priceFlowers });
+      res.status(201).json(col);
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/collections/:id/quotes", requireAuth, async (req: Request, res: Response) => {
+    try {
+      await storage.addQuoteToCollection(req.params.id, req.body.quoteId);
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.delete("/api/collections/:id/quotes/:quoteId", requireAuth, async (req: Request, res: Response) => {
+    try {
+      await storage.removeQuoteFromCollection(req.params.id, req.params.quoteId);
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── QUOTE BATTLES ───────────────────────────────────
+  app.get("/api/battles/active", async (req: Request, res: Response) => {
+    try { res.json(await storage.getActiveBattle(req.user?.id)); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/battles/:id/vote", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { votedQuoteId } = req.body;
+      if (!votedQuoteId) return res.status(400).json({ error: "Pilih quote untuk di-vote" });
+      const result = await storage.voteBattle(req.user!.id, req.params.id, votedQuoteId);
+      res.json(result);
+    } catch (e: any) { res.status(400).json({ error: e.message }); }
+  });
+
+  // ─── BADGES ───────────────────────────────────────────
+  app.get("/api/badges", requireAuth, async (req: Request, res: Response) => {
+    try {
+      await storage.checkAllBadges(req.user!.id);
+      const badges = await storage.getUserBadges(req.user!.id);
+      res.json(badges);
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── STREAKS ──────────────────────────────────────────
+  app.post("/api/streak/update", requireAuth, async (req: Request, res: Response) => {
+    try { res.json(await storage.updateStreak(req.user!.id)); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.get("/api/streak", requireAuth, async (req: Request, res: Response) => {
+    try { res.json(await storage.getStreak(req.user!.id)); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── REFERRALS ────────────────────────────────────────
+  app.get("/api/referral", requireAuth, async (req: Request, res: Response) => {
+    try { res.json(await storage.getReferralStats(req.user!.id)); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/referral/use", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { code } = req.body;
+      if (!code) return res.status(400).json({ error: "Kode referral wajib diisi" });
+      const success = await storage.useReferralCode(code, req.user!.id);
+      if (!success) return res.status(400).json({ error: "Kode tidak valid atau sudah digunakan" });
+      res.json({ success: true, bonus: 50 });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── LEADERBOARD ──────────────────────────────────────
+  app.get("/api/leaderboard", async (_req: Request, res: Response) => {
+    try { res.json(await storage.getAuthorLeaderboard()); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── WIDGET EMBED ─────────────────────────────────────
+  app.get("/api/embed/random", async (_req: Request, res: Response) => {
+    try {
+      const randomPage = Math.floor(Math.random() * 5) + 1;
+      const qs = await storage.getQuotes({ page: randomPage, limit: 1 });
+      if (qs.length === 0) return res.status(404).json({ error: "No quotes" });
+      res.json({ text: qs[0].text, author: qs[0].author, mood: qs[0].mood, id: qs[0].id });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
   return httpServer;
 }

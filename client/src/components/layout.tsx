@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Menu, X, Feather, Heart, User, LogOut, Shield, Flower, Palette, TrendingUp } from "lucide-react";
+import { Menu, X, Feather, Heart, User, LogOut, Shield, Flower, TrendingUp, Swords, Trophy, BookOpen, Users, Code } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useSettings } from "@/lib/settings";
@@ -19,8 +19,9 @@ export default function Layout({ children }: LayoutProps) {
     { href: "/", label: "Beranda" },
     { href: "/explore", label: "Jelajahi" },
     { href: "/trending", label: "Trending" },
-    { href: "/maker", label: "Maker" },
-    { href: "/submit", label: "Submit" },
+    { href: "/battle", label: "Battle" },
+    { href: "/collections", label: "Koleksi" },
+    { href: "/leaderboard", label: "Top" },
   ];
 
   const isActive = (href: string) => href === "/" ? location === "/" : location.startsWith(href);
@@ -46,10 +47,10 @@ export default function Layout({ children }: LayoutProps) {
             </div>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-2">
+          <nav className="hidden md:flex items-center gap-1.5">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href} data-testid={`link-nav-${link.label.toLowerCase()}`}>
-                <span className={`px-4 py-2 font-bold text-sm border-2 border-black rounded-md cursor-pointer transition-all duration-100 inline-block ${isActive(link.href) ? "bg-black text-[#FFF3B0] shadow-[3px_3px_0px_#FFF3B0]" : "bg-white text-black shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"}`}>
+                <span className={`px-3 py-2 font-bold text-xs border-2 border-black rounded-md cursor-pointer transition-all duration-100 inline-block ${isActive(link.href) ? "bg-black text-[#FFF3B0] shadow-[3px_3px_0px_#FFF3B0]" : "bg-white text-black shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"}`}>
                   {link.label}
                 </span>
               </Link>
@@ -85,6 +86,21 @@ export default function Layout({ children }: LayoutProps) {
                     <Link href="/profile" onClick={() => setUserMenuOpen(false)}>
                       <div className="flex items-center gap-2 px-4 py-2.5 font-semibold text-sm cursor-pointer hover:bg-gray-50 border-b border-gray-100" data-testid="link-profile">
                         <User className="w-4 h-4" /> Profil
+                      </div>
+                    </Link>
+                    <Link href="/referral" onClick={() => setUserMenuOpen(false)}>
+                      <div className="flex items-center gap-2 px-4 py-2.5 font-semibold text-sm cursor-pointer hover:bg-gray-50 border-b border-gray-100" data-testid="link-referral">
+                        <Users className="w-4 h-4 text-purple-500" /> Referral
+                      </div>
+                    </Link>
+                    <Link href="/maker" onClick={() => setUserMenuOpen(false)}>
+                      <div className="flex items-center gap-2 px-4 py-2.5 font-semibold text-sm cursor-pointer hover:bg-gray-50 border-b border-gray-100" data-testid="link-maker">
+                        <Feather className="w-4 h-4 text-orange-500" /> Quote Maker
+                      </div>
+                    </Link>
+                    <Link href="/embed" onClick={() => setUserMenuOpen(false)}>
+                      <div className="flex items-center gap-2 px-4 py-2.5 font-semibold text-sm cursor-pointer hover:bg-gray-50 border-b border-gray-100" data-testid="link-embed">
+                        <Code className="w-4 h-4 text-blue-500" /> Widget Embed
                       </div>
                     </Link>
                     <Link href="/topup" onClick={() => setUserMenuOpen(false)}>
@@ -135,13 +151,25 @@ export default function Layout({ children }: LayoutProps) {
                 </span>
               </Link>
             ))}
+            <Link href="/submit" onClick={() => setMenuOpen(false)}>
+              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black rounded-md cursor-pointer ${isActive("/submit") ? "bg-black text-[#FFF3B0]" : "bg-white text-black"}`}>Submit</span>
+            </Link>
+            <Link href="/maker" onClick={() => setMenuOpen(false)}>
+              <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-white">Maker</span>
+            </Link>
+            <Link href="/embed" onClick={() => setMenuOpen(false)}>
+              <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-white">Widget Embed</span>
+            </Link>
             {user ? (
               <>
                 <Link href="/profile" onClick={() => setMenuOpen(false)}>
                   <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-white">Profil (@{user.username})</span>
                 </Link>
+                <Link href="/referral" onClick={() => setMenuOpen(false)}>
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-[#DDB8FF]">Referral</span>
+                </Link>
                 <Link href="/topup" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-yellow-50">Top Up Bunga 🌸</span>
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-yellow-50">Top Up Bunga</span>
                 </Link>
                 {user.isGiveEnabled && (
                   <Link href="/withdraw" onClick={() => setMenuOpen(false)}>
@@ -180,6 +208,7 @@ export default function Layout({ children }: LayoutProps) {
             Made for sharing quotes <Heart className="w-3 h-3 fill-[#FFF3B0]" /> Indonesia
           </p>
           <div className="flex gap-3">
+            <Link href="/embed"><span className="text-xs font-bold underline cursor-pointer">Widget</span></Link>
             <Link href="/waitlist"><span className="text-xs font-bold underline cursor-pointer">Waitlist</span></Link>
             <Link href="/admin"><span className="text-xs font-bold underline cursor-pointer">Admin</span></Link>
           </div>

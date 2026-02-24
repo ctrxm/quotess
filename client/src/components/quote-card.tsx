@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Copy, Check, Share2, Heart, Flower } from "lucide-react";
+import { Copy, Check, Share2, Heart, Flower, Bookmark, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -29,6 +29,7 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState(quote.likedByMe || false);
   const [likeCount, setLikeCount] = useState(quote.likesCount || 0);
+  const [bookmarked, setBookmarked] = useState(quote.bookmarkedByMe || false);
   const [showGive, setShowGive] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -52,6 +53,16 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
       setLiked((prev) => !prev);
       setLikeCount((prev) => liked ? prev + 1 : prev - 1);
     },
+  });
+
+  const { mutate: toggleBookmark } = useMutation({
+    mutationFn: () => apiRequest("POST", `/api/quotes/${quote.id}/bookmark`, {}).then((r) => r.json()),
+    onMutate: () => setBookmarked((prev) => !prev),
+    onSuccess: (data) => {
+      setBookmarked(data.bookmarked);
+      qc.invalidateQueries({ queryKey: ["/api/bookmarks"] });
+    },
+    onError: () => setBookmarked((prev) => !prev),
   });
 
   const handleCopy = async (e: React.MouseEvent) => {
@@ -80,12 +91,20 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
     toggleLike();
   };
 
+  const handleBookmark = (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    if (!user) { toast({ title: "Login dulu!", description: "Silakan login untuk bookmark", variant: "destructive" }); return; }
+    toggleBookmark();
+  };
+
   const handleGive = (e: React.MouseEvent) => {
     e.preventDefault(); e.stopPropagation();
     if (!user) { toast({ title: "Login dulu!", description: "Silakan login untuk memberi hadiah", variant: "destructive" }); return; }
     if (!user.isGiveEnabled) { toast({ title: "Fitur belum aktif", description: "Fitur Give belum diaktifkan untuk akun Anda", variant: "destructive" }); return; }
     setShowGive(true);
   };
+
+  const displayAuthor = quote.author || (!quote.isAnonymous && quote.authorUser ? `@${quote.authorUser.username}` : null);
 
   const cardContent = (
     <div className={`border-4 border-black rounded-lg shadow-[6px_6px_0px_black] ${cardColor} transition-all duration-100 hover:shadow-[3px_3px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] flex flex-col h-full`} data-testid={`card-quote-${quote.id}`}>
@@ -94,11 +113,14 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
           <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold border-2 border-black ${moodColor.bg} ${moodColor.text}`}>
             {MOOD_LABELS[mood]}
           </span>
+          <button onClick={handleBookmark} className={`w-7 h-7 rounded flex items-center justify-center transition-colors ${bookmarked ? "bg-yellow-200 text-yellow-700" : "bg-white/60 text-black/40 hover:text-black"}`} data-testid={`button-bookmark-${quote.id}`}>
+            <Bookmark className={`w-4 h-4 ${bookmarked ? "fill-yellow-600" : ""}`} />
+          </button>
         </div>
         <blockquote className={`font-bold leading-snug text-black flex-1 ${variant === "detail" ? "text-2xl md:text-3xl" : "text-base md:text-lg"}`}>
           &ldquo;{quote.text}&rdquo;
         </blockquote>
-        {quote.author && (
+        {displayAuthor && (
           <p className="text-sm font-semibold text-black/70">
             —{" "}
             <span
@@ -106,16 +128,13 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                navigate(`/author/${encodeURIComponent(quote.author!)}`);
+                navigate(`/author/${encodeURIComponent(quote.author || quote.authorUser?.username || "")}`);
               }}
               data-testid={`link-author-${quote.id}`}
             >
-              {quote.author}
+              {displayAuthor}
             </span>
           </p>
-        )}
-        {!quote.isAnonymous && quote.authorUser && !quote.author && (
-          <p className="text-sm font-semibold text-black/70">— @{quote.authorUser.username}</p>
         )}
         {quote.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
@@ -126,10 +145,14 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
         )}
       </div>
 
-      <div className="border-t-3 border-black grid grid-cols-4">
+      <div className="border-t-3 border-black grid grid-cols-5">
         <button onClick={handleLike} className={`flex items-center justify-center gap-1.5 py-2.5 font-bold text-sm border-r-2 border-black transition-colors ${liked ? "bg-red-100 text-red-600" : "bg-white/50 hover:bg-white"}`} data-testid={`button-like-${quote.id}`}>
           <Heart className={`w-4 h-4 ${liked ? "fill-red-500 text-red-500" : ""}`} />
           <span className="text-xs">{likeCount}</span>
+        </button>
+        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/q/${quote.id}`); }} className="flex items-center justify-center gap-1 py-2.5 font-bold text-sm border-r-2 border-black bg-white/50 hover:bg-white transition-colors" data-testid={`button-comments-${quote.id}`}>
+          <MessageCircle className="w-4 h-4" />
+          {(quote.commentsCount || 0) > 0 && <span className="text-xs">{quote.commentsCount}</span>}
         </button>
         <button onClick={handleGive} className="flex items-center justify-center gap-1 py-2.5 font-bold text-sm border-r-2 border-black bg-white/50 hover:bg-white transition-colors" data-testid={`button-give-${quote.id}`}>
           <Flower className="w-4 h-4 text-pink-500" />

@@ -1,16 +1,21 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import { eq, desc, and, ilike, or, inArray, sql, ne } from "drizzle-orm";
+import { eq, desc, and, ilike, or, inArray, sql, ne, asc, count } from "drizzle-orm";
 import {
   quotes, tags, quoteTags, quoteLikes,
   users, waitlist, settings, giftTypes, giftTransactions,
   flowerTransactions, withdrawalMethods, withdrawalRequests,
   topupPackages, topupRequests, betaCodes, giftRoleApplications, ads,
+  quoteComments, quoteBookmarks, authorFollows,
+  collections, collectionQuotes, quoteBattles, battleVotes,
+  userBadges, userStreaks, referralCodes, referralUses,
+  REFERRAL_BONUS_FLOWERS,
   type Quote, type Tag, type QuoteWithTags, type InsertQuote,
   type User, type PublicUser, type Setting, type GiftType,
   type WithdrawalMethod, type WithdrawalRequest, type Waitlist,
   type GiftTransaction, type FlowerTransaction,
   type TopupPackage, type TopupRequest, type BetaCode, type GiftRoleApplication, type Ad,
+  type QuoteCommentWithUser, type CollectionWithMeta, type QuoteBattleWithQuotes, type UserBadge, type UserStreak,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
@@ -40,13 +45,25 @@ async function getTagsForQuoteIds(quoteIds: string[]): Promise<Map<string, Tag[]
 }
 
 async function attachTags(qs: Quote[], userId?: string): Promise<QuoteWithTags[]> {
-  const tagMap = await getTagsForQuoteIds(qs.map((q) => q.id));
+  if (qs.length === 0) return [];
+  const quoteIds = qs.map((q) => q.id);
+  const tagMap = await getTagsForQuoteIds(quoteIds);
   let likedSet = new Set<string>();
+  let bookmarkSet = new Set<string>();
   if (userId) {
-    const liked = await db.select({ quoteId: quoteLikes.quoteId }).from(quoteLikes)
-      .where(and(eq(quoteLikes.userId, userId), inArray(quoteLikes.quoteId, qs.map((q) => q.id))));
+    const [liked, bookmarked] = await Promise.all([
+      db.select({ quoteId: quoteLikes.quoteId }).from(quoteLikes)
+        .where(and(eq(quoteLikes.userId, userId), inArray(quoteLikes.quoteId, quoteIds))),
+      db.select({ quoteId: quoteBookmarks.quoteId }).from(quoteBookmarks)
+        .where(and(eq(quoteBookmarks.userId, userId), inArray(quoteBookmarks.quoteId, quoteIds))),
+    ]);
     likedSet = new Set(liked.map((r) => r.quoteId));
+    bookmarkSet = new Set(bookmarked.map((r) => r.quoteId));
   }
+  const commentCounts = await db.select({ quoteId: quoteComments.quoteId, cnt: sql<number>`count(*)` })
+    .from(quoteComments).where(inArray(quoteComments.quoteId, quoteIds)).groupBy(quoteComments.quoteId);
+  const commentMap = new Map(commentCounts.map((r) => [r.quoteId, Number(r.cnt)]));
+
   const authorUserIds = qs.map((q) => q.userId).filter(Boolean) as string[];
   const authorMap = new Map<string, { id: string; username: string }>();
   if (authorUserIds.length > 0) {
@@ -57,6 +74,8 @@ async function attachTags(qs: Quote[], userId?: string): Promise<QuoteWithTags[]
     ...q,
     tags: tagMap.get(q.id) || [],
     likedByMe: likedSet.has(q.id),
+    bookmarkedByMe: bookmarkSet.has(q.id),
+    commentsCount: commentMap.get(q.id) || 0,
     authorUser: q.userId ? authorMap.get(q.userId) || null : null,
   }));
 }
@@ -560,6 +579,321 @@ export async function markBetaCodeUsed(code: string, userId: string): Promise<vo
   await db.update(betaCodes).set({ isUsed: true, usedBy: userId, usedAt: new Date() }).where(eq(betaCodes.code, code));
 }
 
+// ─── COMMENTS ───────────────────────────────────────────
+
+export async function getComments(quoteId: string): Promise<QuoteCommentWithUser[]> {
+  const rows = await db.select({
+    id: quoteComments.id, userId: quoteComments.userId, quoteId: quoteComments.quoteId,
+    text: quoteComments.text, createdAt: quoteComments.createdAt, username: users.username,
+  }).from(quoteComments)
+    .innerJoin(users, eq(quoteComments.userId, users.id))
+    .where(eq(quoteComments.quoteId, quoteId))
+    .orderBy(desc(quoteComments.createdAt));
+  return rows;
+}
+
+export async function addComment(userId: string, quoteId: string, text: string): Promise<QuoteCommentWithUser> {
+  const [comment] = await db.insert(quoteComments).values({ id: randomUUID(), userId, quoteId, text }).returning();
+  const user = await getUserById(userId);
+  await checkAndAwardBadge(userId, "first_comment", async () => {
+    const [{ cnt }] = await db.select({ cnt: sql<number>`count(*)` }).from(quoteComments).where(eq(quoteComments.userId, userId));
+    return Number(cnt) >= 1;
+  });
+  return { ...comment, username: user?.username || "unknown" };
+}
+
+export async function deleteComment(commentId: string, userId: string): Promise<void> {
+  await db.delete(quoteComments).where(and(eq(quoteComments.id, commentId), eq(quoteComments.userId, userId)));
+}
+
+// ─── BOOKMARKS ──────────────────────────────────────────
+
+export async function toggleBookmark(userId: string, quoteId: string): Promise<{ bookmarked: boolean }> {
+  const existing = await db.select().from(quoteBookmarks)
+    .where(and(eq(quoteBookmarks.userId, userId), eq(quoteBookmarks.quoteId, quoteId))).limit(1);
+  if (existing.length > 0) {
+    await db.delete(quoteBookmarks).where(eq(quoteBookmarks.id, existing[0].id));
+    return { bookmarked: false };
+  }
+  await db.insert(quoteBookmarks).values({ id: randomUUID(), userId, quoteId });
+  await checkAndAwardBadge(userId, "collector", async () => {
+    const [{ cnt }] = await db.select({ cnt: sql<number>`count(*)` }).from(quoteBookmarks).where(eq(quoteBookmarks.userId, userId));
+    return Number(cnt) >= 20;
+  });
+  return { bookmarked: true };
+}
+
+export async function getBookmarkedQuotes(userId: string): Promise<QuoteWithTags[]> {
+  const bms = await db.select({ quoteId: quoteBookmarks.quoteId }).from(quoteBookmarks)
+    .where(eq(quoteBookmarks.userId, userId)).orderBy(desc(quoteBookmarks.createdAt));
+  if (bms.length === 0) return [];
+  const ids = bms.map((b) => b.quoteId);
+  const rows = await db.select().from(quotes).where(inArray(quotes.id, ids));
+  const ordered = ids.map((id) => rows.find((r) => r.id === id)).filter(Boolean) as Quote[];
+  return attachTags(ordered, userId);
+}
+
+// ─── AUTHOR FOLLOWS ─────────────────────────────────────
+
+export async function toggleFollow(userId: string, authorName: string): Promise<{ following: boolean; followersCount: number }> {
+  const existing = await db.select().from(authorFollows)
+    .where(and(eq(authorFollows.userId, userId), eq(authorFollows.authorName, authorName))).limit(1);
+  if (existing.length > 0) {
+    await db.delete(authorFollows).where(eq(authorFollows.id, existing[0].id));
+  } else {
+    await db.insert(authorFollows).values({ id: randomUUID(), userId, authorName });
+  }
+  const [{ cnt }] = await db.select({ cnt: sql<number>`count(*)` }).from(authorFollows).where(eq(authorFollows.authorName, authorName));
+  return { following: existing.length === 0, followersCount: Number(cnt) };
+}
+
+export async function isFollowing(userId: string, authorName: string): Promise<boolean> {
+  const rows = await db.select().from(authorFollows)
+    .where(and(eq(authorFollows.userId, userId), eq(authorFollows.authorName, authorName))).limit(1);
+  return rows.length > 0;
+}
+
+export async function getFollowersCount(authorName: string): Promise<number> {
+  const [{ cnt }] = await db.select({ cnt: sql<number>`count(*)` }).from(authorFollows).where(eq(authorFollows.authorName, authorName));
+  return Number(cnt);
+}
+
+// ─── COLLECTIONS ────────────────────────────────────────
+
+export async function getCollections(): Promise<CollectionWithMeta[]> {
+  const cols = await db.select().from(collections).where(eq(collections.isPublic, true)).orderBy(desc(collections.createdAt));
+  const colIds = cols.map((c) => c.id);
+  const counts = colIds.length > 0 ? await db.select({ collectionId: collectionQuotes.collectionId, cnt: sql<number>`count(*)` })
+    .from(collectionQuotes).where(inArray(collectionQuotes.collectionId, colIds)).groupBy(collectionQuotes.collectionId) : [];
+  const countMap = new Map(counts.map((r) => [r.collectionId, Number(r.cnt)]));
+  const curatorIds = cols.map((c) => c.curatorId).filter(Boolean) as string[];
+  const curatorMap = new Map<string, string>();
+  if (curatorIds.length > 0) {
+    const curators = await db.select({ id: users.id, username: users.username }).from(users).where(inArray(users.id, curatorIds));
+    for (const c of curators) curatorMap.set(c.id, c.username);
+  }
+  return cols.map((c) => ({ ...c, quoteCount: countMap.get(c.id) || 0, curatorUsername: c.curatorId ? curatorMap.get(c.curatorId) : undefined }));
+}
+
+export async function getCollectionById(id: string, userId?: string): Promise<{ collection: CollectionWithMeta; quotes: QuoteWithTags[] } | undefined> {
+  const [col] = await db.select().from(collections).where(eq(collections.id, id)).limit(1);
+  if (!col) return undefined;
+  const cqs = await db.select({ quoteId: collectionQuotes.quoteId }).from(collectionQuotes)
+    .where(eq(collectionQuotes.collectionId, id)).orderBy(collectionQuotes.sortOrder);
+  const qIds = cqs.map((r) => r.quoteId);
+  let qs: QuoteWithTags[] = [];
+  if (qIds.length > 0) {
+    const rows = await db.select().from(quotes).where(inArray(quotes.id, qIds));
+    const ordered = qIds.map((id) => rows.find((r) => r.id === id)).filter(Boolean) as Quote[];
+    qs = await attachTags(ordered, userId);
+  }
+  const [{ cnt }] = await db.select({ cnt: sql<number>`count(*)` }).from(collectionQuotes).where(eq(collectionQuotes.collectionId, id));
+  let curatorUsername: string | undefined;
+  if (col.curatorId) {
+    const [u] = await db.select({ username: users.username }).from(users).where(eq(users.id, col.curatorId)).limit(1);
+    curatorUsername = u?.username;
+  }
+  return { collection: { ...col, quoteCount: Number(cnt), curatorUsername }, quotes: qs };
+}
+
+export async function createCollection(data: { name: string; description?: string; coverColor?: string; curatorId: string; isPremium?: boolean; priceFlowers?: number }): Promise<Collection> {
+  const [col] = await db.insert(collections).values({
+    id: randomUUID(), name: data.name, description: data.description || null,
+    coverColor: data.coverColor || "#FFF3B0", curatorId: data.curatorId,
+    isPremium: data.isPremium || false, priceFlowers: data.priceFlowers || 0,
+  }).returning();
+  return col;
+}
+
+export async function addQuoteToCollection(collectionId: string, quoteId: string): Promise<void> {
+  const [{ cnt }] = await db.select({ cnt: sql<number>`count(*)` }).from(collectionQuotes).where(eq(collectionQuotes.collectionId, collectionId));
+  await db.insert(collectionQuotes).values({ collectionId, quoteId, sortOrder: Number(cnt) }).onConflictDoNothing();
+}
+
+export async function removeQuoteFromCollection(collectionId: string, quoteId: string): Promise<void> {
+  await db.delete(collectionQuotes).where(and(eq(collectionQuotes.collectionId, collectionId), eq(collectionQuotes.quoteId, quoteId)));
+}
+
+// ─── QUOTE BATTLES ──────────────────────────────────────
+
+export async function getActiveBattle(userId?: string): Promise<QuoteBattleWithQuotes | null> {
+  const now = new Date();
+  let [battle] = await db.select().from(quoteBattles)
+    .where(and(eq(quoteBattles.status, "active"), sql`ends_at > ${now}`))
+    .orderBy(desc(quoteBattles.createdAt)).limit(1);
+
+  if (!battle) {
+    battle = await createNewBattle();
+    if (!battle) return null;
+  }
+
+  const [quoteA, quoteB] = await Promise.all([
+    getQuoteById(battle.quoteAId, userId),
+    getQuoteById(battle.quoteBId, userId),
+  ]);
+  if (!quoteA || !quoteB) return null;
+
+  let myVote: string | null = null;
+  if (userId) {
+    const [vote] = await db.select().from(battleVotes)
+      .where(and(eq(battleVotes.userId, userId), eq(battleVotes.battleId, battle.id))).limit(1);
+    myVote = vote?.votedQuoteId || null;
+  }
+  return { ...battle, quoteA, quoteB, myVote };
+}
+
+async function createNewBattle(): Promise<typeof quoteBattles.$inferSelect | null> {
+  const randomQuotes = await db.select().from(quotes).where(eq(quotes.status, "approved")).orderBy(sql`random()`).limit(2);
+  if (randomQuotes.length < 2) return null;
+  const endsAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const [battle] = await db.insert(quoteBattles).values({
+    id: randomUUID(), quoteAId: randomQuotes[0].id, quoteBId: randomQuotes[1].id, endsAt,
+  }).returning();
+  return battle;
+}
+
+export async function voteBattle(userId: string, battleId: string, votedQuoteId: string): Promise<{ votesA: number; votesB: number }> {
+  const existing = await db.select().from(battleVotes)
+    .where(and(eq(battleVotes.userId, userId), eq(battleVotes.battleId, battleId))).limit(1);
+  if (existing.length > 0) throw new Error("Kamu sudah vote di battle ini");
+
+  const [battle] = await db.select().from(quoteBattles).where(eq(quoteBattles.id, battleId)).limit(1);
+  if (!battle || battle.status !== "active") throw new Error("Battle tidak aktif");
+
+  await db.insert(battleVotes).values({ id: randomUUID(), userId, battleId, votedQuoteId });
+  const isA = votedQuoteId === battle.quoteAId;
+  const [updated] = await db.update(quoteBattles).set(
+    isA ? { votesA: sql`votes_a + 1` } : { votesB: sql`votes_b + 1` }
+  ).where(eq(quoteBattles.id, battleId)).returning();
+
+  await checkAndAwardBadge(userId, "battle_voter", async () => {
+    const [{ cnt }] = await db.select({ cnt: sql<number>`count(*)` }).from(battleVotes).where(eq(battleVotes.userId, userId));
+    return Number(cnt) >= 10;
+  });
+
+  return { votesA: updated.votesA, votesB: updated.votesB };
+}
+
+// ─── BADGES ─────────────────────────────────────────────
+
+async function checkAndAwardBadge(userId: string, badgeType: string, check: () => Promise<boolean>): Promise<void> {
+  try {
+    const existing = await db.select().from(userBadges)
+      .where(and(eq(userBadges.userId, userId), eq(userBadges.badgeType, badgeType))).limit(1);
+    if (existing.length > 0) return;
+    const earned = await check();
+    if (earned) {
+      await db.insert(userBadges).values({ id: randomUUID(), userId, badgeType }).onConflictDoNothing();
+    }
+  } catch {}
+}
+
+export async function getUserBadges(userId: string): Promise<UserBadge[]> {
+  return db.select().from(userBadges).where(eq(userBadges.userId, userId)).orderBy(desc(userBadges.earnedAt));
+}
+
+export async function checkAllBadges(userId: string): Promise<void> {
+  const [quoteCount] = await db.select({ cnt: sql<number>`count(*)` }).from(quotes).where(eq(quotes.userId, userId));
+  const [likeCount] = await db.select({ cnt: sql<number>`count(*)` }).from(quoteLikes).where(eq(quoteLikes.userId, userId));
+  const qc = Number(quoteCount.cnt);
+  const lc = Number(likeCount.cnt);
+  if (qc >= 1) await checkAndAwardBadge(userId, "first_quote", async () => true);
+  if (qc >= 10) await checkAndAwardBadge(userId, "quote_10", async () => true);
+  if (qc >= 50) await checkAndAwardBadge(userId, "quote_50", async () => true);
+  if (lc >= 1) await checkAndAwardBadge(userId, "first_like", async () => true);
+  if (lc >= 100) await checkAndAwardBadge(userId, "like_100", async () => true);
+}
+
+// ─── STREAKS ────────────────────────────────────────────
+
+export async function updateStreak(userId: string): Promise<UserStreak> {
+  const today = new Date().toISOString().slice(0, 10);
+  const [existing] = await db.select().from(userStreaks).where(eq(userStreaks.userId, userId)).limit(1);
+
+  if (!existing) {
+    const [created] = await db.insert(userStreaks).values({
+      id: randomUUID(), userId, currentStreak: 1, longestStreak: 1, lastVisitDate: today,
+    }).returning();
+    return created;
+  }
+
+  if (existing.lastVisitDate === today) return existing;
+
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const isConsecutive = existing.lastVisitDate === yesterday;
+  const newStreak = isConsecutive ? existing.currentStreak + 1 : 1;
+  const newLongest = Math.max(newStreak, existing.longestStreak);
+
+  const [updated] = await db.update(userStreaks).set({
+    currentStreak: newStreak, longestStreak: newLongest, lastVisitDate: today,
+  }).where(eq(userStreaks.id, existing.id)).returning();
+
+  if (newStreak >= 7) await checkAndAwardBadge(userId, "streak_7", async () => true);
+  if (newStreak >= 30) await checkAndAwardBadge(userId, "streak_30", async () => true);
+
+  return updated;
+}
+
+export async function getStreak(userId: string): Promise<UserStreak | null> {
+  const [row] = await db.select().from(userStreaks).where(eq(userStreaks.userId, userId)).limit(1);
+  return row || null;
+}
+
+// ─── REFERRALS ──────────────────────────────────────────
+
+export async function getOrCreateReferralCode(userId: string): Promise<string> {
+  const [existing] = await db.select().from(referralCodes).where(eq(referralCodes.userId, userId)).limit(1);
+  if (existing) return existing.code;
+  const code = "KV-" + randomUUID().slice(0, 6).toUpperCase();
+  await db.insert(referralCodes).values({ id: randomUUID(), userId, code });
+  return code;
+}
+
+export async function useReferralCode(code: string, newUserId: string): Promise<boolean> {
+  const [ref] = await db.select().from(referralCodes).where(eq(referralCodes.code, code)).limit(1);
+  if (!ref || ref.userId === newUserId) return false;
+  const alreadyUsed = await db.select().from(referralUses)
+    .where(eq(referralUses.referredId, newUserId)).limit(1);
+  if (alreadyUsed.length > 0) return false;
+
+  await db.insert(referralUses).values({ id: randomUUID(), referrerId: ref.userId, referredId: newUserId, flowersAmount: REFERRAL_BONUS_FLOWERS });
+  await db.update(users).set({ flowersBalance: sql`flowers_balance + ${REFERRAL_BONUS_FLOWERS}` }).where(eq(users.id, ref.userId));
+  await db.update(users).set({ flowersBalance: sql`flowers_balance + ${REFERRAL_BONUS_FLOWERS}` }).where(eq(users.id, newUserId));
+  await db.insert(flowerTransactions).values({ id: randomUUID(), userId: ref.userId, type: "credit", amount: REFERRAL_BONUS_FLOWERS, description: `Bonus referral` });
+  await db.insert(flowerTransactions).values({ id: randomUUID(), userId: newUserId, type: "credit", amount: REFERRAL_BONUS_FLOWERS, description: `Bonus referral` });
+  return true;
+}
+
+export async function getReferralStats(userId: string): Promise<{ code: string; totalReferred: number; totalFlowers: number }> {
+  const code = await getOrCreateReferralCode(userId);
+  const [stats] = await db.select({
+    cnt: sql<number>`count(*)`, total: sql<number>`COALESCE(sum(flowers_amount), 0)`,
+  }).from(referralUses).where(eq(referralUses.referrerId, userId));
+  return { code, totalReferred: Number(stats.cnt), totalFlowers: Number(stats.total) };
+}
+
+// ─── LEADERBOARD ────────────────────────────────────────
+
+export async function getAuthorLeaderboard(): Promise<{ author: string; totalQuotes: number; totalLikes: number; totalViews: number; score: number }[]> {
+  const rows = await db.select({
+    author: quotes.author,
+    totalQuotes: sql<number>`count(*)`,
+    totalLikes: sql<number>`COALESCE(sum(likes_count), 0)`,
+    totalViews: sql<number>`COALESCE(sum(COALESCE(view_count, 0)), 0)`,
+  }).from(quotes)
+    .where(and(eq(quotes.status, "approved"), sql`author IS NOT NULL`))
+    .groupBy(quotes.author)
+    .orderBy(desc(sql`COALESCE(sum(likes_count), 0) + COALESCE(sum(COALESCE(view_count, 0)), 0)`))
+    .limit(50);
+  return rows.map((r) => ({
+    author: r.author!,
+    totalQuotes: Number(r.totalQuotes),
+    totalLikes: Number(r.totalLikes),
+    totalViews: Number(r.totalViews),
+    score: Number(r.totalLikes) + Number(r.totalViews),
+  }));
+}
+
 export const storage = {
   getQuotes, getQuoteById, searchQuotes, submitQuote, getPendingQuotes, updateQuoteStatus,
   getTags, getRelatedQuotes, toggleLike,
@@ -575,6 +909,15 @@ export const storage = {
   generateBetaCode, getBetaCodes, validateBetaCodeStandalone, markBetaCodeUsed,
   applyForGiftRole, getMyGiftRoleApplication, getAllGiftRoleApplications, updateGiftRoleApplication,
   getActiveAds, getAllAds, createAd, updateAd, deleteAd, incrementAdClicks,
+  getComments, addComment, deleteComment,
+  toggleBookmark, getBookmarkedQuotes,
+  toggleFollow, isFollowing, getFollowersCount,
+  getCollections, getCollectionById, createCollection, addQuoteToCollection, removeQuoteFromCollection,
+  getActiveBattle, voteBattle,
+  getUserBadges, checkAllBadges,
+  updateStreak, getStreak,
+  getOrCreateReferralCode, useReferralCode, getReferralStats,
+  getAuthorLeaderboard,
 };
 
-export type { User, PublicUser, Tag, Quote, QuoteWithTags, GiftType, WithdrawalMethod, WithdrawalRequest, Waitlist, FlowerTransaction, TopupPackage, TopupRequest, BetaCode, GiftRoleApplication, Ad };
+export type { User, PublicUser, Tag, Quote, QuoteWithTags, GiftType, WithdrawalMethod, WithdrawalRequest, Waitlist, FlowerTransaction, TopupPackage, TopupRequest, BetaCode, GiftRoleApplication, Ad, QuoteCommentWithUser, CollectionWithMeta, QuoteBattleWithQuotes, UserBadge, UserStreak };

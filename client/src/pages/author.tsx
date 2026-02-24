@@ -1,9 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRoute } from "wouter";
-import { User, Heart, Eye, BookOpen, ArrowLeft } from "lucide-react";
+import { User, Heart, Eye, BookOpen, ArrowLeft, UserPlus, UserCheck, Users } from "lucide-react";
 import { Link } from "wouter";
 import QuoteCard from "@/components/quote-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
 import type { QuoteWithTags } from "@shared/schema";
 
 interface AuthorData {
@@ -15,10 +18,26 @@ interface AuthorData {
 export default function Author() {
   const [, params] = useRoute("/author/:name");
   const authorName = params?.name ? decodeURIComponent(params.name) : "";
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const qc = useQueryClient();
 
   const { data, isLoading } = useQuery<AuthorData>({
     queryKey: ["/api/author", encodeURIComponent(authorName)],
     enabled: !!authorName,
+  });
+
+  const { data: followData } = useQuery<{ following: boolean; followersCount: number }>({
+    queryKey: ["/api/author", encodeURIComponent(authorName), "following"],
+    enabled: !!authorName && !!user,
+  });
+
+  const { mutate: toggleFollow, isPending: isFollowPending } = useMutation({
+    mutationFn: () => apiRequest("POST", `/api/author/${encodeURIComponent(authorName)}/follow`, {}).then((r) => r.json()),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["/api/author", encodeURIComponent(authorName), "following"] });
+    },
+    onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
   });
 
   if (isLoading) {
@@ -52,6 +71,9 @@ export default function Author() {
     );
   }
 
+  const isFollowing = followData?.following || false;
+  const followersCount = followData?.followersCount || 0;
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <Link href="/">
@@ -69,10 +91,25 @@ export default function Author() {
             <div className="w-16 h-16 bg-white border-3 border-black rounded-full flex items-center justify-center shadow-[4px_4px_0px_black]">
               <User className="w-8 h-8" />
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-2xl md:text-4xl font-black text-black" data-testid="text-author-name">{data.author}</h1>
-              <p className="text-black/60 font-semibold text-sm">Profil Penulis</p>
+              <div className="flex items-center gap-3 mt-1">
+                <span className="text-sm font-semibold text-black/60 flex items-center gap-1">
+                  <Users className="w-4 h-4" /> {followersCount} pengikut
+                </span>
+              </div>
             </div>
+            {user && (
+              <button
+                onClick={() => toggleFollow()}
+                disabled={isFollowPending}
+                className={`flex items-center gap-2 px-4 py-2 border-3 border-black rounded-lg font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all ${isFollowing ? "bg-black text-[#FFF3B0]" : "bg-white"}`}
+                data-testid="button-follow"
+              >
+                {isFollowing ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                {isFollowing ? "Mengikuti" : "Ikuti"}
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-3 mt-6">

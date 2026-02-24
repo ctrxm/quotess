@@ -150,6 +150,129 @@ async function runMigrations() {
   await ensureTable("quotes_is_anonymous", `ALTER TABLE quotes ADD COLUMN IF NOT EXISTS is_anonymous boolean NOT NULL DEFAULT true`);
   await ensureTable("quotes_view_count", `ALTER TABLE quotes ADD COLUMN IF NOT EXISTS view_count integer NOT NULL DEFAULT 0`);
 
+  await ensureTable("quote_comments", `
+    CREATE TABLE IF NOT EXISTS quote_comments (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      quote_id uuid NOT NULL REFERENCES quotes(id) ON DELETE CASCADE,
+      text text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+
+  await ensureTable("quote_bookmarks", `
+    CREATE TABLE IF NOT EXISTS quote_bookmarks (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      quote_id uuid NOT NULL REFERENCES quotes(id) ON DELETE CASCADE,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+
+  await ensureTable("author_follows", `
+    CREATE TABLE IF NOT EXISTS author_follows (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      author_name text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+
+  await ensureTable("collections", `
+    CREATE TABLE IF NOT EXISTS collections (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      name text NOT NULL,
+      description text,
+      cover_color text NOT NULL DEFAULT '#FFF3B0',
+      curator_id uuid REFERENCES users(id) ON DELETE SET NULL,
+      is_public boolean NOT NULL DEFAULT true,
+      is_premium boolean NOT NULL DEFAULT false,
+      price_flowers integer NOT NULL DEFAULT 0,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+
+  await ensureTable("collection_quotes", `
+    CREATE TABLE IF NOT EXISTS collection_quotes (
+      collection_id uuid NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
+      quote_id uuid NOT NULL REFERENCES quotes(id) ON DELETE CASCADE,
+      sort_order integer NOT NULL DEFAULT 0
+    )
+  `);
+
+  await ensureTable("quote_battles", `
+    CREATE TABLE IF NOT EXISTS quote_battles (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      quote_a_id uuid NOT NULL REFERENCES quotes(id) ON DELETE CASCADE,
+      quote_b_id uuid NOT NULL REFERENCES quotes(id) ON DELETE CASCADE,
+      votes_a integer NOT NULL DEFAULT 0,
+      votes_b integer NOT NULL DEFAULT 0,
+      status text NOT NULL DEFAULT 'active',
+      created_at timestamptz NOT NULL DEFAULT now(),
+      ends_at timestamptz NOT NULL
+    )
+  `);
+
+  await ensureTable("battle_votes", `
+    CREATE TABLE IF NOT EXISTS battle_votes (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      battle_id uuid NOT NULL REFERENCES quote_battles(id) ON DELETE CASCADE,
+      voted_quote_id uuid NOT NULL REFERENCES quotes(id) ON DELETE CASCADE,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+
+  await ensureTable("user_badges", `
+    CREATE TABLE IF NOT EXISTS user_badges (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      badge_type text NOT NULL,
+      earned_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+
+  await ensureTable("user_streaks", `
+    CREATE TABLE IF NOT EXISTS user_streaks (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+      current_streak integer NOT NULL DEFAULT 0,
+      longest_streak integer NOT NULL DEFAULT 0,
+      last_visit_date date
+    )
+  `);
+
+  await ensureTable("referral_codes", `
+    CREATE TABLE IF NOT EXISTS referral_codes (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+      code text NOT NULL UNIQUE,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+
+  await ensureTable("referral_uses", `
+    CREATE TABLE IF NOT EXISTS referral_uses (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      referrer_id uuid NOT NULL REFERENCES users(id),
+      referred_id uuid NOT NULL REFERENCES users(id),
+      flowers_amount integer NOT NULL DEFAULT 50,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+
+  await ensureTable("idx_quotes_status", `CREATE INDEX IF NOT EXISTS idx_quotes_status ON quotes(status)`);
+  await ensureTable("idx_quotes_mood", `CREATE INDEX IF NOT EXISTS idx_quotes_mood ON quotes(mood)`);
+  await ensureTable("idx_quotes_author", `CREATE INDEX IF NOT EXISTS idx_quotes_author ON quotes(author)`);
+  await ensureTable("idx_quotes_likes", `CREATE INDEX IF NOT EXISTS idx_quotes_likes ON quotes(likes_count DESC)`);
+  await ensureTable("idx_quotes_views", `CREATE INDEX IF NOT EXISTS idx_quotes_views ON quotes(view_count DESC)`);
+  await ensureTable("idx_quote_likes_user", `CREATE INDEX IF NOT EXISTS idx_quote_likes_user ON quote_likes(user_id, quote_id)`);
+  await ensureTable("idx_quote_tags_quote", `CREATE INDEX IF NOT EXISTS idx_quote_tags_quote ON quote_tags(quote_id)`);
+  await ensureTable("idx_comments_quote", `CREATE INDEX IF NOT EXISTS idx_comments_quote ON quote_comments(quote_id)`);
+  await ensureTable("idx_bookmarks_user", `CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON quote_bookmarks(user_id)`);
+  await ensureTable("idx_follows_user", `CREATE INDEX IF NOT EXISTS idx_follows_user ON author_follows(user_id)`);
+  await ensureTable("idx_battle_votes_user", `CREATE INDEX IF NOT EXISTS idx_battle_votes_user ON battle_votes(user_id, battle_id)`);
+
   console.log("[migrate] Tables ensured.");
 }
 
