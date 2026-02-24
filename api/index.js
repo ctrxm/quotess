@@ -1,10 +1,5 @@
-"use strict";
-var __create = Object.create;
 var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __esm = (fn, res) => function __init() {
   return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
 };
@@ -12,23 +7,6 @@ var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
 };
-var __copyProps = (to, from, except, desc2) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc2 = __getOwnPropDesc(from, key)) || desc2.enumerable });
-  }
-  return to;
-};
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // shared/schema.ts
 var schema_exports = {};
@@ -61,156 +39,156 @@ __export(schema_exports, {
   withdrawalMethods: () => withdrawalMethods,
   withdrawalRequests: () => withdrawalRequests
 });
-var import_drizzle_orm, import_pg_core, import_drizzle_zod, import_zod, users, insertUserSchema, registerSchema, loginSchema, waitlist, settings, quotes, tags, quoteTags, quoteLikes, giftTypes, giftTransactions, flowerTransactions, withdrawalMethods, withdrawalRequests, topupPackages, topupRequests, betaCodes, insertQuoteSchema, submitQuoteSchema, insertTagSchema, MOODS, MOOD_LABELS, MOOD_COLORS, POPULAR_TAGS, FLOWERS_TO_IDR_RATE, MIN_WITHDRAWAL_FLOWERS;
+import { sql } from "drizzle-orm";
+import { pgTable, text, uuid, timestamp, integer, boolean } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+var users, insertUserSchema, registerSchema, loginSchema, waitlist, settings, quotes, tags, quoteTags, quoteLikes, giftTypes, giftTransactions, flowerTransactions, withdrawalMethods, withdrawalRequests, topupPackages, topupRequests, betaCodes, insertQuoteSchema, submitQuoteSchema, insertTagSchema, MOODS, MOOD_LABELS, MOOD_COLORS, POPULAR_TAGS, FLOWERS_TO_IDR_RATE, MIN_WITHDRAWAL_FLOWERS;
 var init_schema = __esm({
   "shared/schema.ts"() {
     "use strict";
-    import_drizzle_orm = require("drizzle-orm");
-    import_pg_core = require("drizzle-orm/pg-core");
-    import_drizzle_zod = require("drizzle-zod");
-    import_zod = require("zod");
-    users = (0, import_pg_core.pgTable)("users", {
-      id: (0, import_pg_core.uuid)("id").primaryKey().default(import_drizzle_orm.sql`gen_random_uuid()`),
-      email: (0, import_pg_core.text)("email").notNull().unique(),
-      username: (0, import_pg_core.text)("username").notNull().unique(),
-      passwordHash: (0, import_pg_core.text)("password_hash").notNull(),
-      role: (0, import_pg_core.text)("role").notNull().default("user"),
-      isActive: (0, import_pg_core.boolean)("is_active").notNull().default(true),
-      hasBetaAccess: (0, import_pg_core.boolean)("has_beta_access").notNull().default(false),
-      flowersBalance: (0, import_pg_core.integer)("flowers_balance").notNull().default(0),
-      isGiveEnabled: (0, import_pg_core.boolean)("is_give_enabled").notNull().default(false),
-      createdAt: (0, import_pg_core.timestamp)("created_at", { withTimezone: true }).notNull().default(import_drizzle_orm.sql`now()`)
+    users = pgTable("users", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      email: text("email").notNull().unique(),
+      username: text("username").notNull().unique(),
+      passwordHash: text("password_hash").notNull(),
+      role: text("role").notNull().default("user"),
+      isActive: boolean("is_active").notNull().default(true),
+      hasBetaAccess: boolean("has_beta_access").notNull().default(false),
+      flowersBalance: integer("flowers_balance").notNull().default(0),
+      isGiveEnabled: boolean("is_give_enabled").notNull().default(false),
+      createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`)
     });
-    insertUserSchema = (0, import_drizzle_zod.createInsertSchema)(users).omit({ id: true, createdAt: true, passwordHash: true, role: true, isActive: true, hasBetaAccess: true, flowersBalance: true, isGiveEnabled: true });
-    registerSchema = import_zod.z.object({
-      email: import_zod.z.string().email("Email tidak valid"),
-      username: import_zod.z.string().min(3, "Username min 3 karakter").max(30, "Username max 30 karakter").regex(/^[a-zA-Z0-9_]+$/, "Hanya huruf, angka, dan underscore"),
-      password: import_zod.z.string().min(6, "Password min 6 karakter"),
-      betaCode: import_zod.z.string().optional()
+    insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, passwordHash: true, role: true, isActive: true, hasBetaAccess: true, flowersBalance: true, isGiveEnabled: true });
+    registerSchema = z.object({
+      email: z.string().email("Email tidak valid"),
+      username: z.string().min(3, "Username min 3 karakter").max(30, "Username max 30 karakter").regex(/^[a-zA-Z0-9_]+$/, "Hanya huruf, angka, dan underscore"),
+      password: z.string().min(6, "Password min 6 karakter"),
+      betaCode: z.string().optional()
     });
-    loginSchema = import_zod.z.object({
-      email: import_zod.z.string().email(),
-      password: import_zod.z.string().min(1, "Password wajib diisi")
+    loginSchema = z.object({
+      email: z.string().email(),
+      password: z.string().min(1, "Password wajib diisi")
     });
-    waitlist = (0, import_pg_core.pgTable)("waitlist", {
-      id: (0, import_pg_core.uuid)("id").primaryKey().default(import_drizzle_orm.sql`gen_random_uuid()`),
-      email: (0, import_pg_core.text)("email").notNull().unique(),
-      name: (0, import_pg_core.text)("name"),
-      status: (0, import_pg_core.text)("status").notNull().default("pending"),
-      betaCode: (0, import_pg_core.text)("beta_code"),
-      createdAt: (0, import_pg_core.timestamp)("created_at", { withTimezone: true }).notNull().default(import_drizzle_orm.sql`now()`)
+    waitlist = pgTable("waitlist", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      email: text("email").notNull().unique(),
+      name: text("name"),
+      status: text("status").notNull().default("pending"),
+      betaCode: text("beta_code"),
+      createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`)
     });
-    settings = (0, import_pg_core.pgTable)("settings", {
-      key: (0, import_pg_core.text)("key").primaryKey(),
-      value: (0, import_pg_core.text)("value").notNull(),
-      updatedAt: (0, import_pg_core.timestamp)("updated_at", { withTimezone: true }).notNull().default(import_drizzle_orm.sql`now()`)
+    settings = pgTable("settings", {
+      key: text("key").primaryKey(),
+      value: text("value").notNull(),
+      updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`)
     });
-    quotes = (0, import_pg_core.pgTable)("quotes", {
-      id: (0, import_pg_core.uuid)("id").primaryKey().default(import_drizzle_orm.sql`gen_random_uuid()`),
-      text: (0, import_pg_core.text)("text").notNull(),
-      author: (0, import_pg_core.text)("author"),
-      mood: (0, import_pg_core.text)("mood").notNull(),
-      status: (0, import_pg_core.text)("status").notNull().default("approved"),
-      likesCount: (0, import_pg_core.integer)("likes_count").notNull().default(0),
-      createdAt: (0, import_pg_core.timestamp)("created_at", { withTimezone: true }).notNull().default(import_drizzle_orm.sql`now()`)
+    quotes = pgTable("quotes", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      text: text("text").notNull(),
+      author: text("author"),
+      mood: text("mood").notNull(),
+      status: text("status").notNull().default("approved"),
+      likesCount: integer("likes_count").notNull().default(0),
+      createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`)
     });
-    tags = (0, import_pg_core.pgTable)("tags", {
-      id: (0, import_pg_core.uuid)("id").primaryKey().default(import_drizzle_orm.sql`gen_random_uuid()`),
-      name: (0, import_pg_core.text)("name").notNull().unique(),
-      slug: (0, import_pg_core.text)("slug").notNull().unique()
+    tags = pgTable("tags", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      name: text("name").notNull().unique(),
+      slug: text("slug").notNull().unique()
     });
-    quoteTags = (0, import_pg_core.pgTable)("quote_tags", {
-      quoteId: (0, import_pg_core.uuid)("quote_id").notNull().references(() => quotes.id, { onDelete: "cascade" }),
-      tagId: (0, import_pg_core.uuid)("tag_id").notNull().references(() => tags.id, { onDelete: "cascade" })
+    quoteTags = pgTable("quote_tags", {
+      quoteId: uuid("quote_id").notNull().references(() => quotes.id, { onDelete: "cascade" }),
+      tagId: uuid("tag_id").notNull().references(() => tags.id, { onDelete: "cascade" })
     });
-    quoteLikes = (0, import_pg_core.pgTable)("quote_likes", {
-      id: (0, import_pg_core.uuid)("id").primaryKey().default(import_drizzle_orm.sql`gen_random_uuid()`),
-      userId: (0, import_pg_core.uuid)("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-      quoteId: (0, import_pg_core.uuid)("quote_id").notNull().references(() => quotes.id, { onDelete: "cascade" }),
-      createdAt: (0, import_pg_core.timestamp)("created_at", { withTimezone: true }).notNull().default(import_drizzle_orm.sql`now()`)
+    quoteLikes = pgTable("quote_likes", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+      quoteId: uuid("quote_id").notNull().references(() => quotes.id, { onDelete: "cascade" }),
+      createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`)
     });
-    giftTypes = (0, import_pg_core.pgTable)("gift_types", {
-      id: (0, import_pg_core.uuid)("id").primaryKey().default(import_drizzle_orm.sql`gen_random_uuid()`),
-      name: (0, import_pg_core.text)("name").notNull(),
-      icon: (0, import_pg_core.text)("icon").notNull().default("flower"),
-      costFlowers: (0, import_pg_core.integer)("cost_flowers").notNull().default(10),
-      isActive: (0, import_pg_core.boolean)("is_active").notNull().default(true)
+    giftTypes = pgTable("gift_types", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      name: text("name").notNull(),
+      icon: text("icon").notNull().default("flower"),
+      costFlowers: integer("cost_flowers").notNull().default(10),
+      isActive: boolean("is_active").notNull().default(true)
     });
-    giftTransactions = (0, import_pg_core.pgTable)("gift_transactions", {
-      id: (0, import_pg_core.uuid)("id").primaryKey().default(import_drizzle_orm.sql`gen_random_uuid()`),
-      senderId: (0, import_pg_core.uuid)("sender_id").notNull().references(() => users.id),
-      receiverId: (0, import_pg_core.uuid)("receiver_id").notNull().references(() => users.id),
-      giftTypeId: (0, import_pg_core.uuid)("gift_type_id").notNull().references(() => giftTypes.id),
-      quoteId: (0, import_pg_core.uuid)("quote_id").references(() => quotes.id),
-      message: (0, import_pg_core.text)("message"),
-      flowersAmount: (0, import_pg_core.integer)("flowers_amount").notNull(),
-      createdAt: (0, import_pg_core.timestamp)("created_at", { withTimezone: true }).notNull().default(import_drizzle_orm.sql`now()`)
+    giftTransactions = pgTable("gift_transactions", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      senderId: uuid("sender_id").notNull().references(() => users.id),
+      receiverId: uuid("receiver_id").notNull().references(() => users.id),
+      giftTypeId: uuid("gift_type_id").notNull().references(() => giftTypes.id),
+      quoteId: uuid("quote_id").references(() => quotes.id),
+      message: text("message"),
+      flowersAmount: integer("flowers_amount").notNull(),
+      createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`)
     });
-    flowerTransactions = (0, import_pg_core.pgTable)("flower_transactions", {
-      id: (0, import_pg_core.uuid)("id").primaryKey().default(import_drizzle_orm.sql`gen_random_uuid()`),
-      userId: (0, import_pg_core.uuid)("user_id").notNull().references(() => users.id),
-      type: (0, import_pg_core.text)("type").notNull(),
-      amount: (0, import_pg_core.integer)("amount").notNull(),
-      description: (0, import_pg_core.text)("description").notNull(),
-      createdAt: (0, import_pg_core.timestamp)("created_at", { withTimezone: true }).notNull().default(import_drizzle_orm.sql`now()`)
+    flowerTransactions = pgTable("flower_transactions", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: uuid("user_id").notNull().references(() => users.id),
+      type: text("type").notNull(),
+      amount: integer("amount").notNull(),
+      description: text("description").notNull(),
+      createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`)
     });
-    withdrawalMethods = (0, import_pg_core.pgTable)("withdrawal_methods", {
-      id: (0, import_pg_core.uuid)("id").primaryKey().default(import_drizzle_orm.sql`gen_random_uuid()`),
-      name: (0, import_pg_core.text)("name").notNull(),
-      type: (0, import_pg_core.text)("type").notNull(),
-      code: (0, import_pg_core.text)("code").notNull().unique(),
-      isActive: (0, import_pg_core.boolean)("is_active").notNull().default(true)
+    withdrawalMethods = pgTable("withdrawal_methods", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      name: text("name").notNull(),
+      type: text("type").notNull(),
+      code: text("code").notNull().unique(),
+      isActive: boolean("is_active").notNull().default(true)
     });
-    withdrawalRequests = (0, import_pg_core.pgTable)("withdrawal_requests", {
-      id: (0, import_pg_core.uuid)("id").primaryKey().default(import_drizzle_orm.sql`gen_random_uuid()`),
-      userId: (0, import_pg_core.uuid)("user_id").notNull().references(() => users.id),
-      methodId: (0, import_pg_core.uuid)("method_id").notNull().references(() => withdrawalMethods.id),
-      accountNumber: (0, import_pg_core.text)("account_number").notNull(),
-      accountName: (0, import_pg_core.text)("account_name").notNull(),
-      flowersAmount: (0, import_pg_core.integer)("flowers_amount").notNull(),
-      idrAmount: (0, import_pg_core.integer)("idr_amount").notNull(),
-      status: (0, import_pg_core.text)("status").notNull().default("pending"),
-      adminNote: (0, import_pg_core.text)("admin_note"),
-      createdAt: (0, import_pg_core.timestamp)("created_at", { withTimezone: true }).notNull().default(import_drizzle_orm.sql`now()`),
-      updatedAt: (0, import_pg_core.timestamp)("updated_at", { withTimezone: true }).notNull().default(import_drizzle_orm.sql`now()`)
+    withdrawalRequests = pgTable("withdrawal_requests", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: uuid("user_id").notNull().references(() => users.id),
+      methodId: uuid("method_id").notNull().references(() => withdrawalMethods.id),
+      accountNumber: text("account_number").notNull(),
+      accountName: text("account_name").notNull(),
+      flowersAmount: integer("flowers_amount").notNull(),
+      idrAmount: integer("idr_amount").notNull(),
+      status: text("status").notNull().default("pending"),
+      adminNote: text("admin_note"),
+      createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+      updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`)
     });
-    topupPackages = (0, import_pg_core.pgTable)("topup_packages", {
-      id: (0, import_pg_core.uuid)("id").primaryKey().default(import_drizzle_orm.sql`gen_random_uuid()`),
-      name: (0, import_pg_core.text)("name").notNull(),
-      icon: (0, import_pg_core.text)("icon").notNull().default("\u{1F338}"),
-      description: (0, import_pg_core.text)("description"),
-      flowersAmount: (0, import_pg_core.integer)("flowers_amount").notNull(),
-      priceIdr: (0, import_pg_core.integer)("price_idr").notNull(),
-      isActive: (0, import_pg_core.boolean)("is_active").notNull().default(true),
-      sortOrder: (0, import_pg_core.integer)("sort_order").notNull().default(0)
+    topupPackages = pgTable("topup_packages", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      name: text("name").notNull(),
+      icon: text("icon").notNull().default("\u{1F338}"),
+      description: text("description"),
+      flowersAmount: integer("flowers_amount").notNull(),
+      priceIdr: integer("price_idr").notNull(),
+      isActive: boolean("is_active").notNull().default(true),
+      sortOrder: integer("sort_order").notNull().default(0)
     });
-    topupRequests = (0, import_pg_core.pgTable)("topup_requests", {
-      id: (0, import_pg_core.uuid)("id").primaryKey().default(import_drizzle_orm.sql`gen_random_uuid()`),
-      userId: (0, import_pg_core.uuid)("user_id").notNull().references(() => users.id),
-      packageId: (0, import_pg_core.uuid)("package_id").notNull().references(() => topupPackages.id),
-      flowersAmount: (0, import_pg_core.integer)("flowers_amount").notNull(),
-      priceIdr: (0, import_pg_core.integer)("price_idr").notNull(),
-      status: (0, import_pg_core.text)("status").notNull().default("pending"),
-      adminNote: (0, import_pg_core.text)("admin_note"),
-      createdAt: (0, import_pg_core.timestamp)("created_at", { withTimezone: true }).notNull().default(import_drizzle_orm.sql`now()`),
-      updatedAt: (0, import_pg_core.timestamp)("updated_at", { withTimezone: true }).notNull().default(import_drizzle_orm.sql`now()`)
+    topupRequests = pgTable("topup_requests", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: uuid("user_id").notNull().references(() => users.id),
+      packageId: uuid("package_id").notNull().references(() => topupPackages.id),
+      flowersAmount: integer("flowers_amount").notNull(),
+      priceIdr: integer("price_idr").notNull(),
+      status: text("status").notNull().default("pending"),
+      adminNote: text("admin_note"),
+      createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+      updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`)
     });
-    betaCodes = (0, import_pg_core.pgTable)("beta_codes", {
-      id: (0, import_pg_core.uuid)("id").primaryKey().default(import_drizzle_orm.sql`gen_random_uuid()`),
-      code: (0, import_pg_core.text)("code").notNull().unique(),
-      isUsed: (0, import_pg_core.boolean)("is_used").notNull().default(false),
-      usedBy: (0, import_pg_core.uuid)("used_by").references(() => users.id),
-      createdAt: (0, import_pg_core.timestamp)("created_at", { withTimezone: true }).notNull().default(import_drizzle_orm.sql`now()`),
-      usedAt: (0, import_pg_core.timestamp)("used_at", { withTimezone: true })
+    betaCodes = pgTable("beta_codes", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      code: text("code").notNull().unique(),
+      isUsed: boolean("is_used").notNull().default(false),
+      usedBy: uuid("used_by").references(() => users.id),
+      createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+      usedAt: timestamp("used_at", { withTimezone: true })
     });
-    insertQuoteSchema = (0, import_drizzle_zod.createInsertSchema)(quotes).omit({ id: true, createdAt: true, status: true, likesCount: true });
+    insertQuoteSchema = createInsertSchema(quotes).omit({ id: true, createdAt: true, status: true, likesCount: true });
     submitQuoteSchema = insertQuoteSchema.extend({
-      text: import_zod.z.string().min(10, "Quote minimal 10 karakter").max(500, "Quote maksimal 500 karakter"),
-      author: import_zod.z.string().max(100).optional(),
-      mood: import_zod.z.enum(["galau", "semangat", "sindir", "healing", "kerja", "cinta"]),
-      tags: import_zod.z.array(import_zod.z.string()).optional().default([])
+      text: z.string().min(10, "Quote minimal 10 karakter").max(500, "Quote maksimal 500 karakter"),
+      author: z.string().max(100).optional(),
+      mood: z.enum(["galau", "semangat", "sindir", "healing", "kerja", "cinta"]),
+      tags: z.array(z.string()).optional().default([])
     });
-    insertTagSchema = (0, import_drizzle_zod.createInsertSchema)(tags).omit({ id: true });
+    insertTagSchema = createInsertSchema(tags).omit({ id: true });
     MOODS = ["galau", "semangat", "sindir", "healing", "kerja", "cinta"];
     MOOD_LABELS = {
       galau: "Galau",
@@ -248,9 +226,14 @@ var init_schema = __esm({
 });
 
 // server/storage.ts
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
+import { eq, desc, and, ilike, or, inArray, sql as sql2, ne } from "drizzle-orm";
+import { randomUUID } from "crypto";
+import bcrypt from "bcryptjs";
 async function getTagsForQuoteIds(quoteIds) {
   if (quoteIds.length === 0) return /* @__PURE__ */ new Map();
-  const rows = await db.select({ quoteId: quoteTags.quoteId, tag: tags }).from(quoteTags).innerJoin(tags, (0, import_drizzle_orm2.eq)(quoteTags.tagId, tags.id)).where((0, import_drizzle_orm2.inArray)(quoteTags.quoteId, quoteIds));
+  const rows = await db.select({ quoteId: quoteTags.quoteId, tag: tags }).from(quoteTags).innerJoin(tags, eq(quoteTags.tagId, tags.id)).where(inArray(quoteTags.quoteId, quoteIds));
   const map = /* @__PURE__ */ new Map();
   for (const row of rows) {
     if (!map.has(row.quoteId)) map.set(row.quoteId, []);
@@ -262,20 +245,20 @@ async function attachTags(qs, userId) {
   const tagMap = await getTagsForQuoteIds(qs.map((q) => q.id));
   let likedSet = /* @__PURE__ */ new Set();
   if (userId) {
-    const liked = await db.select({ quoteId: quoteLikes.quoteId }).from(quoteLikes).where((0, import_drizzle_orm2.and)((0, import_drizzle_orm2.eq)(quoteLikes.userId, userId), (0, import_drizzle_orm2.inArray)(quoteLikes.quoteId, qs.map((q) => q.id))));
+    const liked = await db.select({ quoteId: quoteLikes.quoteId }).from(quoteLikes).where(and(eq(quoteLikes.userId, userId), inArray(quoteLikes.quoteId, qs.map((q) => q.id))));
     likedSet = new Set(liked.map((r) => r.quoteId));
   }
   return qs.map((q) => ({ ...q, tags: tagMap.get(q.id) || [], likedByMe: likedSet.has(q.id) }));
 }
 async function findOrCreateTag(name) {
   const slug = name.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
-  const existing = await db.select().from(tags).where((0, import_drizzle_orm2.eq)(tags.slug, slug)).limit(1);
+  const existing = await db.select().from(tags).where(eq(tags.slug, slug)).limit(1);
   if (existing.length > 0) return existing[0];
-  const [created] = await db.insert(tags).values({ id: (0, import_crypto.randomUUID)(), name, slug }).returning();
+  const [created] = await db.insert(tags).values({ id: randomUUID(), name, slug }).returning();
   return created;
 }
 async function getSetting(key, defaultVal = "") {
-  const rows = await db.select().from(settings).where((0, import_drizzle_orm2.eq)(settings.key, key)).limit(1);
+  const rows = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
   return rows.length > 0 ? rows[0].value : defaultVal;
 }
 async function setSetting(key, value) {
@@ -284,32 +267,32 @@ async function setSetting(key, value) {
 async function getQuotes(opts) {
   const { mood, tagSlug, page = 1, limit = 12, userId } = opts;
   const offset = (page - 1) * limit;
-  const conditions = [(0, import_drizzle_orm2.eq)(quotes.status, "approved")];
-  if (mood) conditions.push((0, import_drizzle_orm2.eq)(quotes.mood, mood));
+  const conditions = [eq(quotes.status, "approved")];
+  if (mood) conditions.push(eq(quotes.mood, mood));
   if (tagSlug) {
-    const tag = await db.select().from(tags).where((0, import_drizzle_orm2.eq)(tags.slug, tagSlug)).limit(1);
+    const tag = await db.select().from(tags).where(eq(tags.slug, tagSlug)).limit(1);
     if (tag.length === 0) return { quotes: [], total: 0 };
-    const qts = await db.select({ quoteId: quoteTags.quoteId }).from(quoteTags).where((0, import_drizzle_orm2.eq)(quoteTags.tagId, tag[0].id));
+    const qts = await db.select({ quoteId: quoteTags.quoteId }).from(quoteTags).where(eq(quoteTags.tagId, tag[0].id));
     const ids = qts.map((r) => r.quoteId);
     if (ids.length === 0) return { quotes: [], total: 0 };
-    conditions.push((0, import_drizzle_orm2.inArray)(quotes.id, ids));
+    conditions.push(inArray(quotes.id, ids));
   }
-  const [countRow] = await db.select({ total: import_drizzle_orm2.sql`count(*)` }).from(quotes).where((0, import_drizzle_orm2.and)(...conditions));
-  const rows = await db.select().from(quotes).where((0, import_drizzle_orm2.and)(...conditions)).orderBy((0, import_drizzle_orm2.desc)(quotes.createdAt)).limit(limit).offset(offset);
+  const [countRow] = await db.select({ total: sql2`count(*)` }).from(quotes).where(and(...conditions));
+  const rows = await db.select().from(quotes).where(and(...conditions)).orderBy(desc(quotes.createdAt)).limit(limit).offset(offset);
   return { quotes: await attachTags(rows, userId), total: Number(countRow.total) };
 }
 async function getQuoteById(id, userId) {
-  const rows = await db.select().from(quotes).where((0, import_drizzle_orm2.eq)(quotes.id, id)).limit(1);
+  const rows = await db.select().from(quotes).where(eq(quotes.id, id)).limit(1);
   if (rows.length === 0) return void 0;
   const [withTags] = await attachTags(rows, userId);
   return withTags;
 }
 async function searchQuotes(q, userId) {
-  const rows = await db.select().from(quotes).where((0, import_drizzle_orm2.and)((0, import_drizzle_orm2.eq)(quotes.status, "approved"), (0, import_drizzle_orm2.or)((0, import_drizzle_orm2.ilike)(quotes.text, `%${q}%`), (0, import_drizzle_orm2.ilike)(quotes.author, `%${q}%`)))).orderBy((0, import_drizzle_orm2.desc)(quotes.createdAt)).limit(20);
+  const rows = await db.select().from(quotes).where(and(eq(quotes.status, "approved"), or(ilike(quotes.text, `%${q}%`), ilike(quotes.author, `%${q}%`)))).orderBy(desc(quotes.createdAt)).limit(20);
   return attachTags(rows, userId);
 }
 async function submitQuote(quote, tagNames) {
-  const id = (0, import_crypto.randomUUID)();
+  const id = randomUUID();
   const [created] = await db.insert(quotes).values({ ...quote, id, status: "pending" }).returning();
   for (const name of tagNames) {
     if (!name.trim()) continue;
@@ -319,35 +302,35 @@ async function submitQuote(quote, tagNames) {
   return created;
 }
 async function getPendingQuotes() {
-  const rows = await db.select().from(quotes).where((0, import_drizzle_orm2.eq)(quotes.status, "pending")).orderBy((0, import_drizzle_orm2.desc)(quotes.createdAt));
+  const rows = await db.select().from(quotes).where(eq(quotes.status, "pending")).orderBy(desc(quotes.createdAt));
   return attachTags(rows);
 }
 async function updateQuoteStatus(id, status) {
-  await db.update(quotes).set({ status }).where((0, import_drizzle_orm2.eq)(quotes.id, id));
+  await db.update(quotes).set({ status }).where(eq(quotes.id, id));
 }
 async function getTags() {
   return db.select().from(tags).orderBy(tags.name);
 }
 async function getRelatedQuotes(mood, excludeId, userId) {
-  const rows = await db.select().from(quotes).where((0, import_drizzle_orm2.and)((0, import_drizzle_orm2.eq)(quotes.status, "approved"), (0, import_drizzle_orm2.eq)(quotes.mood, mood), (0, import_drizzle_orm2.ne)(quotes.id, excludeId))).orderBy(import_drizzle_orm2.sql`random()`).limit(4);
+  const rows = await db.select().from(quotes).where(and(eq(quotes.status, "approved"), eq(quotes.mood, mood), ne(quotes.id, excludeId))).orderBy(sql2`random()`).limit(4);
   return attachTags(rows, userId);
 }
 async function toggleLike(userId, quoteId) {
-  const existing = await db.select().from(quoteLikes).where((0, import_drizzle_orm2.and)((0, import_drizzle_orm2.eq)(quoteLikes.userId, userId), (0, import_drizzle_orm2.eq)(quoteLikes.quoteId, quoteId))).limit(1);
+  const existing = await db.select().from(quoteLikes).where(and(eq(quoteLikes.userId, userId), eq(quoteLikes.quoteId, quoteId))).limit(1);
   if (existing.length > 0) {
-    await db.delete(quoteLikes).where((0, import_drizzle_orm2.eq)(quoteLikes.id, existing[0].id));
-    const [updated] = await db.update(quotes).set({ likesCount: import_drizzle_orm2.sql`likes_count - 1` }).where((0, import_drizzle_orm2.eq)(quotes.id, quoteId)).returning();
+    await db.delete(quoteLikes).where(eq(quoteLikes.id, existing[0].id));
+    const [updated] = await db.update(quotes).set({ likesCount: sql2`likes_count - 1` }).where(eq(quotes.id, quoteId)).returning();
     return { liked: false, count: updated.likesCount };
   } else {
-    await db.insert(quoteLikes).values({ id: (0, import_crypto.randomUUID)(), userId, quoteId });
-    const [updated] = await db.update(quotes).set({ likesCount: import_drizzle_orm2.sql`likes_count + 1` }).where((0, import_drizzle_orm2.eq)(quotes.id, quoteId)).returning();
+    await db.insert(quoteLikes).values({ id: randomUUID(), userId, quoteId });
+    const [updated] = await db.update(quotes).set({ likesCount: sql2`likes_count + 1` }).where(eq(quotes.id, quoteId)).returning();
     return { liked: true, count: updated.likesCount };
   }
 }
 async function createUser(data) {
-  const passwordHash = await import_bcryptjs.default.hash(data.password, 10);
+  const passwordHash = await bcrypt.hash(data.password, 10);
   const [user] = await db.insert(users).values({
-    id: (0, import_crypto.randomUUID)(),
+    id: randomUUID(),
     email: data.email,
     username: data.username,
     passwordHash,
@@ -357,37 +340,37 @@ async function createUser(data) {
   return pub;
 }
 async function getUserByEmail(email) {
-  const rows = await db.select().from(users).where((0, import_drizzle_orm2.eq)(users.email, email.toLowerCase())).limit(1);
+  const rows = await db.select().from(users).where(eq(users.email, email.toLowerCase())).limit(1);
   return rows[0];
 }
 async function getUserById(id) {
-  const rows = await db.select().from(users).where((0, import_drizzle_orm2.eq)(users.id, id)).limit(1);
+  const rows = await db.select().from(users).where(eq(users.id, id)).limit(1);
   return rows[0];
 }
 async function getAllUsers(limit = 50, offset = 0) {
-  const rows = await db.select().from(users).orderBy((0, import_drizzle_orm2.desc)(users.createdAt)).limit(limit).offset(offset);
+  const rows = await db.select().from(users).orderBy(desc(users.createdAt)).limit(limit).offset(offset);
   return rows.map(({ passwordHash: _, ...u }) => u);
 }
 async function updateUser(id, data) {
-  await db.update(users).set(data).where((0, import_drizzle_orm2.eq)(users.id, id));
+  await db.update(users).set(data).where(eq(users.id, id));
 }
 async function verifyPassword(user, password) {
-  return import_bcryptjs.default.compare(password, user.passwordHash);
+  return bcrypt.compare(password, user.passwordHash);
 }
 async function addToWaitlist(email, name) {
-  const existing = await db.select().from(waitlist).where((0, import_drizzle_orm2.eq)(waitlist.email, email.toLowerCase())).limit(1);
+  const existing = await db.select().from(waitlist).where(eq(waitlist.email, email.toLowerCase())).limit(1);
   if (existing.length > 0) return existing[0];
-  const [created] = await db.insert(waitlist).values({ id: (0, import_crypto.randomUUID)(), email: email.toLowerCase(), name, status: "pending" }).returning();
+  const [created] = await db.insert(waitlist).values({ id: randomUUID(), email: email.toLowerCase(), name, status: "pending" }).returning();
   return created;
 }
 async function getWaitlist() {
-  return db.select().from(waitlist).orderBy((0, import_drizzle_orm2.desc)(waitlist.createdAt));
+  return db.select().from(waitlist).orderBy(desc(waitlist.createdAt));
 }
 async function updateWaitlistStatus(id, status, betaCode) {
-  await db.update(waitlist).set({ status, betaCode: betaCode || null }).where((0, import_drizzle_orm2.eq)(waitlist.id, id));
+  await db.update(waitlist).set({ status, betaCode: betaCode || null }).where(eq(waitlist.id, id));
 }
 async function validateBetaCode(code) {
-  const rows = await db.select().from(waitlist).where((0, import_drizzle_orm2.and)((0, import_drizzle_orm2.eq)(waitlist.betaCode, code), (0, import_drizzle_orm2.eq)(waitlist.status, "approved"))).limit(1);
+  const rows = await db.select().from(waitlist).where(and(eq(waitlist.betaCode, code), eq(waitlist.status, "approved"))).limit(1);
   return rows.length > 0;
 }
 async function getAllSettings() {
@@ -395,30 +378,30 @@ async function getAllSettings() {
   return Object.fromEntries(rows.map((r) => [r.key, r.value]));
 }
 async function getGiftTypes() {
-  return db.select().from(giftTypes).where((0, import_drizzle_orm2.eq)(giftTypes.isActive, true));
+  return db.select().from(giftTypes).where(eq(giftTypes.isActive, true));
 }
 async function getAllGiftTypes() {
   return db.select().from(giftTypes).orderBy(giftTypes.name);
 }
 async function createGiftType(data) {
-  const [gt] = await db.insert(giftTypes).values({ id: (0, import_crypto.randomUUID)(), ...data }).returning();
+  const [gt] = await db.insert(giftTypes).values({ id: randomUUID(), ...data }).returning();
   return gt;
 }
 async function updateGiftType(id, data) {
-  await db.update(giftTypes).set(data).where((0, import_drizzle_orm2.eq)(giftTypes.id, id));
+  await db.update(giftTypes).set(data).where(eq(giftTypes.id, id));
 }
 async function sendGift(senderId, receiverId, giftTypeId, quoteId, message) {
-  const gt = await db.select().from(giftTypes).where((0, import_drizzle_orm2.eq)(giftTypes.id, giftTypeId)).limit(1);
+  const gt = await db.select().from(giftTypes).where(eq(giftTypes.id, giftTypeId)).limit(1);
   if (!gt.length) throw new Error("Jenis hadiah tidak ditemukan");
   const cost = gt[0].costFlowers;
   const sender = await getUserById(senderId);
   if (!sender) throw new Error("User tidak ditemukan");
   if (!sender.isGiveEnabled) throw new Error("Fitur Give belum aktif untuk akun Anda");
   if (sender.flowersBalance < cost) throw new Error("Saldo bunga tidak cukup");
-  await db.update(users).set({ flowersBalance: import_drizzle_orm2.sql`flowers_balance - ${cost}` }).where((0, import_drizzle_orm2.eq)(users.id, senderId));
-  await db.update(users).set({ flowersBalance: import_drizzle_orm2.sql`flowers_balance + ${cost}` }).where((0, import_drizzle_orm2.eq)(users.id, receiverId));
+  await db.update(users).set({ flowersBalance: sql2`flowers_balance - ${cost}` }).where(eq(users.id, senderId));
+  await db.update(users).set({ flowersBalance: sql2`flowers_balance + ${cost}` }).where(eq(users.id, receiverId));
   await db.insert(giftTransactions).values({
-    id: (0, import_crypto.randomUUID)(),
+    id: randomUUID(),
     senderId,
     receiverId,
     giftTypeId,
@@ -426,24 +409,24 @@ async function sendGift(senderId, receiverId, giftTypeId, quoteId, message) {
     message: message || null,
     flowersAmount: cost
   });
-  await db.insert(flowerTransactions).values({ id: (0, import_crypto.randomUUID)(), userId: senderId, type: "debit", amount: cost, description: `Mengirim hadiah ke @${receiverId}` });
-  await db.insert(flowerTransactions).values({ id: (0, import_crypto.randomUUID)(), userId: receiverId, type: "credit", amount: cost, description: `Menerima hadiah` });
+  await db.insert(flowerTransactions).values({ id: randomUUID(), userId: senderId, type: "debit", amount: cost, description: `Mengirim hadiah ke @${receiverId}` });
+  await db.insert(flowerTransactions).values({ id: randomUUID(), userId: receiverId, type: "credit", amount: cost, description: `Menerima hadiah` });
 }
 async function getFlowerHistory(userId) {
-  return db.select().from(flowerTransactions).where((0, import_drizzle_orm2.eq)(flowerTransactions.userId, userId)).orderBy((0, import_drizzle_orm2.desc)(flowerTransactions.createdAt)).limit(50);
+  return db.select().from(flowerTransactions).where(eq(flowerTransactions.userId, userId)).orderBy(desc(flowerTransactions.createdAt)).limit(50);
 }
 async function getWithdrawalMethods() {
-  return db.select().from(withdrawalMethods).where((0, import_drizzle_orm2.eq)(withdrawalMethods.isActive, true)).orderBy(withdrawalMethods.type, withdrawalMethods.name);
+  return db.select().from(withdrawalMethods).where(eq(withdrawalMethods.isActive, true)).orderBy(withdrawalMethods.type, withdrawalMethods.name);
 }
 async function getAllWithdrawalMethods() {
   return db.select().from(withdrawalMethods).orderBy(withdrawalMethods.type, withdrawalMethods.name);
 }
 async function createWithdrawalMethod(data) {
-  const [wm] = await db.insert(withdrawalMethods).values({ id: (0, import_crypto.randomUUID)(), ...data }).returning();
+  const [wm] = await db.insert(withdrawalMethods).values({ id: randomUUID(), ...data }).returning();
   return wm;
 }
 async function updateWithdrawalMethod(id, data) {
-  await db.update(withdrawalMethods).set(data).where((0, import_drizzle_orm2.eq)(withdrawalMethods.id, id));
+  await db.update(withdrawalMethods).set(data).where(eq(withdrawalMethods.id, id));
 }
 async function requestWithdrawal(userId, methodId, accountNumber, accountName, flowersAmount) {
   const { MIN_WITHDRAWAL_FLOWERS: MIN_WITHDRAWAL_FLOWERS3, FLOWERS_TO_IDR_RATE: FLOWERS_TO_IDR_RATE3 } = await Promise.resolve().then(() => (init_schema(), schema_exports));
@@ -451,9 +434,9 @@ async function requestWithdrawal(userId, methodId, accountNumber, accountName, f
   const user = await getUserById(userId);
   if (!user || user.flowersBalance < flowersAmount) throw new Error("Saldo tidak cukup");
   const idrAmount = flowersAmount * FLOWERS_TO_IDR_RATE3;
-  await db.update(users).set({ flowersBalance: import_drizzle_orm2.sql`flowers_balance - ${flowersAmount}` }).where((0, import_drizzle_orm2.eq)(users.id, userId));
+  await db.update(users).set({ flowersBalance: sql2`flowers_balance - ${flowersAmount}` }).where(eq(users.id, userId));
   const [req] = await db.insert(withdrawalRequests).values({
-    id: (0, import_crypto.randomUUID)(),
+    id: randomUUID(),
     userId,
     methodId,
     accountNumber,
@@ -463,7 +446,7 @@ async function requestWithdrawal(userId, methodId, accountNumber, accountName, f
     status: "pending"
   }).returning();
   await db.insert(flowerTransactions).values({
-    id: (0, import_crypto.randomUUID)(),
+    id: randomUUID(),
     userId,
     type: "debit",
     amount: flowersAmount,
@@ -472,39 +455,39 @@ async function requestWithdrawal(userId, methodId, accountNumber, accountName, f
   return req;
 }
 async function getWithdrawalRequests(userId) {
-  if (userId) return db.select().from(withdrawalRequests).where((0, import_drizzle_orm2.eq)(withdrawalRequests.userId, userId)).orderBy((0, import_drizzle_orm2.desc)(withdrawalRequests.createdAt));
-  return db.select().from(withdrawalRequests).orderBy((0, import_drizzle_orm2.desc)(withdrawalRequests.createdAt));
+  if (userId) return db.select().from(withdrawalRequests).where(eq(withdrawalRequests.userId, userId)).orderBy(desc(withdrawalRequests.createdAt));
+  return db.select().from(withdrawalRequests).orderBy(desc(withdrawalRequests.createdAt));
 }
 async function updateWithdrawalStatus(id, status, adminNote) {
   const updates = { status, updatedAt: /* @__PURE__ */ new Date() };
   if (adminNote !== void 0) updates.adminNote = adminNote;
-  await db.update(withdrawalRequests).set(updates).where((0, import_drizzle_orm2.eq)(withdrawalRequests.id, id));
+  await db.update(withdrawalRequests).set(updates).where(eq(withdrawalRequests.id, id));
   if (status === "rejected") {
-    const [req] = await db.select().from(withdrawalRequests).where((0, import_drizzle_orm2.eq)(withdrawalRequests.id, id)).limit(1);
+    const [req] = await db.select().from(withdrawalRequests).where(eq(withdrawalRequests.id, id)).limit(1);
     if (req) {
-      await db.update(users).set({ flowersBalance: import_drizzle_orm2.sql`flowers_balance + ${req.flowersAmount}` }).where((0, import_drizzle_orm2.eq)(users.id, req.userId));
-      await db.insert(flowerTransactions).values({ id: (0, import_crypto.randomUUID)(), userId: req.userId, type: "credit", amount: req.flowersAmount, description: "Pengembalian penarikan ditolak" });
+      await db.update(users).set({ flowersBalance: sql2`flowers_balance + ${req.flowersAmount}` }).where(eq(users.id, req.userId));
+      await db.insert(flowerTransactions).values({ id: randomUUID(), userId: req.userId, type: "credit", amount: req.flowersAmount, description: "Pengembalian penarikan ditolak" });
     }
   }
 }
 async function getTopupPackages() {
-  return db.select().from(topupPackages).where((0, import_drizzle_orm2.eq)(topupPackages.isActive, true)).orderBy(topupPackages.sortOrder);
+  return db.select().from(topupPackages).where(eq(topupPackages.isActive, true)).orderBy(topupPackages.sortOrder);
 }
 async function getAllTopupPackages() {
   return db.select().from(topupPackages).orderBy(topupPackages.sortOrder);
 }
 async function createTopupPackage(data) {
-  const [pkg] = await db.insert(topupPackages).values({ id: (0, import_crypto.randomUUID)(), ...data }).returning();
+  const [pkg] = await db.insert(topupPackages).values({ id: randomUUID(), ...data }).returning();
   return pkg;
 }
 async function updateTopupPackage(id, data) {
-  await db.update(topupPackages).set(data).where((0, import_drizzle_orm2.eq)(topupPackages.id, id));
+  await db.update(topupPackages).set(data).where(eq(topupPackages.id, id));
 }
 async function createTopupRequest(userId, packageId) {
-  const pkg = await db.select().from(topupPackages).where((0, import_drizzle_orm2.eq)(topupPackages.id, packageId)).limit(1);
+  const pkg = await db.select().from(topupPackages).where(eq(topupPackages.id, packageId)).limit(1);
   if (!pkg.length) throw new Error("Paket tidak ditemukan");
   const [req] = await db.insert(topupRequests).values({
-    id: (0, import_crypto.randomUUID)(),
+    id: randomUUID(),
     userId,
     packageId,
     flowersAmount: pkg[0].flowersAmount,
@@ -514,19 +497,19 @@ async function createTopupRequest(userId, packageId) {
   return req;
 }
 async function getTopupRequests(userId) {
-  if (userId) return db.select().from(topupRequests).where((0, import_drizzle_orm2.eq)(topupRequests.userId, userId)).orderBy((0, import_drizzle_orm2.desc)(topupRequests.createdAt));
-  return db.select().from(topupRequests).orderBy((0, import_drizzle_orm2.desc)(topupRequests.createdAt));
+  if (userId) return db.select().from(topupRequests).where(eq(topupRequests.userId, userId)).orderBy(desc(topupRequests.createdAt));
+  return db.select().from(topupRequests).orderBy(desc(topupRequests.createdAt));
 }
 async function updateTopupStatus(id, status, adminNote) {
   const updates = { status, updatedAt: /* @__PURE__ */ new Date() };
   if (adminNote !== void 0) updates.adminNote = adminNote;
-  await db.update(topupRequests).set(updates).where((0, import_drizzle_orm2.eq)(topupRequests.id, id));
+  await db.update(topupRequests).set(updates).where(eq(topupRequests.id, id));
   if (status === "confirmed") {
-    const [req] = await db.select().from(topupRequests).where((0, import_drizzle_orm2.eq)(topupRequests.id, id)).limit(1);
+    const [req] = await db.select().from(topupRequests).where(eq(topupRequests.id, id)).limit(1);
     if (req) {
-      await db.update(users).set({ flowersBalance: import_drizzle_orm2.sql`flowers_balance + ${req.flowersAmount}` }).where((0, import_drizzle_orm2.eq)(users.id, req.userId));
+      await db.update(users).set({ flowersBalance: sql2`flowers_balance + ${req.flowersAmount}` }).where(eq(users.id, req.userId));
       await db.insert(flowerTransactions).values({
-        id: (0, import_crypto.randomUUID)(),
+        id: randomUUID(),
         userId: req.userId,
         type: "credit",
         amount: req.flowersAmount,
@@ -537,34 +520,29 @@ async function updateTopupStatus(id, status, adminNote) {
 }
 async function generateBetaCode() {
   const code = Math.random().toString(36).slice(2, 6).toUpperCase() + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
-  const [bc] = await db.insert(betaCodes).values({ id: (0, import_crypto.randomUUID)(), code }).returning();
+  const [bc] = await db.insert(betaCodes).values({ id: randomUUID(), code }).returning();
   return bc;
 }
 async function getBetaCodes() {
-  return db.select().from(betaCodes).orderBy((0, import_drizzle_orm2.desc)(betaCodes.createdAt)).limit(50);
+  return db.select().from(betaCodes).orderBy(desc(betaCodes.createdAt)).limit(50);
 }
 async function validateBetaCodeStandalone(code) {
-  const wl = await db.select().from(waitlist).where((0, import_drizzle_orm2.and)((0, import_drizzle_orm2.eq)(waitlist.betaCode, code), (0, import_drizzle_orm2.eq)(waitlist.status, "approved"))).limit(1);
+  const wl = await db.select().from(waitlist).where(and(eq(waitlist.betaCode, code), eq(waitlist.status, "approved"))).limit(1);
   if (wl.length > 0) return true;
-  const bc = await db.select().from(betaCodes).where((0, import_drizzle_orm2.and)((0, import_drizzle_orm2.eq)(betaCodes.code, code), (0, import_drizzle_orm2.eq)(betaCodes.isUsed, false))).limit(1);
+  const bc = await db.select().from(betaCodes).where(and(eq(betaCodes.code, code), eq(betaCodes.isUsed, false))).limit(1);
   return bc.length > 0;
 }
 async function markBetaCodeUsed(code, userId) {
-  await db.update(betaCodes).set({ isUsed: true, usedBy: userId, usedAt: /* @__PURE__ */ new Date() }).where((0, import_drizzle_orm2.eq)(betaCodes.code, code));
+  await db.update(betaCodes).set({ isUsed: true, usedBy: userId, usedAt: /* @__PURE__ */ new Date() }).where(eq(betaCodes.code, code));
 }
-var import_node_postgres, import_pg, import_drizzle_orm2, import_crypto, import_bcryptjs, DB_URL, pool, db, storage;
+var DB_URL, pool, db, storage;
 var init_storage = __esm({
   "server/storage.ts"() {
     "use strict";
-    import_node_postgres = require("drizzle-orm/node-postgres");
-    import_pg = require("pg");
-    import_drizzle_orm2 = require("drizzle-orm");
     init_schema();
-    import_crypto = require("crypto");
-    import_bcryptjs = __toESM(require("bcryptjs"), 1);
     DB_URL = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
-    pool = new import_pg.Pool({ connectionString: DB_URL, ssl: { rejectUnauthorized: false } });
-    db = (0, import_node_postgres.drizzle)(pool);
+    pool = new Pool({ connectionString: DB_URL, ssl: { rejectUnauthorized: false } });
+    db = drizzle(pool);
     storage = {
       getQuotes,
       getQuoteById,
@@ -621,26 +599,29 @@ var seed_exports = {};
 __export(seed_exports, {
   seedDatabase: () => seedDatabase
 });
+import { randomUUID as randomUUID3 } from "crypto";
+import { sql as sql3, eq as eq2 } from "drizzle-orm";
+import bcrypt2 from "bcryptjs";
 async function seedDatabase() {
   try {
-    const [{ quoteCount }] = await db.select({ quoteCount: import_drizzle_orm3.sql`count(*)` }).from(quotes);
+    const [{ quoteCount }] = await db.select({ quoteCount: sql3`count(*)` }).from(quotes);
     if (Number(quoteCount) === 0) {
       console.log("[seed] Seeding quotes...");
       const tagMap = /* @__PURE__ */ new Map();
       for (const [slug, name] of Object.entries(ALL_TAGS)) {
-        const id = (0, import_crypto3.randomUUID)();
+        const id = randomUUID3();
         await db.insert(tags).values({ id, name, slug }).onConflictDoNothing();
         tagMap.set(slug, id);
       }
       const existingTags = await db.select().from(tags);
       for (const tag of existingTags) tagMap.set(tag.slug, tag.id);
       for (const q of SEED_QUOTES) {
-        const id = (0, import_crypto3.randomUUID)();
+        const id = randomUUID3();
         await db.insert(quotes).values({ id, text: q.text, author: q.author, mood: q.mood, status: "approved" });
         for (const tagSlug of q.tags) {
           let tagId = tagMap.get(tagSlug);
           if (!tagId) {
-            const newTagId = (0, import_crypto3.randomUUID)();
+            const newTagId = randomUUID3();
             await db.insert(tags).values({ id: newTagId, name: tagSlug, slug: tagSlug }).onConflictDoNothing();
             tagMap.set(tagSlug, newTagId);
             tagId = newTagId;
@@ -653,22 +634,22 @@ async function seedDatabase() {
     for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
       await db.insert(settings).values({ key, value }).onConflictDoNothing();
     }
-    const [{ giftCount }] = await db.select({ giftCount: import_drizzle_orm3.sql`count(*)` }).from(giftTypes);
+    const [{ giftCount }] = await db.select({ giftCount: sql3`count(*)` }).from(giftTypes);
     if (Number(giftCount) === 0) {
       for (const gt of DEFAULT_GIFT_TYPES) {
-        await db.insert(giftTypes).values({ id: (0, import_crypto3.randomUUID)(), ...gt }).onConflictDoNothing();
+        await db.insert(giftTypes).values({ id: randomUUID3(), ...gt }).onConflictDoNothing();
       }
     }
-    const [{ wmCount }] = await db.select({ wmCount: import_drizzle_orm3.sql`count(*)` }).from(withdrawalMethods);
+    const [{ wmCount }] = await db.select({ wmCount: sql3`count(*)` }).from(withdrawalMethods);
     if (Number(wmCount) === 0) {
       for (const wm of DEFAULT_WITHDRAWAL_METHODS) {
-        await db.insert(withdrawalMethods).values({ id: (0, import_crypto3.randomUUID)(), ...wm }).onConflictDoNothing();
+        await db.insert(withdrawalMethods).values({ id: randomUUID3(), ...wm }).onConflictDoNothing();
       }
     }
-    const [{ adminCount }] = await db.select({ adminCount: import_drizzle_orm3.sql`count(*)` }).from(users).where((0, import_drizzle_orm3.eq)(users.role, "admin"));
+    const [{ adminCount }] = await db.select({ adminCount: sql3`count(*)` }).from(users).where(eq2(users.role, "admin"));
     if (Number(adminCount) === 0) {
-      const passwordHash = await import_bcryptjs2.default.hash("admin123", 10);
-      await db.insert(users).values({ id: (0, import_crypto3.randomUUID)(), email: "admin@kataviral.id", username: "admin", passwordHash, role: "admin", hasBetaAccess: true }).onConflictDoNothing();
+      const passwordHash = await bcrypt2.hash("admin123", 10);
+      await db.insert(users).values({ id: randomUUID3(), email: "admin@kataviral.id", username: "admin", passwordHash, role: "admin", hasBetaAccess: true }).onConflictDoNothing();
       console.log("[seed] Admin user created: admin@kataviral.id / admin123");
     }
     console.log("[seed] Database ready!");
@@ -676,15 +657,12 @@ async function seedDatabase() {
     console.error("[seed] Error:", e);
   }
 }
-var import_crypto3, import_drizzle_orm3, import_bcryptjs2, SEED_QUOTES, ALL_TAGS, DEFAULT_SETTINGS, DEFAULT_GIFT_TYPES, DEFAULT_WITHDRAWAL_METHODS;
+var SEED_QUOTES, ALL_TAGS, DEFAULT_SETTINGS, DEFAULT_GIFT_TYPES, DEFAULT_WITHDRAWAL_METHODS;
 var init_seed = __esm({
   "server/seed.ts"() {
     "use strict";
     init_storage();
     init_schema();
-    import_crypto3 = require("crypto");
-    import_drizzle_orm3 = require("drizzle-orm");
-    import_bcryptjs2 = __toESM(require("bcryptjs"), 1);
     SEED_QUOTES = [
       { text: "Hidup itu bukan soal seberapa keras kamu jatuh, tapi seberapa cepat kamu bangkit.", author: "Anonim", mood: "semangat", tags: ["motivasi", "kehidupan"] },
       { text: "Kamu tidak bisa kembali dan mengubah awal, tapi kamu bisa mulai dari sekarang dan mengubah akhir.", author: "C.S. Lewis", mood: "semangat", tags: ["motivasi", "mindset"] },
@@ -758,16 +736,11 @@ var init_seed = __esm({
 });
 
 // api/_source.ts
-var source_exports = {};
-__export(source_exports, {
-  default: () => handler
-});
-module.exports = __toCommonJS(source_exports);
-var import_express = __toESM(require("express"), 1);
-var import_express_session = __toESM(require("express-session"), 1);
-var import_connect_pg_simple = __toESM(require("connect-pg-simple"), 1);
-var import_pg2 = require("pg");
-var import_http = require("http");
+import express from "express";
+import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
+import { Pool as Pool2 } from "pg";
+import { createServer } from "http";
 
 // server/routes.ts
 init_storage();
@@ -796,7 +769,7 @@ function requireAdmin(req, res, next) {
 }
 
 // server/routes.ts
-var import_crypto2 = require("crypto");
+import { randomUUID as randomUUID2 } from "crypto";
 var rateLimitMap = /* @__PURE__ */ new Map();
 function checkRateLimit(ip, max = 5, windowMs = 10 * 60 * 1e3) {
   const now = Date.now();
@@ -1074,7 +1047,7 @@ async function registerRoutes(httpServer2, app2) {
   app2.patch("/api/admin/waitlist/:id", requireAdmin, async (req, res) => {
     try {
       const { status } = req.body;
-      const betaCode = status === "approved" ? (0, import_crypto2.randomUUID)().slice(0, 8).toUpperCase() : void 0;
+      const betaCode = status === "approved" ? randomUUID2().slice(0, 8).toUpperCase() : void 0;
       await storage.updateWaitlistStatus(req.params.id, status, betaCode);
       res.json({ success: true, betaCode });
     } catch (e) {
@@ -1244,25 +1217,25 @@ async function registerRoutes(httpServer2, app2) {
 }
 
 // api/_source.ts
-var PgSession = (0, import_connect_pg_simple.default)(import_express_session.default);
-var app = (0, import_express.default)();
-var httpServer = (0, import_http.createServer)(app);
+var PgSession = connectPgSimple(session);
+var app = express();
+var httpServer = createServer(app);
 var DB_URL2 = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
-var sessionPool = new import_pg2.Pool({
+var sessionPool = new Pool2({
   connectionString: DB_URL2,
   ssl: { rejectUnauthorized: false }
 });
 app.set("trust proxy", 1);
 app.use(
-  import_express.default.json({
+  express.json({
     verify: (req, _res, buf) => {
       req.rawBody = buf;
     }
   })
 );
-app.use(import_express.default.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false }));
 app.use(
-  (0, import_express_session.default)({
+  session({
     store: new PgSession({
       pool: sessionPool,
       tableName: "sessions",
@@ -1301,4 +1274,6 @@ async function handler(req, res) {
   await initPromise;
   app(req, res);
 }
-module.exports=module.exports.default||module.exports;
+export {
+  handler as default
+};
