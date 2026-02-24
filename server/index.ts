@@ -62,6 +62,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  console.log(`[env-check] BREVO_SMTP_LOGIN=${process.env.BREVO_SMTP_LOGIN ? "set (" + process.env.BREVO_SMTP_LOGIN.length + " chars)" : "MISSING"}`);
+  console.log(`[env-check] BREVO_SMTP_KEY=${process.env.BREVO_SMTP_KEY ? "set (" + process.env.BREVO_SMTP_KEY.length + " chars)" : "MISSING"}`);
+
   const { seedDatabase } = await import("./seed");
   await seedDatabase();
   await registerRoutes(httpServer, app);
