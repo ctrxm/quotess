@@ -5,16 +5,18 @@ import {
   quotes, tags, quoteTags, quoteLikes,
   users, waitlist, settings, giftTypes, giftTransactions,
   flowerTransactions, withdrawalMethods, withdrawalRequests,
+  topupPackages, topupRequests, betaCodes,
   type Quote, type Tag, type QuoteWithTags, type InsertQuote,
   type User, type PublicUser, type Setting, type GiftType,
   type WithdrawalMethod, type WithdrawalRequest, type Waitlist,
   type GiftTransaction, type FlowerTransaction,
+  type TopupPackage, type TopupRequest, type BetaCode,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 
-const DB_URL = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL!;
-const pool = new Pool({ connectionString: DB_URL, ssl: process.env.SUPABASE_DATABASE_URL ? { rejectUnauthorized: false } : false });
+const DB_URL = process.env.DATABASE_URL!;
+const pool = new Pool({ connectionString: DB_URL, ssl: false });
 export const db = drizzle(pool);
 
 // ─── HELPERS ──────────────────────────────────────────────
@@ -310,6 +312,82 @@ export async function updateWithdrawalStatus(id: string, status: string, adminNo
   }
 }
 
+// ─── TOPUP ───────────────────────────────────────────────
+
+export async function getTopupPackages(): Promise<TopupPackage[]> {
+  return db.select().from(topupPackages).where(eq(topupPackages.isActive, true)).orderBy(topupPackages.sortOrder);
+}
+
+export async function getAllTopupPackages(): Promise<TopupPackage[]> {
+  return db.select().from(topupPackages).orderBy(topupPackages.sortOrder);
+}
+
+export async function createTopupPackage(data: Omit<TopupPackage, "id">): Promise<TopupPackage> {
+  const [pkg] = await db.insert(topupPackages).values({ id: randomUUID(), ...data }).returning();
+  return pkg;
+}
+
+export async function updateTopupPackage(id: string, data: Partial<TopupPackage>): Promise<void> {
+  await db.update(topupPackages).set(data).where(eq(topupPackages.id, id));
+}
+
+export async function createTopupRequest(userId: string, packageId: string): Promise<TopupRequest> {
+  const pkg = await db.select().from(topupPackages).where(eq(topupPackages.id, packageId)).limit(1);
+  if (!pkg.length) throw new Error("Paket tidak ditemukan");
+  const [req] = await db.insert(topupRequests).values({
+    id: randomUUID(), userId, packageId,
+    flowersAmount: pkg[0].flowersAmount, priceIdr: pkg[0].priceIdr, status: "pending",
+  }).returning();
+  return req;
+}
+
+export async function getTopupRequests(userId?: string): Promise<TopupRequest[]> {
+  if (userId) return db.select().from(topupRequests).where(eq(topupRequests.userId, userId)).orderBy(desc(topupRequests.createdAt));
+  return db.select().from(topupRequests).orderBy(desc(topupRequests.createdAt));
+}
+
+export async function updateTopupStatus(id: string, status: string, adminNote?: string): Promise<void> {
+  const updates: any = { status, updatedAt: new Date() };
+  if (adminNote !== undefined) updates.adminNote = adminNote;
+  await db.update(topupRequests).set(updates).where(eq(topupRequests.id, id));
+
+  if (status === "confirmed") {
+    const [req] = await db.select().from(topupRequests).where(eq(topupRequests.id, id)).limit(1);
+    if (req) {
+      await db.update(users).set({ flowersBalance: sql`flowers_balance + ${req.flowersAmount}` }).where(eq(users.id, req.userId));
+      await db.insert(flowerTransactions).values({
+        id: randomUUID(), userId: req.userId, type: "credit", amount: req.flowersAmount,
+        description: `Top up ${req.flowersAmount} bunga`,
+      });
+    }
+  }
+}
+
+// ─── BETA CODES ──────────────────────────────────────────
+
+export async function generateBetaCode(): Promise<BetaCode> {
+  const code = Math.random().toString(36).slice(2, 6).toUpperCase() + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+  const [bc] = await db.insert(betaCodes).values({ id: randomUUID(), code }).returning();
+  return bc;
+}
+
+export async function getBetaCodes(): Promise<BetaCode[]> {
+  return db.select().from(betaCodes).orderBy(desc(betaCodes.createdAt)).limit(50);
+}
+
+export async function validateBetaCodeStandalone(code: string): Promise<boolean> {
+  // Check waitlist codes
+  const wl = await db.select().from(waitlist).where(and(eq(waitlist.betaCode, code), eq(waitlist.status, "approved"))).limit(1);
+  if (wl.length > 0) return true;
+  // Check standalone beta codes
+  const bc = await db.select().from(betaCodes).where(and(eq(betaCodes.code, code), eq(betaCodes.isUsed, false))).limit(1);
+  return bc.length > 0;
+}
+
+export async function markBetaCodeUsed(code: string, userId: string): Promise<void> {
+  await db.update(betaCodes).set({ isUsed: true, usedBy: userId, usedAt: new Date() }).where(eq(betaCodes.code, code));
+}
+
 export const storage = {
   getQuotes, getQuoteById, searchQuotes, submitQuote, getPendingQuotes, updateQuoteStatus,
   getTags, getRelatedQuotes, toggleLike,
@@ -319,6 +397,9 @@ export const storage = {
   getGiftTypes, getAllGiftTypes, createGiftType, updateGiftType, sendGift, getFlowerHistory,
   getWithdrawalMethods, getAllWithdrawalMethods, createWithdrawalMethod, updateWithdrawalMethod,
   requestWithdrawal, getWithdrawalRequests, updateWithdrawalStatus,
+  getTopupPackages, getAllTopupPackages, createTopupPackage, updateTopupPackage,
+  createTopupRequest, getTopupRequests, updateTopupStatus,
+  generateBetaCode, getBetaCodes, validateBetaCodeStandalone, markBetaCodeUsed,
 };
 
-export type { User, PublicUser, Tag, Quote, QuoteWithTags, GiftType, WithdrawalMethod, WithdrawalRequest, Waitlist, FlowerTransaction };
+export type { User, PublicUser, Tag, Quote, QuoteWithTags, GiftType, WithdrawalMethod, WithdrawalRequest, Waitlist, FlowerTransaction, TopupPackage, TopupRequest, BetaCode };

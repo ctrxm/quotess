@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Check, X, Clock, Users, Settings, Flower, Wallet, ListOrdered, Lock, Mail, Toggle, ArrowRight } from "lucide-react";
-import type { QuoteWithTags, User, Waitlist, GiftType, WithdrawalRequest, WithdrawalMethod } from "@shared/schema";
+import { Shield, Check, X, Clock, Users, Settings, Flower, Wallet, ListOrdered, Lock, Mail, Toggle, ArrowRight, Copy, Plus, KeyRound, ShoppingBag } from "lucide-react";
+import type { QuoteWithTags, User, Waitlist, GiftType, WithdrawalRequest, WithdrawalMethod, TopupPackage, TopupRequest, BetaCode } from "@shared/schema";
 import { MOOD_LABELS, MOOD_COLORS } from "@shared/schema";
 import type { Mood } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { Link, useLocation } from "wouter";
 
-type Tab = "quotes" | "users" | "waitlist" | "gifts" | "withdrawals" | "settings";
+type Tab = "quotes" | "users" | "waitlist" | "gifts" | "withdrawals" | "topup" | "betacodes" | "settings";
 
 export default function Admin() {
   const { user, isLoading: authLoading } = useAuth();
@@ -38,6 +38,8 @@ export default function Admin() {
     { id: "waitlist", label: "Waitlist", icon: Mail },
     { id: "gifts", label: "Hadiah", icon: Flower },
     { id: "withdrawals", label: "Tarik Dana", icon: Wallet },
+    { id: "topup", label: "Top Up", icon: ShoppingBag },
+    { id: "betacodes", label: "Beta Code", icon: KeyRound },
     { id: "settings", label: "Pengaturan", icon: Settings },
   ];
 
@@ -64,6 +66,8 @@ export default function Admin() {
       {tab === "waitlist" && <WaitlistTab qc={qc} toast={toast} />}
       {tab === "gifts" && <GiftsTab qc={qc} toast={toast} />}
       {tab === "withdrawals" && <WithdrawalsTab qc={qc} toast={toast} />}
+      {tab === "topup" && <TopupTab qc={qc} toast={toast} />}
+      {tab === "betacodes" && <BetaCodesTab qc={qc} toast={toast} />}
       {tab === "settings" && <SettingsTab qc={qc} toast={toast} />}
     </div>
   );
@@ -342,6 +346,7 @@ function SettingsTab({ qc, toast }: any) {
       )}
 
       <SiteInfoSettings s={s} save={save} />
+      <TopupPaymentSettings s={s} save={save} />
     </div>
   );
 }
@@ -387,6 +392,230 @@ function SiteInfoSettings({ s, save }: { s: Record<string, string>; save: (args:
           <button onClick={() => save({ key: "site_description", value: siteDesc })} className="px-3 py-2 bg-[#FFE34D] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid="button-save-setting-site_description">Simpan</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function TopupPaymentSettings({ s, save }: { s: Record<string, string>; save: (args: { key: string; value: string }) => void }) {
+  const [bankName, setBankName] = useState(s.topup_bank_name || "");
+  const [accountNumber, setAccountNumber] = useState(s.topup_account_number || "");
+  const [accountName, setAccountName] = useState(s.topup_account_name || "");
+  return (
+    <div className="border-4 border-black rounded-xl bg-white p-5 shadow-[6px_6px_0px_black]">
+      <h3 className="font-black mb-3 flex items-center gap-2"><ShoppingBag className="w-4 h-4" /> Info Pembayaran Top Up</h3>
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2 items-end">
+          <div className="flex-1">
+            <label className="font-bold text-xs text-gray-500 mb-1 block">Nama Bank/E-Wallet</label>
+            <input value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="Contoh: BCA, GoPay" className="w-full px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid="input-setting-topup_bank_name" />
+          </div>
+          <button onClick={() => save({ key: "topup_bank_name", value: bankName })} className="px-3 py-2 bg-[#FFE34D] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black]" data-testid="button-save-topup-bank">Simpan</button>
+        </div>
+        <div className="flex gap-2 items-end">
+          <div className="flex-1">
+            <label className="font-bold text-xs text-gray-500 mb-1 block">Nomor Rekening/Akun</label>
+            <input value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="Nomor rekening" className="w-full px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid="input-setting-topup_account_number" />
+          </div>
+          <button onClick={() => save({ key: "topup_account_number", value: accountNumber })} className="px-3 py-2 bg-[#FFE34D] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black]" data-testid="button-save-topup-account-number">Simpan</button>
+        </div>
+        <div className="flex gap-2 items-end">
+          <div className="flex-1">
+            <label className="font-bold text-xs text-gray-500 mb-1 block">Nama Pemilik Rekening</label>
+            <input value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="Nama pemilik" className="w-full px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid="input-setting-topup_account_name" />
+          </div>
+          <button onClick={() => save({ key: "topup_account_name", value: accountName })} className="px-3 py-2 bg-[#FFE34D] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black]" data-testid="button-save-topup-account-name">Simpan</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── TOPUP TAB ────────────────────────────────────────────
+
+function TopupTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast: ReturnType<typeof useToast>["toast"] }) {
+  const [subtab, setSubtab] = useState<"requests" | "packages">("requests");
+  const [noteInputs, setNoteInputs] = useState<Record<string, string>>({});
+  const [newPkg, setNewPkg] = useState({ name: "", icon: "🌸", description: "", flowersAmount: "", priceIdr: "", sortOrder: "0" });
+
+  const { data: requests = [], isLoading: reqLoading } = useQuery<TopupRequest[]>({
+    queryKey: ["/api/admin/topup/requests"],
+    queryFn: () => fetch("/api/admin/topup/requests", { credentials: "include" }).then((r) => r.json()),
+  });
+
+  const { data: packages = [], isLoading: pkgLoading } = useQuery<TopupPackage[]>({
+    queryKey: ["/api/admin/topup/packages"],
+    queryFn: () => fetch("/api/admin/topup/packages", { credentials: "include" }).then((r) => r.json()),
+  });
+
+  const updateReq = useMutation({
+    mutationFn: ({ id, status, adminNote }: { id: string; status: string; adminNote?: string }) =>
+      apiRequest("PATCH", `/api/admin/topup/requests/${id}`, { status, adminNote }).then((r) => r.json()),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["/api/admin/topup/requests"] }); toast({ title: "Status diperbarui!" }); },
+    onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
+  });
+
+  const addPkg = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/admin/topup/packages", {
+      ...newPkg, flowersAmount: parseInt(newPkg.flowersAmount), priceIdr: parseInt(newPkg.priceIdr), sortOrder: parseInt(newPkg.sortOrder),
+    }).then((r) => r.json()),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["/api/admin/topup/packages"] }); setNewPkg({ name: "", icon: "🌸", description: "", flowersAmount: "", priceIdr: "", sortOrder: "0" }); toast({ title: "Paket ditambahkan!" }); },
+    onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
+  });
+
+  const togglePkg = useMutation({
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => apiRequest("PATCH", `/api/admin/topup/packages/${id}`, { isActive }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["/api/admin/topup/packages"] }),
+  });
+
+  const STATUS_COLORS: Record<string, string> = {
+    pending: "bg-yellow-100 text-yellow-700 border-yellow-400",
+    confirmed: "bg-green-100 text-green-700 border-green-400",
+    rejected: "bg-red-100 text-red-700 border-red-400",
+  };
+
+  return (
+    <div>
+      <div className="flex gap-2 mb-4">
+        {(["requests", "packages"] as const).map((s) => (
+          <button key={s} onClick={() => setSubtab(s)} className={`px-4 py-2 font-bold text-sm border-2 border-black rounded-lg transition-all ${subtab === s ? "bg-black text-[#FFE34D]" : "bg-white shadow-[2px_2px_0px_black]"}`} data-testid={`tab-topup-${s}`}>
+            {s === "requests" ? "Permintaan" : "Paket"}
+          </button>
+        ))}
+      </div>
+
+      {subtab === "requests" && (
+        reqLoading ? <LoadingBox /> : requests.length === 0 ? <EmptyBox msg="Belum ada permintaan top up" /> :
+        <div className="flex flex-col gap-3">
+          {requests.map((req) => (
+            <div key={req.id} className="border-4 border-black rounded-xl bg-white p-4 shadow-[4px_4px_0px_black]" data-testid={`row-topupreq-${req.id}`}>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div>
+                  <p className="font-black">🌸 {req.flowersAmount} bunga · Rp {req.priceIdr.toLocaleString("id-ID")}</p>
+                  <p className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString("id-ID")}</p>
+                  <p className="text-xs text-gray-400">User: {req.userId}</p>
+                </div>
+                <span className={`text-xs font-black px-2 py-1 rounded border ${STATUS_COLORS[req.status] || "bg-gray-100 border-gray-300"}`}>{req.status}</span>
+              </div>
+              {req.status === "pending" && (
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  <input
+                    placeholder="Catatan admin (opsional)"
+                    value={noteInputs[req.id] || ""}
+                    onChange={(e) => setNoteInputs((n) => ({ ...n, [req.id]: e.target.value }))}
+                    className="flex-1 px-2 py-1.5 border-2 border-gray-300 rounded-lg text-sm font-semibold min-w-0"
+                    data-testid={`input-topupreq-note-${req.id}`}
+                  />
+                  <button onClick={() => updateReq.mutate({ id: req.id, status: "confirmed", adminNote: noteInputs[req.id] })}
+                    className="px-3 py-1.5 bg-green-100 border-2 border-green-500 rounded-lg font-black text-xs text-green-700 shadow-[2px_2px_0px_#16a34a]" data-testid={`button-topupreq-confirm-${req.id}`}>
+                    <Check className="w-3 h-3 inline mr-1" />Konfirmasi
+                  </button>
+                  <button onClick={() => updateReq.mutate({ id: req.id, status: "rejected", adminNote: noteInputs[req.id] })}
+                    className="px-3 py-1.5 bg-red-100 border-2 border-red-500 rounded-lg font-black text-xs text-red-700 shadow-[2px_2px_0px_#dc2626]" data-testid={`button-topupreq-reject-${req.id}`}>
+                    <X className="w-3 h-3 inline mr-1" />Tolak
+                  </button>
+                </div>
+              )}
+              {req.adminNote && <p className="text-xs text-gray-500 mt-2 border-t border-gray-100 pt-2">Catatan: {req.adminNote}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {subtab === "packages" && (
+        <div className="flex flex-col gap-4">
+          <div className="border-4 border-black rounded-xl bg-[#FFE34D] p-4 shadow-[5px_5px_0px_black]">
+            <h3 className="font-black mb-3 flex items-center gap-2"><Plus className="w-4 h-4" /> Tambah Paket</h3>
+            <div className="grid grid-cols-2 gap-2">
+              <input placeholder="Nama paket" value={newPkg.name} onChange={(e) => setNewPkg((p) => ({ ...p, name: e.target.value }))} className="px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid="input-newpkg-name" />
+              <input placeholder="Icon (emoji)" value={newPkg.icon} onChange={(e) => setNewPkg((p) => ({ ...p, icon: e.target.value }))} className="px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid="input-newpkg-icon" />
+              <input placeholder="Jumlah bunga" type="number" value={newPkg.flowersAmount} onChange={(e) => setNewPkg((p) => ({ ...p, flowersAmount: e.target.value }))} className="px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid="input-newpkg-flowers" />
+              <input placeholder="Harga (Rp)" type="number" value={newPkg.priceIdr} onChange={(e) => setNewPkg((p) => ({ ...p, priceIdr: e.target.value }))} className="px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid="input-newpkg-price" />
+              <input placeholder="Deskripsi" value={newPkg.description} onChange={(e) => setNewPkg((p) => ({ ...p, description: e.target.value }))} className="px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold col-span-2" data-testid="input-newpkg-description" />
+            </div>
+            <button onClick={() => addPkg.mutate()} disabled={addPkg.isPending || !newPkg.name || !newPkg.flowersAmount || !newPkg.priceIdr}
+              className="mt-2 px-4 py-2 bg-black text-[#FFE34D] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_#FFE34D] disabled:opacity-50" data-testid="button-newpkg-add">
+              {addPkg.isPending ? "..." : "Tambah Paket"}
+            </button>
+          </div>
+
+          {pkgLoading ? <LoadingBox /> : packages.length === 0 ? <EmptyBox msg="Belum ada paket" /> : (
+            <div className="grid grid-cols-2 gap-3">
+              {packages.map((pkg) => (
+                <div key={pkg.id} className="border-3 border-black rounded-xl bg-white p-4 shadow-[4px_4px_0px_black]" data-testid={`card-pkg-${pkg.id}`}>
+                  <div className="flex items-start justify-between mb-1">
+                    <span className="text-2xl">{pkg.icon}</span>
+                    <button onClick={() => togglePkg.mutate({ id: pkg.id, isActive: !pkg.isActive })}
+                      className={`text-xs font-black px-2 py-1 rounded border-2 ${pkg.isActive ? "border-green-400 text-green-700 bg-green-50" : "border-gray-300 text-gray-400 bg-gray-50"}`}>
+                      {pkg.isActive ? "Aktif" : "Nonaktif"}
+                    </button>
+                  </div>
+                  <p className="font-black text-sm">{pkg.name}</p>
+                  <p className="font-bold text-xs text-gray-500">🌸 {pkg.flowersAmount} · Rp {pkg.priceIdr.toLocaleString("id-ID")}</p>
+                  {pkg.description && <p className="text-xs text-gray-400 mt-1">{pkg.description}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── BETA CODES TAB ───────────────────────────────────────
+
+function BetaCodesTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast: ReturnType<typeof useToast>["toast"] }) {
+  const { data: codes = [], isLoading } = useQuery<BetaCode[]>({
+    queryKey: ["/api/admin/beta-codes"],
+    queryFn: () => fetch("/api/admin/beta-codes", { credentials: "include" }).then((r) => r.json()),
+  });
+
+  const generate = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/admin/beta-codes/generate").then((r) => r.json()),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["/api/admin/beta-codes"] }); toast({ title: "Kode beta baru dibuat!" }); },
+    onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
+  });
+
+  const copyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    toast({ title: "Disalin!", description: code });
+  };
+
+  return (
+    <div>
+      <div className="border-4 border-black rounded-xl bg-[#FFE34D] p-5 shadow-[6px_6px_0px_black] mb-4">
+        <h3 className="font-black text-lg mb-2 flex items-center gap-2"><KeyRound className="w-5 h-5" /> Generator Kode Beta</h3>
+        <p className="text-sm font-semibold text-black/70 mb-3">Buat kode unik untuk mengundang pengguna beta baru</p>
+        <button onClick={() => generate.mutate()} disabled={generate.isPending}
+          className="flex items-center gap-2 px-5 py-2.5 bg-black text-[#FFE34D] border-2 border-black rounded-lg font-black shadow-[4px_4px_0px_#FFE34D] hover:shadow-[2px_2px_0px_#FFE34D] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+          data-testid="button-generate-betacode">
+          <Plus className="w-4 h-4" /> {generate.isPending ? "Membuat..." : "Buat Kode Baru"}
+        </button>
+      </div>
+
+      {isLoading ? <LoadingBox /> : codes.length === 0 ? <EmptyBox msg="Belum ada kode beta" /> : (
+        <div className="border-4 border-black rounded-xl bg-white shadow-[6px_6px_0px_black] overflow-hidden">
+          <div className="grid grid-cols-3 gap-0 bg-black text-[#FFE34D] text-xs font-black uppercase px-4 py-2">
+            <span>Kode</span>
+            <span>Status</span>
+            <span>Dibuat</span>
+          </div>
+          {codes.map((bc) => (
+            <div key={bc.id} className="grid grid-cols-3 gap-0 px-4 py-3 border-t-2 border-gray-100 items-center" data-testid={`row-betacode-${bc.id}`}>
+              <div className="flex items-center gap-2">
+                <span className="font-black font-mono text-sm tracking-wider">{bc.code}</span>
+                <button onClick={() => copyCode(bc.code)} className="p-1 hover:bg-gray-100 rounded" data-testid={`button-copy-code-${bc.id}`}>
+                  <Copy className="w-3 h-3 text-gray-400" />
+                </button>
+              </div>
+              <span className={`text-xs font-black px-2 py-0.5 rounded border w-fit ${bc.isUsed ? "bg-gray-100 border-gray-300 text-gray-500" : "bg-green-50 border-green-400 text-green-700"}`}>
+                {bc.isUsed ? "Digunakan" : "Tersedia"}
+              </span>
+              <span className="text-xs text-gray-400">{new Date(bc.createdAt).toLocaleDateString("id-ID")}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

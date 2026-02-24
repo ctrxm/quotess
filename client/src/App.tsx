@@ -13,6 +13,7 @@ import Auth from "@/pages/auth";
 import Waitlist from "@/pages/waitlist";
 import Profile from "@/pages/profile";
 import Withdraw from "@/pages/withdraw";
+import Topup from "@/pages/topup";
 import Layout from "@/components/layout";
 import { AuthProvider } from "@/lib/auth";
 import { SettingsProvider } from "@/lib/settings";
@@ -38,6 +39,7 @@ function AppContent() {
         <Route path="/waitlist" component={Waitlist} />
         <Route path="/profile" component={Profile} />
         <Route path="/withdraw" component={Withdraw} />
+        <Route path="/topup" component={Topup} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

@@ -85,10 +85,15 @@ export default function Layout({ children }: LayoutProps) {
                         <User className="w-4 h-4" /> Profil
                       </div>
                     </Link>
+                    <Link href="/topup" onClick={() => setUserMenuOpen(false)}>
+                      <div className="flex items-center gap-2 px-4 py-2.5 font-semibold text-sm cursor-pointer hover:bg-gray-50 border-b border-gray-100" data-testid="link-topup">
+                        <Flower className="w-4 h-4 text-yellow-500" /> Top Up Bunga
+                      </div>
+                    </Link>
                     {user.isGiveEnabled && (
                       <Link href="/withdraw" onClick={() => setUserMenuOpen(false)}>
                         <div className="flex items-center gap-2 px-4 py-2.5 font-semibold text-sm cursor-pointer hover:bg-gray-50 border-b border-gray-100" data-testid="link-withdraw">
-                          <Flower className="w-4 h-4 text-pink-500" /> Tukar Bunga
+                          <Flower className="w-4 h-4 text-pink-500" /> Tarik Bunga
                         </div>
                       </Link>
                     )}
@@ -133,9 +138,12 @@ export default function Layout({ children }: LayoutProps) {
                 <Link href="/profile" onClick={() => setMenuOpen(false)}>
                   <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-white">Profil (@{user.username})</span>
                 </Link>
+                <Link href="/topup" onClick={() => setMenuOpen(false)}>
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-yellow-50">Top Up Bunga 🌸</span>
+                </Link>
                 {user.isGiveEnabled && (
                   <Link href="/withdraw" onClick={() => setMenuOpen(false)}>
-                    <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-white">Tukar Bunga ({user.flowersBalance})</span>
+                    <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-white">Tarik Bunga ({user.flowersBalance})</span>
                   </Link>
                 )}
                 {user.role === "admin" && (

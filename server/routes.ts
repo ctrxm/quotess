@@ -4,6 +4,7 @@ import { storage, getSetting, setSetting } from "./storage";
 import { submitQuoteSchema, registerSchema, loginSchema, FLOWERS_TO_IDR_RATE, MIN_WITHDRAWAL_FLOWERS } from "@shared/schema";
 import { requireAuth, requireAdmin } from "./auth";
 import { randomUUID } from "crypto";
+import type { TopupPackage } from "@shared/schema";
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 function checkRateLimit(ip: string, max = 5, windowMs = 10 * 60 * 1000): boolean {
@@ -33,7 +34,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         }
         if (accessType === "code") {
           if (!betaCode) return res.status(403).json({ error: "Kode beta diperlukan untuk registrasi" });
-          const valid = await storage.validateBetaCode(betaCode);
+          const valid = await storage.validateBetaCodeStandalone(betaCode);
           if (!valid) return res.status(403).json({ error: "Kode beta tidak valid atau sudah digunakan" });
         }
       }
@@ -43,6 +44,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       const user = await storage.createUser({ email: email.toLowerCase(), username, password });
       req.session.userId = user.id;
+      if (betaCode) await storage.markBetaCodeUsed(betaCode, user.id).catch(() => {});
       res.status(201).json({ user });
     } catch (e: any) {
       if (e.code === "23505") return res.status(409).json({ error: "Email atau username sudah digunakan" });
@@ -317,6 +319,84 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       await storage.updateWithdrawalMethod(req.params.id, req.body);
       res.json({ success: true });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── TOPUP (PUBLIC) ──────────────────────────────────
+  app.get("/api/topup/packages", async (_req: Request, res: Response) => {
+    try { res.json(await storage.getTopupPackages()); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.get("/api/topup/payment-info", async (_req: Request, res: Response) => {
+    try {
+      const bankName = await getSetting("topup_bank_name", "");
+      const accountNumber = await getSetting("topup_account_number", "");
+      const accountName = await getSetting("topup_account_name", "");
+      res.json({ bankName: bankName || null, accountNumber: accountNumber || null, accountName: accountName || null });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/topup/request", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { packageId } = req.body;
+      if (!packageId) return res.status(400).json({ error: "PackageId wajib diisi" });
+      const result = await storage.createTopupRequest(req.user!.id, packageId);
+      res.json(result);
+    } catch (e: any) { res.status(400).json({ error: e.message }); }
+  });
+
+  app.get("/api/topup/my", requireAuth, async (req: Request, res: Response) => {
+    try { res.json(await storage.getTopupRequests(req.user!.id)); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── ADMIN TOPUP ────────────────────────────────────
+  app.get("/api/admin/topup/packages", requireAdmin, async (_req: Request, res: Response) => {
+    try { res.json(await storage.getAllTopupPackages()); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/admin/topup/packages", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const { name, icon, description, flowersAmount, priceIdr, sortOrder } = req.body;
+      const pkg = await storage.createTopupPackage({
+        name, icon: icon || "🌸", description: description || null,
+        flowersAmount: parseInt(flowersAmount), priceIdr: parseInt(priceIdr),
+        isActive: true, sortOrder: parseInt(sortOrder) || 0,
+      });
+      res.status(201).json(pkg);
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.patch("/api/admin/topup/packages/:id", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      await storage.updateTopupPackage(req.params.id, req.body);
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.get("/api/admin/topup/requests", requireAdmin, async (_req: Request, res: Response) => {
+    try { res.json(await storage.getTopupRequests()); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.patch("/api/admin/topup/requests/:id", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const { status, adminNote } = req.body;
+      await storage.updateTopupStatus(req.params.id, status, adminNote);
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── BETA CODES ─────────────────────────────────────
+  app.get("/api/admin/beta-codes", requireAdmin, async (_req: Request, res: Response) => {
+    try { res.json(await storage.getBetaCodes()); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/admin/beta-codes/generate", requireAdmin, async (_req: Request, res: Response) => {
+    try { res.json(await storage.generateBetaCode()); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
   return httpServer;

@@ -6,7 +6,7 @@ Quote-sharing website Indonesia dengan desain Neobrutalism. Platform untuk berba
 
 - **Frontend**: React + Vite, Wouter (routing), TanStack Query, Shadcn UI, Tailwind CSS
 - **Backend**: Express.js, TypeScript, Drizzle ORM
-- **Database**: Supabase PostgreSQL (via SUPABASE_DATABASE_URL)
+- **Database**: PostgreSQL (via DATABASE_URL - Replit managed)
 - **Auth**: express-session + bcryptjs (session-based)
 - **Font**: Space Grotesk
 
@@ -23,7 +23,8 @@ client/src/
     waitlist.tsx      - Waitlist signup page
     profile.tsx       - User profile + flower balance
     withdraw.tsx      - Flower withdrawal page
-    admin.tsx         - Full admin panel
+    topup.tsx         - Flower top-up purchase page
+    admin.tsx         - Full admin panel (quotes, users, waitlist, gifts, withdrawals, topup, betacodes, settings)
   components/
     layout.tsx        - Header/footer/nav (with user menu)
     quote-card.tsx    - Card with like + give buttons

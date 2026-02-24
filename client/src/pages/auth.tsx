@@ -1,58 +1,107 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useLocation, Link } from "wouter";
 import { Feather, Eye, EyeOff, Lock } from "lucide-react";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/lib/settings";
 
-const loginSchema = z.object({
-  email: z.string().email("Email tidak valid"),
-  password: z.string().min(1, "Password wajib diisi"),
-});
-
-const registerSchema = z.object({
-  email: z.string().email("Email tidak valid"),
-  username: z.string().min(3, "Min 3 karakter").max(30).regex(/^[a-zA-Z0-9_]+$/, "Hanya huruf, angka, underscore"),
-  password: z.string().min(6, "Min 6 karakter"),
-  betaCode: z.string().optional(),
-});
+function InputField({ label, type = "text", placeholder, value, onChange, error, id, ...rest }: {
+  label: string; type?: string; placeholder?: string; value: string;
+  onChange: (v: string) => void; error?: string; id: string; [k: string]: any;
+}) {
+  const [show, setShow] = useState(false);
+  const isPass = type === "password";
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className="font-black text-sm">{label}</label>
+      <div className="relative">
+        <input
+          id={id}
+          type={isPass ? (show ? "text" : "password") : type}
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          autoComplete={isPass ? "current-password" : type === "email" ? "email" : "off"}
+          className={`w-full px-3 py-2.5 border-2 border-black rounded-lg font-semibold text-sm outline-none transition-all focus:shadow-[2px_2px_0px_black] ${isPass ? "pr-10" : ""} ${error ? "border-red-500 bg-red-50" : "bg-white"}`}
+          {...rest}
+        />
+        {isPass && (
+          <button type="button" onClick={() => setShow((s) => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+            {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        )}
+      </div>
+      {error && <p className="text-xs text-red-600 font-semibold">{error}</p>}
+    </div>
+  );
+}
 
 export default function Auth() {
   const [tab, setTab] = useState<"login" | "register">("login");
-  const [showPass, setShowPass] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [, navigate] = useLocation();
   const { login, register } = useAuth();
   const { toast } = useToast();
   const settings = useSettings();
 
-  const loginForm = useForm({ resolver: zodResolver(loginSchema), defaultValues: { email: "", password: "" } });
-  const regForm = useForm({ resolver: zodResolver(registerSchema), defaultValues: { email: "", username: "", password: "", betaCode: "" } });
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
 
-  const handleLogin = async (data: z.infer<typeof loginSchema>) => {
+  const [regEmail, setRegEmail] = useState("");
+  const [regUsername, setRegUsername] = useState("");
+  const [regPassword, setRegPassword] = useState("");
+  const [regBetaCode, setRegBetaCode] = useState("");
+  const [regErrors, setRegErrors] = useState<Record<string, string>>({});
+
+  const validateLogin = () => {
+    const errs: Record<string, string> = {};
+    if (!loginEmail) errs.email = "Email wajib diisi";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginEmail)) errs.email = "Format email tidak valid";
+    if (!loginPassword) errs.password = "Password wajib diisi";
+    setLoginErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const validateRegister = () => {
+    const errs: Record<string, string> = {};
+    if (!regEmail) errs.email = "Email wajib diisi";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(regEmail)) errs.email = "Format email tidak valid";
+    if (!regUsername) errs.username = "Username wajib diisi";
+    else if (regUsername.length < 3) errs.username = "Min 3 karakter";
+    else if (!/^[a-zA-Z0-9_]+$/.test(regUsername)) errs.username = "Hanya huruf, angka, underscore";
+    if (!regPassword) errs.password = "Password wajib diisi";
+    else if (regPassword.length < 6) errs.password = "Min 6 karakter";
+    if (settings.betaMode && settings.betaAccessType === "code" && !regBetaCode) {
+      errs.betaCode = "Kode beta wajib diisi";
+    }
+    setRegErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateLogin()) return;
     setIsLoading(true);
     try {
-      await login(data.email, data.password);
+      await login(loginEmail, loginPassword);
       toast({ title: "Selamat datang kembali!" });
       navigate("/");
-    } catch (e: any) {
-      toast({ title: "Login gagal", description: e.message, variant: "destructive" });
+    } catch (err: any) {
+      toast({ title: "Login gagal", description: err.message, variant: "destructive" });
     } finally { setIsLoading(false); }
   };
 
-  const handleRegister = async (data: z.infer<typeof registerSchema>) => {
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateRegister()) return;
     setIsLoading(true);
     try {
-      await register({ email: data.email, username: data.username, password: data.password, betaCode: data.betaCode || undefined });
+      await register({ email: regEmail, username: regUsername, password: regPassword, betaCode: regBetaCode || undefined });
       toast({ title: "Selamat datang!", description: "Akun berhasil dibuat" });
       navigate("/");
-    } catch (e: any) {
-      toast({ title: "Registrasi gagal", description: e.message, variant: "destructive" });
+    } catch (err: any) {
+      toast({ title: "Registrasi gagal", description: err.message, variant: "destructive" });
     } finally { setIsLoading(false); }
   };
 
@@ -60,7 +109,7 @@ export default function Auth() {
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-[#FFE34D] border-3 border-black rounded-xl flex items-center justify-center mx-auto mb-4 shadow-[5px_5px_0px_black]">
+          <div className="w-14 h-14 bg-[#FFE34D] border-[3px] border-black rounded-xl flex items-center justify-center mx-auto mb-4 shadow-[5px_5px_0px_black]">
             <Feather className="w-7 h-7 text-black" />
           </div>
           <h1 className="text-3xl font-black">{settings.siteName}</h1>
@@ -70,7 +119,7 @@ export default function Auth() {
         <div className="border-4 border-black rounded-xl bg-white shadow-[8px_8px_0px_black] overflow-hidden">
           <div className="grid grid-cols-2 border-b-4 border-black">
             {(["login", "register"] as const).map((t) => (
-              <button key={t} onClick={() => setTab(t)} className={`py-3 font-black text-sm transition-all ${tab === t ? "bg-[#FFE34D] text-black" : "bg-white text-black/50 hover:bg-gray-50"}`} data-testid={`button-tab-${t}`}>
+              <button key={t} type="button" onClick={() => setTab(t)} className={`py-3 font-black text-sm transition-colors ${tab === t ? "bg-[#FFE34D] text-black" : "bg-white text-black/50 hover:bg-gray-50"}`} data-testid={`button-tab-${t}`}>
                 {t === "login" ? "Masuk" : "Daftar"}
               </button>
             ))}
@@ -78,95 +127,45 @@ export default function Auth() {
 
           <div className="p-6">
             {tab === "login" ? (
-              <Form {...loginForm}>
-                <form onSubmit={loginForm.handleSubmit(handleLogin)} className="flex flex-col gap-4">
-                  <FormField control={loginForm.control} name="email" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-black text-sm">Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="email@kamu.com" type="email" className="border-2 border-black rounded-lg shadow-[3px_3px_0px_black] focus-visible:ring-0 focus:shadow-[1px_1px_0px_black] focus:translate-x-[2px] focus:translate-y-[2px] transition-all" data-testid="input-login-email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={loginForm.control} name="password" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-black text-sm">Password</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input type={showPass ? "text" : "password"} placeholder="Password..." className="border-2 border-black rounded-lg shadow-[3px_3px_0px_black] focus-visible:ring-0 focus:shadow-[1px_1px_0px_black] focus:translate-x-[2px] focus:translate-y-[2px] transition-all pr-10" data-testid="input-login-password" {...field} />
-                          <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2">
-                            {showPass ? <EyeOff className="w-4 h-4 text-gray-400" /> : <Eye className="w-4 h-4 text-gray-400" />}
-                          </button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <button type="submit" disabled={isLoading} className="w-full py-3 bg-[#FFE34D] border-3 border-black rounded-lg font-black shadow-[5px_5px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-60 mt-2" data-testid="button-login">
-                    {isLoading ? "Memuat..." : "Masuk"}
-                  </button>
-                </form>
-              </Form>
+              <form onSubmit={handleLogin} className="flex flex-col gap-4" noValidate>
+                <InputField id="login-email" label="Email" type="email" placeholder="email@kamu.com" value={loginEmail} onChange={setLoginEmail} error={loginErrors.email} data-testid="input-login-email" />
+                <InputField id="login-password" label="Password" type="password" placeholder="Password kamu..." value={loginPassword} onChange={setLoginPassword} error={loginErrors.password} data-testid="input-login-password" />
+                <button type="submit" disabled={isLoading} className="w-full py-3 bg-[#FFE34D] border-[3px] border-black rounded-lg font-black shadow-[5px_5px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-60 mt-2 text-sm" data-testid="button-login">
+                  {isLoading ? "Memuat..." : "Masuk"}
+                </button>
+              </form>
             ) : (
-              <Form {...regForm}>
-                <form onSubmit={regForm.handleSubmit(handleRegister)} className="flex flex-col gap-4">
-                  <FormField control={regForm.control} name="email" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-black text-sm">Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="email@kamu.com" type="email" className="border-2 border-black rounded-lg shadow-[3px_3px_0px_black] focus-visible:ring-0" data-testid="input-reg-email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={regForm.control} name="username" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-black text-sm">Username</FormLabel>
-                      <FormControl>
-                        <Input placeholder="username_kamu" className="border-2 border-black rounded-lg shadow-[3px_3px_0px_black] focus-visible:ring-0" data-testid="input-reg-username" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={regForm.control} name="password" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-black text-sm">Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Min. 6 karakter" className="border-2 border-black rounded-lg shadow-[3px_3px_0px_black] focus-visible:ring-0" data-testid="input-reg-password" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  {settings.betaMode && settings.betaAccessType === "code" && (
-                    <FormField control={regForm.control} name="betaCode" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-black text-sm flex items-center gap-2"><Lock className="w-4 h-4" /> Kode Beta</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Masukkan kode beta..." className="border-2 border-black rounded-lg shadow-[3px_3px_0px_black] focus-visible:ring-0" data-testid="input-beta-code" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                  )}
-                  {settings.betaMode && (
-                    <div className="bg-[#FFE34D] border-2 border-black rounded-lg p-3 text-sm font-semibold">
-                      <Lock className="w-4 h-4 inline mr-1" />
-                      Website dalam mode Beta. {settings.betaAccessType === "waitlist" ? "Hanya pengguna waitlist yang bisa daftar." : settings.betaAccessType === "code" ? "Masukkan kode beta untuk daftar." : "Registrasi terbuka."}
-                      {settings.betaAccessType === "waitlist" && <span className="block mt-1"><a href="/waitlist" className="font-black underline">Daftar waitlist</a></span>}
+              <form onSubmit={handleRegister} className="flex flex-col gap-4" noValidate>
+                <InputField id="reg-email" label="Email" type="email" placeholder="email@kamu.com" value={regEmail} onChange={setRegEmail} error={regErrors.email} data-testid="input-reg-email" autoComplete="email" />
+                <InputField id="reg-username" label="Username" placeholder="username_kamu" value={regUsername} onChange={setRegUsername} error={regErrors.username} data-testid="input-reg-username" autoComplete="username" />
+                <InputField id="reg-password" label="Password" type="password" placeholder="Min. 6 karakter" value={regPassword} onChange={setRegPassword} error={regErrors.password} data-testid="input-reg-password" autoComplete="new-password" />
+
+                {settings.betaMode && settings.betaAccessType === "code" && (
+                  <InputField id="reg-beta" label="Kode Beta" placeholder="Masukkan kode beta..." value={regBetaCode} onChange={setRegBetaCode} error={regErrors.betaCode} data-testid="input-beta-code" />
+                )}
+
+                {settings.betaMode && (
+                  <div className="bg-[#FFE34D] border-2 border-black rounded-lg p-3 text-sm font-semibold flex items-start gap-2">
+                    <Lock className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <div>
+                      Website dalam mode Beta. {settings.betaAccessType === "waitlist" ? "Hanya pengguna waitlist yang bisa daftar." : settings.betaAccessType === "code" ? "Masukkan kode beta untuk mendaftar." : "Registrasi terbuka."}
+                      {settings.betaAccessType === "waitlist" && (
+                        <Link href="/waitlist"><span className="font-black underline cursor-pointer block mt-1">Daftar waitlist →</span></Link>
+                      )}
                     </div>
-                  )}
-                  <button type="submit" disabled={isLoading} className="w-full py-3 bg-black text-[#FFE34D] border-3 border-black rounded-lg font-black shadow-[5px_5px_0px_#FFE34D] hover:shadow-[2px_2px_0px_#FFE34D] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-60 mt-2" data-testid="button-register">
-                    {isLoading ? "Memuat..." : "Buat Akun"}
-                  </button>
-                </form>
-              </Form>
+                  </div>
+                )}
+
+                <button type="submit" disabled={isLoading} className="w-full py-3 bg-black text-[#FFE34D] border-[3px] border-black rounded-lg font-black shadow-[5px_5px_0px_#FFE34D] hover:shadow-[2px_2px_0px_#FFE34D] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-60 mt-2 text-sm" data-testid="button-register">
+                  {isLoading ? "Memuat..." : "Buat Akun"}
+                </button>
+              </form>
             )}
           </div>
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-4 font-medium">
-          Dengan mendaftar, kamu setuju dengan syarat & ketentuan KataViral
+          Dengan mendaftar, kamu setuju dengan syarat & ketentuan {settings.siteName}
         </p>
       </div>
     </div>

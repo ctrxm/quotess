@@ -9,7 +9,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   username: text("username").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
-  role: text("role").notNull().default("user"), // "user" | "admin"
+  role: text("role").notNull().default("user"),
   isActive: boolean("is_active").notNull().default(true),
   hasBetaAccess: boolean("has_beta_access").notNull().default(false),
   flowersBalance: integer("flowers_balance").notNull().default(0),
@@ -38,7 +38,7 @@ export const waitlist = pgTable("waitlist", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   email: text("email").notNull().unique(),
   name: text("name"),
-  status: text("status").notNull().default("pending"), // pending | approved | rejected
+  status: text("status").notNull().default("pending"),
   betaCode: text("beta_code"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
 });
@@ -107,7 +107,7 @@ export type GiftTransaction = typeof giftTransactions.$inferSelect;
 export const flowerTransactions = pgTable("flower_transactions", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: uuid("user_id").notNull().references(() => users.id),
-  type: text("type").notNull(), // "credit" | "debit"
+  type: text("type").notNull(),
   amount: integer("amount").notNull(),
   description: text("description").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
@@ -118,8 +118,8 @@ export type FlowerTransaction = typeof flowerTransactions.$inferSelect;
 export const withdrawalMethods = pgTable("withdrawal_methods", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
-  type: text("type").notNull(), // "bank" | "ewallet"
-  code: text("code").notNull().unique(), // e.g., "BCA", "OVO"
+  type: text("type").notNull(),
+  code: text("code").notNull().unique(),
   isActive: boolean("is_active").notNull().default(true),
 });
 export type WithdrawalMethod = typeof withdrawalMethods.$inferSelect;
@@ -132,12 +132,50 @@ export const withdrawalRequests = pgTable("withdrawal_requests", {
   accountName: text("account_name").notNull(),
   flowersAmount: integer("flowers_amount").notNull(),
   idrAmount: integer("idr_amount").notNull(),
-  status: text("status").notNull().default("pending"), // pending | approved | rejected | paid
+  status: text("status").notNull().default("pending"),
   adminNote: text("admin_note"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`),
 });
 export type WithdrawalRequest = typeof withdrawalRequests.$inferSelect;
+
+// ─── TOPUP PACKAGES ──────────────────────────────────────
+export const topupPackages = pgTable("topup_packages", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  icon: text("icon").notNull().default("🌸"),
+  description: text("description"),
+  flowersAmount: integer("flowers_amount").notNull(),
+  priceIdr: integer("price_idr").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+export type TopupPackage = typeof topupPackages.$inferSelect;
+
+// ─── TOPUP REQUESTS ──────────────────────────────────────
+export const topupRequests = pgTable("topup_requests", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id),
+  packageId: uuid("package_id").notNull().references(() => topupPackages.id),
+  flowersAmount: integer("flowers_amount").notNull(),
+  priceIdr: integer("price_idr").notNull(),
+  status: text("status").notNull().default("pending"),
+  adminNote: text("admin_note"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+export type TopupRequest = typeof topupRequests.$inferSelect;
+
+// ─── BETA CODES ──────────────────────────────────────────
+export const betaCodes = pgTable("beta_codes", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  code: text("code").notNull().unique(),
+  isUsed: boolean("is_used").notNull().default(false),
+  usedBy: uuid("used_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+});
+export type BetaCode = typeof betaCodes.$inferSelect;
 
 // ─── SCHEMAS ─────────────────────────────────────────────
 export const insertQuoteSchema = createInsertSchema(quotes).omit({ id: true, createdAt: true, status: true, likesCount: true });
@@ -164,12 +202,12 @@ export const MOOD_LABELS: Record<Mood, string> = {
 };
 
 export const MOOD_COLORS: Record<Mood, { bg: string; border: string; text: string }> = {
-  galau: { bg: "bg-blue-100 dark:bg-blue-900", border: "border-blue-500", text: "text-blue-700 dark:text-blue-300" },
-  semangat: { bg: "bg-yellow-100 dark:bg-yellow-900", border: "border-yellow-500", text: "text-yellow-700 dark:text-yellow-300" },
-  sindir: { bg: "bg-red-100 dark:bg-red-900", border: "border-red-500", text: "text-red-700 dark:text-red-300" },
-  healing: { bg: "bg-green-100 dark:bg-green-900", border: "border-green-500", text: "text-green-700 dark:text-green-300" },
-  kerja: { bg: "bg-purple-100 dark:bg-purple-900", border: "border-purple-500", text: "text-purple-700 dark:text-purple-300" },
-  cinta: { bg: "bg-pink-100 dark:bg-pink-900", border: "border-pink-500", text: "text-pink-700 dark:text-pink-300" },
+  galau: { bg: "bg-blue-100", border: "border-blue-500", text: "text-blue-700" },
+  semangat: { bg: "bg-yellow-100", border: "border-yellow-500", text: "text-yellow-700" },
+  sindir: { bg: "bg-red-100", border: "border-red-500", text: "text-red-700" },
+  healing: { bg: "bg-green-100", border: "border-green-500", text: "text-green-700" },
+  kerja: { bg: "bg-purple-100", border: "border-purple-500", text: "text-purple-700" },
+  cinta: { bg: "bg-pink-100", border: "border-pink-500", text: "text-pink-700" },
 };
 
 export const POPULAR_TAGS = [
@@ -181,6 +219,5 @@ export const POPULAR_TAGS = [
   { name: "Kehidupan", slug: "kehidupan" }, { name: "Bucin", slug: "bucin" },
 ];
 
-// Conversion rate: 100 flowers = Rp 1,000
-export const FLOWERS_TO_IDR_RATE = 10; // 1 flower = Rp 10
-export const MIN_WITHDRAWAL_FLOWERS = 1000; // min 1000 flowers = Rp 10,000
+export const FLOWERS_TO_IDR_RATE = 10;
+export const MIN_WITHDRAWAL_FLOWERS = 1000;
