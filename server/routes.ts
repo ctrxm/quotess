@@ -422,6 +422,43 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
+  // ─── ADS ────────────────────────────────────────────
+  app.get("/api/ads", async (_req: Request, res: Response) => {
+    try { res.json(await storage.getActiveAds()); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/ads/:id/click", async (req: Request, res: Response) => {
+    try {
+      await storage.incrementAdClicks(req.params.id);
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.get("/api/admin/ads", requireAdmin, async (_req: Request, res: Response) => {
+    try { res.json(await storage.getAllAds()); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/admin/ads", requireAdmin, async (req: Request, res: Response) => {
+    try { res.json(await storage.createAd(req.body)); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.patch("/api/admin/ads/:id", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      await storage.updateAd(req.params.id, req.body);
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.delete("/api/admin/ads/:id", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      await storage.deleteAd(req.params.id);
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
   // ─── BETA CODES ─────────────────────────────────────
   app.get("/api/admin/beta-codes", requireAdmin, async (_req: Request, res: Response) => {
     try { res.json(await storage.getBetaCodes()); }

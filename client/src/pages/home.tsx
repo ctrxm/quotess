@@ -3,8 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Search, ChevronLeft, ChevronRight, Zap, TrendingUp, Sparkles } from "lucide-react";
 import QuoteCard from "@/components/quote-card";
+import AdCard from "@/components/ad-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { QuoteWithTags, Mood } from "@shared/schema";
+import type { QuoteWithTags, Mood, Ad } from "@shared/schema";
 import { MOODS, MOOD_LABELS } from "@shared/schema";
 
 function QuoteCardSkeleton() {
@@ -44,10 +45,30 @@ export default function Home() {
     enabled: !!debouncedSearch,
   });
 
+  const { data: adsData } = useQuery<Ad[]>({
+    queryKey: ["/api/ads"],
+  });
+  const inlineAds = (Array.isArray(adsData) ? adsData : []).filter((a) => a.position === "inline");
+  const bottomAds = (Array.isArray(adsData) ? adsData : []).filter((a) => a.position === "bottom");
+
   const quotes = debouncedSearch ? (searchResults || []) : (data?.quotes || []);
   const total = data?.total || 0;
   const totalPages = Math.ceil(total / 12);
   const loading = debouncedSearch ? searchLoading : isLoading;
+
+  function buildGrid(quoteList: QuoteWithTags[]) {
+    const AD_EVERY = 4;
+    const items: { type: "quote" | "ad"; data: QuoteWithTags | Ad; key: string }[] = [];
+    let adIdx = 0;
+    quoteList.forEach((q, i) => {
+      items.push({ type: "quote", data: q, key: q.id });
+      if ((i + 1) % AD_EVERY === 0 && adIdx < inlineAds.length) {
+        items.push({ type: "ad", data: inlineAds[adIdx], key: `ad-${inlineAds[adIdx].id}` });
+        adIdx++;
+      }
+    });
+    return items;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -132,9 +153,17 @@ export default function Home() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {quotes.map((quote) => (
-            <QuoteCard key={quote.id} quote={quote} />
-          ))}
+          {buildGrid(quotes).map((item) =>
+            item.type === "quote"
+              ? <QuoteCard key={item.key} quote={item.data as QuoteWithTags} />
+              : <AdCard key={item.key} ad={item.data as Ad} />
+          )}
+        </div>
+      )}
+
+      {bottomAds.length > 0 && (
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {bottomAds.map((ad) => <AdCard key={ad.id} ad={ad} />)}
         </div>
       )}
 

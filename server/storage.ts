@@ -5,12 +5,12 @@ import {
   quotes, tags, quoteTags, quoteLikes,
   users, waitlist, settings, giftTypes, giftTransactions,
   flowerTransactions, withdrawalMethods, withdrawalRequests,
-  topupPackages, topupRequests, betaCodes, giftRoleApplications,
+  topupPackages, topupRequests, betaCodes, giftRoleApplications, ads,
   type Quote, type Tag, type QuoteWithTags, type InsertQuote,
   type User, type PublicUser, type Setting, type GiftType,
   type WithdrawalMethod, type WithdrawalRequest, type Waitlist,
   type GiftTransaction, type FlowerTransaction,
-  type TopupPackage, type TopupRequest, type BetaCode, type GiftRoleApplication,
+  type TopupPackage, type TopupRequest, type BetaCode, type GiftRoleApplication, type Ad,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
@@ -411,6 +411,55 @@ export async function updateGiftRoleApplication(id: string, status: "approved" |
   }
 }
 
+// ─── ADS ──────────────────────────────────────────────────
+
+export async function getActiveAds(): Promise<Ad[]> {
+  return db.select().from(ads).where(eq(ads.isActive, true)).orderBy(ads.sortOrder, desc(ads.createdAt));
+}
+
+export async function getAllAds(): Promise<Ad[]> {
+  return db.select().from(ads).orderBy(ads.sortOrder, desc(ads.createdAt));
+}
+
+export async function createAd(data: Partial<Ad>): Promise<Ad> {
+  const [ad] = await db.insert(ads).values({
+    type: data.type || "text",
+    title: data.title || null,
+    description: data.description || null,
+    imageUrl: data.imageUrl || null,
+    linkUrl: data.linkUrl || null,
+    isActive: data.isActive ?? true,
+    position: data.position || "inline",
+    bgColor: data.bgColor || "#78C1FF",
+    textColor: data.textColor || "#000000",
+    sortOrder: data.sortOrder ?? 0,
+  }).returning();
+  return ad;
+}
+
+export async function updateAd(id: string, data: Partial<Ad>): Promise<void> {
+  await db.update(ads).set({
+    ...(data.title !== undefined && { title: data.title }),
+    ...(data.description !== undefined && { description: data.description }),
+    ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
+    ...(data.linkUrl !== undefined && { linkUrl: data.linkUrl }),
+    ...(data.isActive !== undefined && { isActive: data.isActive }),
+    ...(data.position !== undefined && { position: data.position }),
+    ...(data.bgColor !== undefined && { bgColor: data.bgColor }),
+    ...(data.textColor !== undefined && { textColor: data.textColor }),
+    ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),
+    ...(data.type !== undefined && { type: data.type }),
+  }).where(eq(ads.id, id));
+}
+
+export async function deleteAd(id: string): Promise<void> {
+  await db.delete(ads).where(eq(ads.id, id));
+}
+
+export async function incrementAdClicks(id: string): Promise<void> {
+  await db.update(ads).set({ clickCount: sql`${ads.clickCount} + 1` }).where(eq(ads.id, id));
+}
+
 // ─── BETA CODES ──────────────────────────────────────────
 
 export async function generateBetaCode(): Promise<BetaCode> {
@@ -449,6 +498,7 @@ export const storage = {
   createTopupRequest, getTopupRequests, updateTopupStatus,
   generateBetaCode, getBetaCodes, validateBetaCodeStandalone, markBetaCodeUsed,
   applyForGiftRole, getMyGiftRoleApplication, getAllGiftRoleApplications, updateGiftRoleApplication,
+  getActiveAds, getAllAds, createAd, updateAd, deleteAd, incrementAdClicks,
 };
 
-export type { User, PublicUser, Tag, Quote, QuoteWithTags, GiftType, WithdrawalMethod, WithdrawalRequest, Waitlist, FlowerTransaction, TopupPackage, TopupRequest, BetaCode, GiftRoleApplication };
+export type { User, PublicUser, Tag, Quote, QuoteWithTags, GiftType, WithdrawalMethod, WithdrawalRequest, Waitlist, FlowerTransaction, TopupPackage, TopupRequest, BetaCode, GiftRoleApplication, Ad };

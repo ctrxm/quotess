@@ -181,6 +181,25 @@ export const giftRoleApplications = pgTable("gift_role_applications", {
 export type GiftRoleApplication = typeof giftRoleApplications.$inferSelect;
 export const insertGiftRoleApplicationSchema = createInsertSchema(giftRoleApplications).omit({ id: true, userId: true, status: true, adminNote: true, createdAt: true, updatedAt: true });
 
+// ─── ADS ─────────────────────────────────────────────────
+export const ads = pgTable("ads", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  type: text("type").notNull().default("text"), // "text" | "image"
+  title: text("title"),
+  description: text("description"),
+  imageUrl: text("image_url"),
+  linkUrl: text("link_url"),
+  isActive: boolean("is_active").notNull().default(true),
+  position: text("position").notNull().default("inline"), // "inline" | "bottom"
+  bgColor: text("bg_color").notNull().default("#78C1FF"),
+  textColor: text("text_color").notNull().default("#000000"),
+  clickCount: integer("click_count").notNull().default(0),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+export type Ad = typeof ads.$inferSelect;
+export const insertAdSchema = createInsertSchema(ads).omit({ id: true, clickCount: true, createdAt: true });
+
 // ─── BETA CODES ──────────────────────────────────────────
 export const betaCodes = pgTable("beta_codes", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),

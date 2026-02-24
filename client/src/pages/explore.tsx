@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Compass, Tag } from "lucide-react";
 import QuoteCard from "@/components/quote-card";
+import AdCard from "@/components/ad-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { QuoteWithTags, Tag as TagType, Mood } from "@shared/schema";
+import type { QuoteWithTags, Tag as TagType, Mood, Ad } from "@shared/schema";
 import { MOODS, MOOD_LABELS, MOOD_COLORS } from "@shared/schema";
 
 function QuoteCardSkeleton() {
@@ -33,9 +34,26 @@ export default function Explore() {
     queryKey: ["/api/tags"],
   });
 
+  const { data: adsData } = useQuery<Ad[]>({ queryKey: ["/api/ads"] });
+  const inlineAds = (Array.isArray(adsData) ? adsData : []).filter((a) => a.position === "inline");
+
   const quotes = data?.quotes || [];
   const total = data?.total || 0;
   const totalPages = Math.ceil(total / 12);
+
+  function buildGrid(quoteList: QuoteWithTags[]) {
+    const AD_EVERY = 4;
+    const items: { type: "quote" | "ad"; data: QuoteWithTags | Ad; key: string }[] = [];
+    let adIdx = 0;
+    quoteList.forEach((q, i) => {
+      items.push({ type: "quote", data: q, key: q.id });
+      if ((i + 1) % AD_EVERY === 0 && adIdx < inlineAds.length) {
+        items.push({ type: "ad", data: inlineAds[adIdx], key: `ad-${inlineAds[adIdx].id}` });
+        adIdx++;
+      }
+    });
+    return items;
+  }
 
   const handleMood = (mood: Mood | "") => {
     setActiveMood(mood === activeMood ? "" : mood);
@@ -146,9 +164,11 @@ export default function Explore() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {quotes.map((quote) => (
-            <QuoteCard key={quote.id} quote={quote} />
-          ))}
+          {buildGrid(quotes).map((item) =>
+            item.type === "quote"
+              ? <QuoteCard key={item.key} quote={item.data as QuoteWithTags} />
+              : <AdCard key={item.key} ad={item.data as Ad} />
+          )}
         </div>
       )}
 

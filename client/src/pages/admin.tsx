@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Check, X, Clock, Users, Settings, Flower, Wallet, ListOrdered, Lock, Mail, Toggle, ArrowRight, Copy, Plus, KeyRound, ShoppingBag, Gift } from "lucide-react";
-import type { QuoteWithTags, User, Waitlist, GiftType, WithdrawalRequest, WithdrawalMethod, TopupPackage, TopupRequest, BetaCode } from "@shared/schema";
+import { Shield, Check, X, Clock, Users, Settings, Flower, Wallet, ListOrdered, Lock, Mail, Toggle, ArrowRight, Copy, Plus, KeyRound, ShoppingBag, Gift, Megaphone, ExternalLink, Pencil, Trash2 } from "lucide-react";
+import type { QuoteWithTags, User, Waitlist, GiftType, WithdrawalRequest, WithdrawalMethod, TopupPackage, TopupRequest, BetaCode, Ad } from "@shared/schema";
 import { MOOD_LABELS, MOOD_COLORS } from "@shared/schema";
 import type { Mood } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { Link, useLocation } from "wouter";
 
-type Tab = "quotes" | "users" | "waitlist" | "gifts" | "giftroles" | "withdrawals" | "topup" | "betacodes" | "settings";
+type Tab = "quotes" | "users" | "waitlist" | "gifts" | "giftroles" | "withdrawals" | "topup" | "betacodes" | "ads" | "settings";
 
 export default function Admin() {
   const { user, isLoading: authLoading } = useAuth();
@@ -41,6 +41,7 @@ export default function Admin() {
     { id: "withdrawals", label: "Tarik Dana", icon: Wallet },
     { id: "topup", label: "Top Up", icon: ShoppingBag },
     { id: "betacodes", label: "Beta Code", icon: KeyRound },
+    { id: "ads", label: "Iklan", icon: Megaphone },
     { id: "settings", label: "Pengaturan", icon: Settings },
   ];
 
@@ -70,6 +71,7 @@ export default function Admin() {
       {tab === "withdrawals" && <WithdrawalsTab qc={qc} toast={toast} />}
       {tab === "topup" && <TopupTab qc={qc} toast={toast} />}
       {tab === "betacodes" && <BetaCodesTab qc={qc} toast={toast} />}
+      {tab === "ads" && <AdsTab qc={qc} toast={toast} />}
       {tab === "settings" && <SettingsTab qc={qc} toast={toast} />}
     </div>
   );
@@ -865,6 +867,281 @@ function EmptyBox({ msg }: { msg: string }) {
     <div className="border-4 border-black rounded-xl bg-[#FFE34D] p-8 text-center shadow-[6px_6px_0px_black]">
       <Clock className="w-12 h-12 mx-auto mb-2 opacity-40" />
       <p className="font-black">{msg}</p>
+    </div>
+  );
+}
+
+const BLANK_AD: Partial<Ad> = { type: "text", title: "", description: "", imageUrl: "", linkUrl: "", isActive: true, position: "inline", bgColor: "#78C1FF", textColor: "#000000", sortOrder: 0 };
+const COLOR_PRESETS = [
+  { color: "#FFE34D", label: "Kuning" },
+  { color: "#78C1FF", label: "Biru" },
+  { color: "#A8FF78", label: "Hijau" },
+  { color: "#FF7878", label: "Merah" },
+  { color: "#E8D5FF", label: "Ungu" },
+  { color: "#FFFFFF", label: "Putih" },
+  { color: "#1a1a1a", label: "Hitam" },
+];
+
+function AdsTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast: ReturnType<typeof useToast>["toast"] }) {
+  const [form, setForm] = useState<Partial<Ad>>({ ...BLANK_AD });
+  const [editId, setEditId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+
+  const { data: allAds = [], isLoading } = useQuery<Ad[]>({
+    queryKey: ["/api/admin/ads"],
+    queryFn: async () => {
+      const r = await fetch("/api/admin/ads", { credentials: "include" });
+      if (!r.ok) return [];
+      const d = await r.json();
+      return Array.isArray(d) ? d : [];
+    },
+  });
+
+  const { mutate: save, isPending: saving } = useMutation({
+    mutationFn: () => editId
+      ? apiRequest("PATCH", `/api/admin/ads/${editId}`, form)
+      : apiRequest("POST", "/api/admin/ads", form),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["/api/admin/ads"] });
+      qc.invalidateQueries({ queryKey: ["/api/ads"] });
+      toast({ title: editId ? "Iklan diperbarui!" : "Iklan ditambahkan!" });
+      setForm({ ...BLANK_AD });
+      setEditId(null);
+      setShowForm(false);
+    },
+    onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
+  });
+
+  const { mutate: remove, isPending: removing } = useMutation({
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/admin/ads/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["/api/admin/ads"] });
+      qc.invalidateQueries({ queryKey: ["/api/ads"] });
+      toast({ title: "Iklan dihapus!" });
+    },
+    onError: (e: any) => toast({ title: "Gagal hapus", description: e.message, variant: "destructive" }),
+  });
+
+  const { mutate: toggle } = useMutation({
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => apiRequest("PATCH", `/api/admin/ads/${id}`, { isActive }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["/api/admin/ads"] });
+      qc.invalidateQueries({ queryKey: ["/api/ads"] });
+    },
+  });
+
+  function startEdit(ad: Ad) {
+    setForm({ type: ad.type, title: ad.title || "", description: ad.description || "", imageUrl: ad.imageUrl || "", linkUrl: ad.linkUrl || "", isActive: ad.isActive, position: ad.position, bgColor: ad.bgColor, textColor: ad.textColor, sortOrder: ad.sortOrder });
+    setEditId(ad.id);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function cancelEdit() {
+    setForm({ ...BLANK_AD });
+    setEditId(null);
+    setShowForm(false);
+  }
+
+  const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+    <div className="flex flex-col gap-1">
+      <label className="text-xs font-black uppercase tracking-widest">{label}</label>
+      {children}
+    </div>
+  );
+
+  const inputCls = "border-2 border-black rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none bg-white w-full";
+
+  if (isLoading) return <LoadingBox />;
+
+  return (
+    <div className="flex flex-col gap-5">
+      {!showForm && (
+        <button
+          onClick={() => setShowForm(true)}
+          data-testid="button-add-ad"
+          className="flex items-center gap-2 px-5 py-3 bg-[#FFE34D] border-3 border-black rounded-xl font-black text-sm shadow-[5px_5px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] transition-all w-fit"
+        >
+          <Plus className="w-4 h-4" /> Tambah Iklan Baru
+        </button>
+      )}
+
+      {showForm && (
+        <div className="border-4 border-black rounded-xl bg-white p-6 shadow-[6px_6px_0px_black]">
+          <h2 className="font-black text-lg mb-5 flex items-center gap-2">
+            <Megaphone className="w-5 h-5" />
+            {editId ? "Edit Iklan" : "Tambah Iklan Baru"}
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <Field label="Tipe">
+              <div className="flex gap-2">
+                {(["text", "image"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setForm({ ...form, type: t })}
+                    className={`flex-1 py-2 border-2 border-black rounded-lg font-bold text-sm transition-all ${form.type === t ? "bg-black text-[#FFE34D]" : "bg-white shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black]"}`}
+                    data-testid={`button-ad-type-${t}`}
+                  >
+                    {t === "text" ? "Teks" : "Gambar"}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Posisi">
+              <div className="flex gap-2">
+                {(["inline", "bottom"] as const).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setForm({ ...form, position: p })}
+                    className={`flex-1 py-2 border-2 border-black rounded-lg font-bold text-sm transition-all ${form.position === p ? "bg-black text-[#FFE34D]" : "bg-white shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black]"}`}
+                    data-testid={`button-ad-pos-${p}`}
+                  >
+                    {p === "inline" ? "Di antara Quote" : "Bawah Halaman"}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Judul">
+              <input type="text" value={form.title || ""} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Judul iklan..." className={inputCls} data-testid="input-ad-title" />
+            </Field>
+
+            <Field label="Link URL">
+              <input type="url" value={form.linkUrl || ""} onChange={(e) => setForm({ ...form, linkUrl: e.target.value })} placeholder="https://..." className={inputCls} data-testid="input-ad-link" />
+            </Field>
+
+            {form.type === "image" && (
+              <Field label="URL Gambar">
+                <input type="url" value={form.imageUrl || ""} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://..." className={inputCls} data-testid="input-ad-image" />
+              </Field>
+            )}
+
+            <Field label="Urutan (sort)">
+              <input type="number" value={form.sortOrder ?? 0} onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })} className={inputCls} data-testid="input-ad-sort" />
+            </Field>
+          </div>
+
+          <Field label="Deskripsi">
+            <textarea rows={2} value={form.description || ""} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Deskripsi singkat iklan..." className={`${inputCls} resize-none`} data-testid="input-ad-desc" />
+          </Field>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label className="text-xs font-black uppercase tracking-widest block mb-2">Warna Background</label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {COLOR_PRESETS.map((p) => (
+                  <button
+                    key={p.color}
+                    type="button"
+                    onClick={() => setForm({ ...form, bgColor: p.color })}
+                    title={p.label}
+                    className={`w-7 h-7 rounded-md border-2 transition-all ${form.bgColor === p.color ? "border-black scale-110 shadow-[2px_2px_0px_black]" : "border-gray-300"}`}
+                    style={{ backgroundColor: p.color }}
+                    data-testid={`button-ad-bg-${p.label.toLowerCase()}`}
+                  />
+                ))}
+              </div>
+              <div className="flex gap-2 items-center">
+                <input type="color" value={form.bgColor || "#78C1FF"} onChange={(e) => setForm({ ...form, bgColor: e.target.value })} className="w-10 h-10 border-2 border-black rounded-md cursor-pointer" data-testid="input-ad-bg-color" />
+                <input type="text" value={form.bgColor || ""} onChange={(e) => setForm({ ...form, bgColor: e.target.value })} className="border-2 border-black rounded-lg px-3 py-2 text-sm font-mono w-full" data-testid="input-ad-bg-hex" />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-black uppercase tracking-widest block mb-2">Warna Teks</label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {[{ color: "#000000", label: "Hitam" }, { color: "#FFFFFF", label: "Putih" }, { color: "#1a1a1a", label: "Gelap" }].map((p) => (
+                  <button
+                    key={p.color}
+                    type="button"
+                    onClick={() => setForm({ ...form, textColor: p.color })}
+                    title={p.label}
+                    className={`w-7 h-7 rounded-md border-2 transition-all ${form.textColor === p.color ? "border-yellow-400 scale-110" : "border-gray-300"}`}
+                    style={{ backgroundColor: p.color }}
+                    data-testid={`button-ad-text-${p.label.toLowerCase()}`}
+                  />
+                ))}
+              </div>
+              <div className="flex gap-2 items-center">
+                <input type="color" value={form.textColor || "#000000"} onChange={(e) => setForm({ ...form, textColor: e.target.value })} className="w-10 h-10 border-2 border-black rounded-md cursor-pointer" data-testid="input-ad-text-color" />
+                <input type="text" value={form.textColor || ""} onChange={(e) => setForm({ ...form, textColor: e.target.value })} className="border-2 border-black rounded-lg px-3 py-2 text-sm font-mono w-full" data-testid="input-ad-text-hex" />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 p-4 border-2 border-dashed border-black rounded-xl" style={{ backgroundColor: form.bgColor }}>
+            <p className="text-xs font-black uppercase tracking-widest mb-2" style={{ color: form.textColor || "#000" }}>Preview</p>
+            {form.type === "image" && form.imageUrl && (
+              <img src={form.imageUrl} alt="preview" className="w-full max-h-32 object-cover rounded-lg mb-2 border-2 border-black" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+            )}
+            {form.title && <p className="font-black text-sm" style={{ color: form.textColor || "#000" }}>{form.title}</p>}
+            {form.description && <p className="text-xs font-semibold mt-1 opacity-80" style={{ color: form.textColor || "#000" }}>{form.description}</p>}
+            {form.linkUrl && (
+              <span className="mt-2 inline-flex items-center gap-1 text-xs font-black border-2 border-black px-3 py-1 rounded-md bg-white shadow-[2px_2px_0px_black]">
+                <ExternalLink className="w-3 h-3" /> Kunjungi
+              </span>
+            )}
+          </div>
+
+          <div className="flex gap-3 mt-5">
+            <button
+              onClick={() => save()}
+              disabled={saving}
+              data-testid="button-save-ad"
+              className="flex-1 py-3 bg-[#A8FF78] border-3 border-black rounded-xl font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+            >
+              {saving ? "Menyimpan..." : (editId ? "Perbarui Iklan" : "Simpan Iklan")}
+            </button>
+            <button onClick={cancelEdit} className="px-5 py-3 bg-white border-3 border-black rounded-xl font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="button-cancel-ad">
+              Batal
+            </button>
+          </div>
+        </div>
+      )}
+
+      {allAds.length === 0 && !showForm && <EmptyBox msg="Belum ada iklan. Tambahkan iklan pertama!" />}
+
+      <div className="flex flex-col gap-4">
+        {allAds.map((ad) => (
+          <div key={ad.id} className={`border-4 border-black rounded-xl shadow-[6px_6px_0px_black] overflow-hidden ${!ad.isActive ? "opacity-60" : ""}`} style={{ backgroundColor: ad.bgColor }} data-testid={`card-ad-${ad.id}`}>
+            <div className="flex items-center justify-between px-4 py-2 border-b-2 border-black bg-black/10">
+              <div className="flex items-center gap-2">
+                <Megaphone className="w-3.5 h-3.5" style={{ color: ad.textColor }} />
+                <span className="text-xs font-black uppercase tracking-widest" style={{ color: ad.textColor }}>{ad.type === "image" ? "Gambar" : "Teks"} · {ad.position === "inline" ? "Di antara quote" : "Bawah halaman"}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold opacity-70" style={{ color: ad.textColor }}>{ad.clickCount} klik</span>
+                <span className={`text-xs font-black px-2 py-0.5 rounded-md border-2 border-black ${ad.isActive ? "bg-[#A8FF78]" : "bg-gray-200"}`}>{ad.isActive ? "Aktif" : "Nonaktif"}</span>
+              </div>
+            </div>
+            <div className="p-4 flex items-start gap-4">
+              {ad.type === "image" && ad.imageUrl && (
+                <img src={ad.imageUrl} alt="ad" className="w-20 h-16 object-cover rounded-lg border-2 border-black flex-shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              )}
+              <div className="flex-1 min-w-0">
+                {ad.title && <p className="font-black text-sm truncate" style={{ color: ad.textColor }}>{ad.title}</p>}
+                {ad.description && <p className="text-xs opacity-75 mt-0.5 line-clamp-2" style={{ color: ad.textColor }}>{ad.description}</p>}
+                {ad.linkUrl && <p className="text-xs font-mono mt-1 opacity-60 truncate" style={{ color: ad.textColor }}>{ad.linkUrl}</p>}
+              </div>
+              <div className="flex flex-col gap-2 flex-shrink-0">
+                <button onClick={() => toggle({ id: ad.id, isActive: !ad.isActive })} className="px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-white shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all whitespace-nowrap" data-testid={`button-toggle-ad-${ad.id}`}>
+                  {ad.isActive ? "Nonaktifkan" : "Aktifkan"}
+                </button>
+                <button onClick={() => startEdit(ad)} className="flex items-center gap-1 px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-[#FFE34D] shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid={`button-edit-ad-${ad.id}`}>
+                  <Pencil className="w-3 h-3" /> Edit
+                </button>
+                <button onClick={() => { if (confirm("Hapus iklan ini?")) remove(ad.id); }} disabled={removing} className="flex items-center gap-1 px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-[#FF7878] shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all disabled:opacity-50" data-testid={`button-delete-ad-${ad.id}`}>
+                  <Trash2 className="w-3 h-3" /> Hapus
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
