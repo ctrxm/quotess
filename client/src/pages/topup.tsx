@@ -72,7 +72,7 @@ export default function Topup() {
         </button>
       </Link>
 
-      <div className="border-4 border-black rounded-xl bg-[#FFE34D] p-5 shadow-[8px_8px_0px_black] mb-6">
+      <div className="border-4 border-black rounded-xl bg-[#FFF3B0] p-5 shadow-[8px_8px_0px_black] mb-6">
         <h1 className="text-2xl font-black mb-1 flex items-center gap-2">🌸 Top Up Bunga</h1>
         <p className="font-semibold text-sm text-black/70">Beli bunga untuk dikirim sebagai hadiah ke penulis quote favorit kamu</p>
         <div className="flex items-center gap-2 mt-2 bg-white/70 border-2 border-black rounded-lg px-3 py-2 w-fit">
@@ -98,7 +98,7 @@ export default function Topup() {
                 <button
                   key={pkg.id}
                   onClick={() => setSelectedPkg(pkg.id)}
-                  className={`flex flex-col gap-1.5 p-4 border-3 border-black rounded-xl text-left transition-all ${selectedPkg === pkg.id ? "bg-[#FFE34D] shadow-[3px_3px_0px_black] translate-x-[3px] translate-y-[3px]" : "bg-white shadow-[6px_6px_0px_black] hover:shadow-[3px_3px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px]"}`}
+                  className={`flex flex-col gap-1.5 p-4 border-3 border-black rounded-xl text-left transition-all ${selectedPkg === pkg.id ? "bg-[#FFF3B0] shadow-[3px_3px_0px_black] translate-x-[3px] translate-y-[3px]" : "bg-white shadow-[6px_6px_0px_black] hover:shadow-[3px_3px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px]"}`}
                   data-testid={`button-pkg-${pkg.id}`}
                 >
                   <span className="text-3xl">{pkg.icon}</span>
@@ -114,7 +114,7 @@ export default function Topup() {
           <button
             onClick={() => { if (!selectedPkg) { toast({ title: "Pilih paket dulu" }); return; } setStep("confirm"); }}
             disabled={!selectedPkg}
-            className="w-full py-3 bg-black text-[#FFE34D] border-3 border-black rounded-lg font-black shadow-[5px_5px_0px_#FFE34D] hover:shadow-[2px_2px_0px_#FFE34D] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-50 text-sm"
+            className="w-full py-3 bg-black text-[#FFF3B0] border-3 border-black rounded-lg font-black shadow-[5px_5px_0px_#FFF3B0] hover:shadow-[2px_2px_0px_#FFF3B0] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-50 text-sm"
             data-testid="button-topup-next"
           >
             Lanjutkan ke Pembayaran →
@@ -125,7 +125,7 @@ export default function Topup() {
       {step === "confirm" && selected && (
         <div className="border-4 border-black rounded-xl bg-white p-6 shadow-[8px_8px_0px_black]">
           <h2 className="font-black text-lg mb-4">Konfirmasi Top Up</h2>
-          <div className="bg-[#FFE34D] border-2 border-black rounded-lg p-4 mb-4">
+          <div className="bg-[#FFF3B0] border-2 border-black rounded-lg p-4 mb-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-2xl">{selected.icon}</span>
               <span className="font-black text-lg">{selected.name}</span>
@@ -162,7 +162,7 @@ export default function Topup() {
             <button onClick={() => setStep("select")} className="flex-1 py-2.5 border-2 border-black rounded-lg font-bold text-sm bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid="button-topup-back">
               ← Ubah
             </button>
-            <button onClick={() => createRequest(selectedPkg)} disabled={isPending || !hasBankInfo} className="flex-2 px-6 py-2.5 bg-[#FFE34D] border-2 border-black rounded-lg font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50" data-testid="button-topup-confirm">
+            <button onClick={() => createRequest(selectedPkg)} disabled={isPending || !hasBankInfo} className="flex-2 px-6 py-2.5 bg-[#FFF3B0] border-2 border-black rounded-lg font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50" data-testid="button-topup-confirm">
               {isPending ? "Memproses..." : "Sudah Transfer ✓"}
             </button>
           </div>

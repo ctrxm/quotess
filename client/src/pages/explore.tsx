@@ -69,7 +69,7 @@ export default function Explore() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-[#78C1FF] border-3 border-black rounded-lg shadow-[4px_4px_0px_black] flex items-center justify-center">
+          <div className="w-10 h-10 bg-[#B8DBFF] border-3 border-black rounded-lg shadow-[4px_4px_0px_black] flex items-center justify-center">
             <Compass className="w-5 h-5 text-black" />
           </div>
           <h1 className="text-3xl font-black">Jelajahi Quote</h1>
@@ -86,7 +86,7 @@ export default function Explore() {
           <button
             onClick={() => handleMood("")}
             className={`px-4 py-2 font-bold text-sm border-2 border-black rounded-md transition-all duration-100 ${
-              activeMood === "" ? "bg-black text-white shadow-[2px_2px_0px_#FFE34D]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"
+              activeMood === "" ? "bg-black text-white shadow-[2px_2px_0px_#FFF3B0]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"
             }`}
             data-testid="button-explore-mood-all"
           >
@@ -125,7 +125,7 @@ export default function Explore() {
                 onClick={() => handleTag(tag.slug)}
                 className={`px-3 py-1.5 font-bold text-xs border-2 border-black rounded-md transition-all duration-100 ${
                   activeTag === tag.slug
-                    ? "bg-black text-white shadow-[2px_2px_0px_#FFE34D]"
+                    ? "bg-black text-white shadow-[2px_2px_0px_#FFF3B0]"
                     : "bg-white shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[1px] hover:translate-y-[1px]"
                 }`}
                 data-testid={`button-tag-${tag.slug}`}
@@ -179,7 +179,7 @@ export default function Explore() {
               key={p}
               onClick={() => setPage(p)}
               className={`w-10 h-10 font-black text-sm border-2 border-black rounded-md transition-all ${
-                p === page ? "bg-black text-white shadow-[2px_2px_0px_#FFE34D]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"
+                p === page ? "bg-black text-white shadow-[2px_2px_0px_#FFF3B0]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"
               }`}
               data-testid={`button-page-${p}`}
             >

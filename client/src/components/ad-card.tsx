@@ -23,7 +23,7 @@ export default function AdCard({ ad }: AdCardProps) {
     <div
       data-testid={`ad-card-${ad.id}`}
       className="border-4 border-black rounded-xl shadow-[6px_6px_0px_black] overflow-hidden"
-      style={{ backgroundColor: ad.bgColor || "#78C1FF" }}
+      style={{ backgroundColor: ad.bgColor || "#B8DBFF" }}
     >
       <div className="flex items-center gap-2 px-3 py-1.5 border-b-2 border-black bg-black/10">
         <Megaphone className="w-3 h-3" style={{ color: ad.textColor || "#000" }} />

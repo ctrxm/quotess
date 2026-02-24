@@ -73,14 +73,14 @@ export default function Submit() {
   if (!user) {
     return (
       <div className="max-w-lg mx-auto px-4 py-16 text-center">
-        <div className="border-4 border-black rounded-xl bg-[#FFE34D] p-10 shadow-[8px_8px_0px_black]">
+        <div className="border-4 border-black rounded-xl bg-[#FFF3B0] p-10 shadow-[8px_8px_0px_black]">
           <LogIn className="w-16 h-16 mx-auto mb-4" />
           <h2 className="text-2xl font-black mb-2">Login Diperlukan</h2>
           <p className="font-semibold text-black/70 mb-6">
             Kamu harus login atau daftar dulu untuk bisa submit quote.
           </p>
           <Link href="/auth">
-            <button className="px-8 py-3 bg-black text-[#FFE34D] font-black border-3 border-black rounded-lg shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="button-login-to-submit">
+            <button className="px-8 py-3 bg-black text-[#FFF3B0] font-black border-3 border-black rounded-lg shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="button-login-to-submit">
               Login / Daftar
             </button>
           </Link>
@@ -92,7 +92,7 @@ export default function Submit() {
   if (submitted) {
     return (
       <div className="max-w-lg mx-auto px-4 py-16 text-center">
-        <div className="border-4 border-black rounded-xl bg-[#A8FF78] p-10 shadow-[8px_8px_0px_black]">
+        <div className="border-4 border-black rounded-xl bg-[#C1F0C1] p-10 shadow-[8px_8px_0px_black]">
           <CheckCircle className="w-16 h-16 mx-auto mb-4 text-black" />
           <h2 className="text-2xl font-black mb-2">Quote Berhasil Dikirim!</h2>
           <p className="font-semibold text-black/70 mb-6">
@@ -101,7 +101,7 @@ export default function Submit() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => setSubmitted(false)}
-              className="px-6 py-3 bg-black text-[#A8FF78] font-black border-3 border-black rounded-lg shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+              className="px-6 py-3 bg-black text-[#C1F0C1] font-black border-3 border-black rounded-lg shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
               data-testid="button-submit-another"
             >
               Submit Lagi
@@ -119,7 +119,7 @@ export default function Submit() {
     <div className="max-w-lg mx-auto px-4 py-8">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-[#A8FF78] border-3 border-black rounded-lg shadow-[4px_4px_0px_black] flex items-center justify-center">
+          <div className="w-10 h-10 bg-[#C1F0C1] border-3 border-black rounded-lg shadow-[4px_4px_0px_black] flex items-center justify-center">
             <Send className="w-5 h-5 text-black" />
           </div>
           <h1 className="text-3xl font-black">Submit Quote</h1>
@@ -138,7 +138,7 @@ export default function Submit() {
                   onClick={() => { form.setValue("isAnonymous", true); form.setValue("author", ""); }}
                   className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 border-2 border-black rounded-lg font-bold text-sm transition-all ${
                     isAnonymous
-                      ? "bg-black text-white shadow-[2px_2px_0px_#FFE34D]"
+                      ? "bg-black text-white shadow-[2px_2px_0px_#FFF3B0]"
                       : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"
                   }`}
                   data-testid="button-post-anonymous"
@@ -151,7 +151,7 @@ export default function Submit() {
                   onClick={() => form.setValue("isAnonymous", false)}
                   className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 border-2 border-black rounded-lg font-bold text-sm transition-all ${
                     !isAnonymous
-                      ? "bg-black text-white shadow-[2px_2px_0px_#FFE34D]"
+                      ? "bg-black text-white shadow-[2px_2px_0px_#FFF3B0]"
                       : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"
                   }`}
                   data-testid="button-post-username"
@@ -263,7 +263,7 @@ export default function Submit() {
               {tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {tags.map((t) => (
-                    <span key={t} className="inline-flex items-center gap-1 px-3 py-1 bg-[#FFE34D] border-2 border-black rounded-md font-bold text-xs shadow-[2px_2px_0px_black]">
+                    <span key={t} className="inline-flex items-center gap-1 px-3 py-1 bg-[#FFF3B0] border-2 border-black rounded-md font-bold text-xs shadow-[2px_2px_0px_black]">
                       #{t}
                       <button type="button" onClick={() => removeTag(t)} data-testid={`button-remove-tag-${t}`}>
                         <X className="w-3 h-3" />
@@ -281,7 +281,7 @@ export default function Submit() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full py-3 bg-[#FFE34D] text-black font-black border-3 border-black rounded-lg shadow-[5px_5px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-60 disabled:cursor-not-allowed text-sm uppercase tracking-wide"
+                className="w-full py-3 bg-[#FFF3B0] text-black font-black border-3 border-black rounded-lg shadow-[5px_5px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-60 disabled:cursor-not-allowed text-sm uppercase tracking-wide"
                 data-testid="button-submit-quote"
               >
                 {isPending ? "Mengirim..." : "Kirim Quote"}

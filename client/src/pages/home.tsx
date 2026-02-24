@@ -73,7 +73,7 @@ export default function Home() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <section className="mb-10">
-        <div className="border-4 border-black bg-[#FFE34D] rounded-xl p-6 md:p-10 shadow-[8px_8px_0px_black] relative overflow-hidden">
+        <div className="border-4 border-black bg-[#FFF3B0] rounded-xl p-6 md:p-10 shadow-[8px_8px_0px_black] relative overflow-hidden">
           <div className="absolute top-4 right-4 opacity-20 text-8xl font-black select-none">"</div>
           <div className="flex items-center gap-2 mb-3">
             <Zap className="w-5 h-5 fill-black" />
@@ -88,7 +88,7 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Link href="/explore">
-              <button className="px-6 py-3 bg-black text-[#FFE34D] font-black border-3 border-black rounded-lg shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm" data-testid="button-explore-hero">
+              <button className="px-6 py-3 bg-black text-[#FFF3B0] font-black border-3 border-black rounded-lg shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm" data-testid="button-explore-hero">
                 <TrendingUp className="w-4 h-4 inline mr-1" />
                 Jelajahi Semua
               </button>
@@ -120,7 +120,7 @@ export default function Home() {
           <button
             onClick={() => setActiveMood("")}
             className={`px-4 py-2 font-bold text-sm border-2 border-black rounded-md transition-all duration-100 ${
-              activeMood === "" ? "bg-black text-white shadow-[2px_2px_0px_#FFE34D]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"
+              activeMood === "" ? "bg-black text-white shadow-[2px_2px_0px_#FFF3B0]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"
             }`}
             data-testid="button-mood-all"
           >
@@ -131,7 +131,7 @@ export default function Home() {
               key={mood}
               onClick={() => setActiveMood(mood === activeMood ? "" : mood)}
               className={`px-4 py-2 font-bold text-sm border-2 border-black rounded-md transition-all duration-100 ${
-                activeMood === mood ? "bg-black text-white shadow-[2px_2px_0px_#FFE34D]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"
+                activeMood === mood ? "bg-black text-white shadow-[2px_2px_0px_#FFF3B0]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"
               }`}
               data-testid={`button-mood-${mood}`}
             >
@@ -177,7 +177,7 @@ export default function Home() {
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <span className="font-black text-sm border-2 border-black px-4 py-2 bg-[#FFE34D] rounded-md shadow-[3px_3px_0px_black]">
+          <span className="font-black text-sm border-2 border-black px-4 py-2 bg-[#FFF3B0] rounded-md shadow-[3px_3px_0px_black]">
             {page} / {totalPages}
           </span>
           <button

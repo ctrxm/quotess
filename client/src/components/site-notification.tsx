@@ -19,7 +19,7 @@ export default function SiteNotification() {
 
   if (!settings.notificationEnabled || !settings.notificationMessage || dismissed) return null;
 
-  const bg = settings.notificationBg || "#FFE34D";
+  const bg = settings.notificationBg || "#FFF3B0";
   const textColor = settings.notificationTextColor || "#000000";
 
   function dismiss() {

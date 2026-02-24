@@ -15,8 +15,8 @@ interface QuoteCardProps {
 }
 
 const CARD_ACCENT_COLORS = [
-  "bg-[#FFE34D]", "bg-[#A8FF78]", "bg-[#78C1FF]",
-  "bg-[#FF9F78]", "bg-[#E478FF]", "bg-[#FF7878]",
+  "bg-[#FFF3B0]", "bg-[#C1F0C1]", "bg-[#B8DBFF]",
+  "bg-[#FFD1A9]", "bg-[#DDB8FF]", "bg-[#FFB3B3]",
 ];
 
 function getCardColor(id: string): string {

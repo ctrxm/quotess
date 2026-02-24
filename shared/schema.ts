@@ -193,7 +193,7 @@ export const ads = pgTable("ads", {
   linkUrl: text("link_url"),
   isActive: boolean("is_active").notNull().default(true),
   position: text("position").notNull().default("inline"), // "inline" | "bottom"
-  bgColor: text("bg_color").notNull().default("#78C1FF"),
+  bgColor: text("bg_color").notNull().default("#B8DBFF"),
   textColor: text("text_color").notNull().default("#000000"),
   clickCount: integer("click_count").notNull().default(0),
   sortOrder: integer("sort_order").notNull().default(0),

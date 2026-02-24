@@ -27,7 +27,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     maintenanceMode: false, betaMode: false, betaAccessType: "open",
     siteName: "KataViral", siteDescription: "Quote Indonesia yang Bikin Viral",
     notificationEnabled: false, notificationType: "banner",
-    notificationMessage: "", notificationBg: "#FFE34D", notificationTextColor: "#000000",
+    notificationMessage: "", notificationBg: "#FFF3B0", notificationTextColor: "#000000",
   };
 
   return <SettingsContext.Provider value={settings}>{children}</SettingsContext.Provider>;

@@ -23,7 +23,7 @@ export default function QuoteDetail() {
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="border-4 border-black rounded-xl shadow-[8px_8px_0px_black] bg-[#FFE34D] p-8 animate-pulse h-64" />
+        <div className="border-4 border-black rounded-xl shadow-[8px_8px_0px_black] bg-[#FFF3B0] p-8 animate-pulse h-64" />
       </div>
     );
   }
@@ -35,7 +35,7 @@ export default function QuoteDetail() {
           <h2 className="text-2xl font-black mb-2">Quote tidak ditemukan</h2>
           <p className="text-gray-500 font-semibold mb-4">Mungkin sudah dihapus atau ID salah</p>
           <Link href="/">
-            <button className="px-6 py-2 bg-black text-white font-black border-2 border-black rounded-lg shadow-[4px_4px_0px_#FFE34D]">
+            <button className="px-6 py-2 bg-black text-white font-black border-2 border-black rounded-lg shadow-[4px_4px_0px_#FFF3B0]">
               Kembali ke Beranda
             </button>
           </Link>
@@ -74,7 +74,7 @@ export default function QuoteDetail() {
             href={shareUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-2 border-2 border-black rounded-md bg-[#FFE34D] hover:bg-[#FFD700] font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-1 whitespace-nowrap"
+            className="px-3 py-2 border-2 border-black rounded-md bg-[#FFF3B0] hover:bg-[#FFE68A] font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-1 whitespace-nowrap"
             data-testid="link-open-new"
           >
             <ExternalLink className="w-4 h-4" />

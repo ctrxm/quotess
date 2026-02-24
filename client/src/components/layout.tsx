@@ -30,12 +30,12 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFDF0] flex flex-col" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-      <header className="sticky top-0 z-50 bg-[#FFFDF0] border-b-4 border-black">
+    <div className="min-h-screen bg-[#FFF8F0] flex flex-col" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+      <header className="sticky top-0 z-50 bg-[#FFF8F0] border-b-4 border-black">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <Link href="/" data-testid="link-logo">
             <div className="flex items-center gap-2 cursor-pointer">
-              <div className="w-9 h-9 bg-[#FFE34D] border-3 border-black rounded-md flex items-center justify-center shadow-[3px_3px_0px_black]">
+              <div className="w-9 h-9 bg-[#FFF3B0] border-3 border-black rounded-md flex items-center justify-center shadow-[3px_3px_0px_black]">
                 <Feather className="w-5 h-5 text-black" />
               </div>
               <span className="text-xl font-black tracking-tight text-black hidden sm:block">
@@ -47,7 +47,7 @@ export default function Layout({ children }: LayoutProps) {
           <nav className="hidden md:flex items-center gap-2">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href} data-testid={`link-nav-${link.label.toLowerCase()}`}>
-                <span className={`px-4 py-2 font-bold text-sm border-2 border-black rounded-md cursor-pointer transition-all duration-100 inline-block ${isActive(link.href) ? "bg-black text-[#FFE34D] shadow-[3px_3px_0px_#FFE34D]" : "bg-white text-black shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"}`}>
+                <span className={`px-4 py-2 font-bold text-sm border-2 border-black rounded-md cursor-pointer transition-all duration-100 inline-block ${isActive(link.href) ? "bg-black text-[#FFF3B0] shadow-[3px_3px_0px_#FFF3B0]" : "bg-white text-black shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"}`}>
                   {link.label}
                 </span>
               </Link>
@@ -62,7 +62,7 @@ export default function Layout({ children }: LayoutProps) {
                   className="flex items-center gap-2 px-3 py-2 border-2 border-black rounded-md bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold text-sm"
                   data-testid="button-user-menu"
                 >
-                  <div className="w-6 h-6 bg-[#FFE34D] border-2 border-black rounded-full flex items-center justify-center">
+                  <div className="w-6 h-6 bg-[#FFF3B0] border-2 border-black rounded-full flex items-center justify-center">
                     <User className="w-3 h-3" />
                   </div>
                   <span className="max-w-[100px] truncate">{user.username}</span>
@@ -70,7 +70,7 @@ export default function Layout({ children }: LayoutProps) {
                 </button>
                 {userMenuOpen && (
                   <div className="absolute right-0 top-full mt-2 w-52 bg-white border-3 border-black rounded-xl shadow-[6px_6px_0px_black] overflow-hidden z-50">
-                    <div className="p-3 border-b-2 border-black bg-[#FFE34D]">
+                    <div className="p-3 border-b-2 border-black bg-[#FFF3B0]">
                       <p className="font-black text-sm">{user.username}</p>
                       <p className="text-xs text-black/60 font-medium truncate">{user.email}</p>
                       {user.isGiveEnabled && (
@@ -112,7 +112,7 @@ export default function Layout({ children }: LayoutProps) {
               </div>
             ) : (
               <Link href="/auth">
-                <span className="px-4 py-2 font-bold text-sm border-2 border-black rounded-md cursor-pointer bg-black text-[#FFE34D] shadow-[3px_3px_0px_#FFE34D] hover:shadow-[1px_1px_0px_#FFE34D] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="link-login">
+                <span className="px-4 py-2 font-bold text-sm border-2 border-black rounded-md cursor-pointer bg-black text-[#FFF3B0] shadow-[3px_3px_0px_#FFF3B0] hover:shadow-[1px_1px_0px_#FFF3B0] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="link-login">
                   Masuk
                 </span>
               </Link>
@@ -125,10 +125,10 @@ export default function Layout({ children }: LayoutProps) {
         </div>
 
         {menuOpen && (
-          <div className="md:hidden border-t-4 border-black bg-[#FFFDF0] px-4 py-3 flex flex-col gap-2">
+          <div className="md:hidden border-t-4 border-black bg-[#FFF8F0] px-4 py-3 flex flex-col gap-2">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)}>
-                <span className={`block px-4 py-2 font-bold text-sm border-2 border-black rounded-md cursor-pointer ${isActive(link.href) ? "bg-black text-[#FFE34D]" : "bg-white text-black"}`}>
+                <span className={`block px-4 py-2 font-bold text-sm border-2 border-black rounded-md cursor-pointer ${isActive(link.href) ? "bg-black text-[#FFF3B0]" : "bg-white text-black"}`}>
                   {link.label}
                 </span>
               </Link>
@@ -157,7 +157,7 @@ export default function Layout({ children }: LayoutProps) {
               </>
             ) : (
               <Link href="/auth" onClick={() => setMenuOpen(false)}>
-                <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-black text-[#FFE34D] text-center">Masuk / Daftar</span>
+                <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-black text-[#FFF3B0] text-center">Masuk / Daftar</span>
               </Link>
             )}
           </div>
@@ -168,14 +168,14 @@ export default function Layout({ children }: LayoutProps) {
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t-4 border-black bg-black text-[#FFE34D] py-4 mt-8">
+      <footer className="border-t-4 border-black bg-black text-[#FFF3B0] py-4 mt-8">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2 font-bold text-sm">
             <Feather className="w-4 h-4" />
             <span>{settings.siteName}</span>
           </div>
           <p className="text-xs font-medium flex items-center gap-1">
-            Made for sharing quotes <Heart className="w-3 h-3 fill-[#FFE34D]" /> Indonesia
+            Made for sharing quotes <Heart className="w-3 h-3 fill-[#FFF3B0]" /> Indonesia
           </p>
           <div className="flex gap-3">
             <Link href="/waitlist"><span className="text-xs font-bold underline cursor-pointer">Waitlist</span></Link>
