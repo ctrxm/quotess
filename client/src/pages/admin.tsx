@@ -1,181 +1,405 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Check, X, Clock } from "lucide-react";
-import type { QuoteWithTags } from "@shared/schema";
+import { Shield, Check, X, Clock, Users, Settings, Flower, Wallet, ListOrdered, Lock, Mail, Toggle, ArrowRight } from "lucide-react";
+import type { QuoteWithTags, User, Waitlist, GiftType, WithdrawalRequest, WithdrawalMethod } from "@shared/schema";
 import { MOOD_LABELS, MOOD_COLORS } from "@shared/schema";
 import type { Mood } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
+import { Link, useLocation } from "wouter";
+
+type Tab = "quotes" | "users" | "waitlist" | "gifts" | "withdrawals" | "settings";
 
 export default function Admin() {
-  const [key, setKey] = useState("");
-  const [enteredKey, setEnteredKey] = useState("");
-  const [isAuth, setIsAuth] = useState(false);
+  const { user, isLoading: authLoading } = useAuth();
+  const [, navigate] = useLocation();
+  const [tab, setTab] = useState<Tab>("quotes");
   const { toast } = useToast();
   const qc = useQueryClient();
 
-  const { data: pending, isLoading, refetch } = useQuery<QuoteWithTags[]>({
-    queryKey: ["/api/admin/quotes", enteredKey],
-    queryFn: () => fetch(`/api/admin/quotes?key=${encodeURIComponent(enteredKey)}`).then(async (r) => {
-      if (r.status === 403) throw new Error("forbidden");
-      return r.json();
-    }),
-    enabled: isAuth,
-    retry: false,
-  });
-
-  const { mutate: updateStatus, isPending: updating } = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) =>
-      apiRequest("PATCH", `/api/admin/quotes/${id}?key=${encodeURIComponent(enteredKey)}`, { status }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["/api/admin/quotes", enteredKey] });
-      qc.invalidateQueries({ queryKey: ["/api/quotes"] });
-      toast({ title: "Status diperbarui!" });
-    },
-    onError: () => toast({ title: "Gagal", variant: "destructive" }),
-  });
-
-  const handleLogin = () => {
-    setEnteredKey(key);
-    setIsAuth(true);
-  };
-
-  if (!isAuth) {
+  if (authLoading) return <div className="max-w-5xl mx-auto px-4 py-8"><div className="h-48 border-4 border-black rounded-xl bg-gray-100 animate-pulse shadow-[6px_6px_0px_black]" /></div>;
+  if (!user || user.role !== "admin") {
     return (
-      <div className="max-w-sm mx-auto px-4 py-16 text-center">
-        <div className="border-4 border-black rounded-xl bg-white p-8 shadow-[8px_8px_0px_black]">
-          <div className="w-14 h-14 bg-black rounded-xl flex items-center justify-center mx-auto mb-4 shadow-[4px_4px_0px_#FFE34D]">
-            <Shield className="w-7 h-7 text-[#FFE34D]" />
-          </div>
-          <h1 className="text-2xl font-black mb-1">Admin Panel</h1>
-          <p className="text-gray-500 font-semibold text-sm mb-6">Masukkan admin secret untuk akses</p>
-          <div className="flex flex-col gap-3">
-            <input
-              type="password"
-              placeholder="Admin Secret..."
-              value={key}
-              onChange={(e) => setKey(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              className="w-full px-4 py-2.5 border-2 border-black rounded-lg font-semibold shadow-[3px_3px_0px_black] focus:outline-none text-sm"
-              data-testid="input-admin-key"
-            />
-            <button
-              onClick={handleLogin}
-              className="px-6 py-2.5 bg-black text-[#FFE34D] font-black border-2 border-black rounded-lg shadow-[4px_4px_0px_#FFE34D] hover:shadow-[2px_2px_0px_#FFE34D] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm"
-              data-testid="button-admin-login"
-            >
-              Masuk
-            </button>
-          </div>
-          <p className="text-xs text-gray-400 mt-4 font-medium">
-            Jika ADMIN_SECRET belum dikonfigurasi, biarkan kosong dan tekan Masuk.
-          </p>
+      <div className="max-w-md mx-auto px-4 py-16 text-center">
+        <div className="border-4 border-black rounded-xl bg-[#FFE34D] p-10 shadow-[8px_8px_0px_black]">
+          <Shield className="w-16 h-16 mx-auto mb-4" />
+          <h2 className="text-2xl font-black mb-2">Akses Ditolak</h2>
+          <p className="font-semibold text-black/70 mb-4">Halaman ini hanya untuk admin.</p>
+          {!user && <Link href="/auth"><button className="px-6 py-2 bg-black text-[#FFE34D] font-black border-3 border-black rounded-lg shadow-[4px_4px_0px_#FFE34D]">Login</button></Link>}
         </div>
       </div>
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="grid gap-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="border-4 border-black rounded-xl h-28 bg-gray-100 animate-pulse shadow-[6px_6px_0px_black]" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const TABS: { id: Tab; label: string; icon: typeof Shield }[] = [
+    { id: "quotes", label: "Quote", icon: ListOrdered },
+    { id: "users", label: "Users", icon: Users },
+    { id: "waitlist", label: "Waitlist", icon: Mail },
+    { id: "gifts", label: "Hadiah", icon: Flower },
+    { id: "withdrawals", label: "Tarik Dana", icon: Wallet },
+    { id: "settings", label: "Pengaturan", icon: Settings },
+  ];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-8 flex items-center justify-between flex-wrap gap-4">
+    <div className="max-w-5xl mx-auto px-4 py-6">
+      <div className="border-4 border-black rounded-xl bg-[#FFE34D] p-5 shadow-[8px_8px_0px_black] mb-6 flex items-center gap-3">
+        <Shield className="w-8 h-8" />
         <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center shadow-[4px_4px_0px_#FFE34D]">
-              <Shield className="w-5 h-5 text-[#FFE34D]" />
-            </div>
-            <h1 className="text-3xl font-black">Admin Panel</h1>
-          </div>
-          <p className="text-gray-600 font-semibold text-sm">
-            {pending?.length || 0} quote menunggu moderasi
-          </p>
+          <h1 className="text-2xl font-black">Admin Panel</h1>
+          <p className="text-sm font-semibold text-black/70">KataViral Control Center</p>
         </div>
-        <button
-          onClick={() => { setIsAuth(false); setKey(""); setEnteredKey(""); }}
-          className="px-4 py-2 border-2 border-black rounded-lg font-bold text-sm bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-          data-testid="button-admin-logout"
-        >
-          Keluar
-        </button>
       </div>
 
-      {!pending || pending.length === 0 ? (
-        <div className="border-4 border-black rounded-xl bg-white p-12 text-center shadow-[6px_6px_0px_black]">
-          <div className="w-16 h-16 bg-[#A8FF78] border-3 border-black rounded-xl flex items-center justify-center mx-auto mb-4 shadow-[4px_4px_0px_black]">
-            <Check className="w-8 h-8 text-black" />
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {TABS.map(({ id, label, icon: Icon }) => (
+          <button key={id} onClick={() => setTab(id)} className={`flex items-center gap-1.5 px-4 py-2 font-bold text-sm border-2 border-black rounded-lg transition-all ${tab === id ? "bg-black text-[#FFE34D] shadow-[3px_3px_0px_#FFE34D]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"}`} data-testid={`tab-admin-${id}`}>
+            <Icon className="w-4 h-4" />{label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "quotes" && <QuotesTab qc={qc} toast={toast} />}
+      {tab === "users" && <UsersTab qc={qc} toast={toast} currentUserId={user.id} />}
+      {tab === "waitlist" && <WaitlistTab qc={qc} toast={toast} />}
+      {tab === "gifts" && <GiftsTab qc={qc} toast={toast} />}
+      {tab === "withdrawals" && <WithdrawalsTab qc={qc} toast={toast} />}
+      {tab === "settings" && <SettingsTab qc={qc} toast={toast} />}
+    </div>
+  );
+}
+
+function QuotesTab({ qc, toast }: any) {
+  const { data: quotes = [], isLoading } = useQuery<QuoteWithTags[]>({
+    queryKey: ["/api/admin/quotes"],
+    queryFn: () => fetch("/api/admin/quotes", { credentials: "include" }).then((r) => r.json()),
+  });
+
+  const { mutate: updateStatus, isPending } = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => apiRequest("PATCH", `/api/admin/quotes/${id}`, { status }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["/api/admin/quotes"] }); toast({ title: "Status diperbarui!" }); },
+    onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
+  });
+
+  if (isLoading) return <LoadingBox />;
+  if (!quotes.length) return <EmptyBox msg="Tidak ada quote pending" />;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="font-bold text-sm text-gray-500">{quotes.length} quote menunggu review</p>
+      {quotes.map((q) => {
+        const mc = MOOD_COLORS[q.mood as Mood];
+        return (
+          <div key={q.id} className="border-4 border-black rounded-xl bg-white p-5 shadow-[6px_6px_0px_black]" data-testid={`card-admin-quote-${q.id}`}>
+            <div className="flex items-start gap-3 mb-3">
+              <span className={`text-xs font-black px-2 py-1 rounded border-2 border-black ${mc.bg} ${mc.text}`}>{MOOD_LABELS[q.mood as Mood]}</span>
+              {q.tags.map((t) => <span key={t.id} className="text-xs font-bold px-2 py-1 bg-black text-white rounded">#{t.slug}</span>)}
+            </div>
+            <blockquote className="font-bold text-lg mb-1">&ldquo;{q.text}&rdquo;</blockquote>
+            {q.author && <p className="text-sm text-gray-500 font-semibold mb-3">— {q.author}</p>}
+            <div className="flex gap-2">
+              <button onClick={() => updateStatus({ id: q.id, status: "approved" })} disabled={isPending} className="flex items-center gap-1.5 px-4 py-2 bg-[#A8FF78] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid={`button-approve-${q.id}`}>
+                <Check className="w-4 h-4" /> Setujui
+              </button>
+              <button onClick={() => updateStatus({ id: q.id, status: "rejected" })} disabled={isPending} className="flex items-center gap-1.5 px-4 py-2 bg-[#FF7878] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid={`button-reject-${q.id}`}>
+                <X className="w-4 h-4" /> Tolak
+              </button>
+            </div>
           </div>
-          <h3 className="text-xl font-black mb-2">Semua bersih!</h3>
-          <p className="text-gray-500 font-semibold">Tidak ada quote yang menunggu moderasi</p>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {pending.map((quote) => {
-            const mood = quote.mood as Mood;
-            const moodColor = MOOD_COLORS[mood];
-            return (
-              <div key={quote.id} className="border-4 border-black rounded-xl bg-white p-5 shadow-[6px_6px_0px_black]" data-testid={`card-pending-${quote.id}`}>
-                <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`px-2 py-1 text-xs font-bold border-2 border-black rounded ${moodColor.bg} ${moodColor.text}`}>
-                      {MOOD_LABELS[mood]}
-                    </span>
-                    <span className="flex items-center gap-1 text-xs font-semibold text-yellow-600 bg-yellow-50 border border-yellow-300 px-2 py-1 rounded">
-                      <Clock className="w-3 h-3" />
-                      Pending
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-400 font-mono">{quote.id.slice(0, 8)}...</span>
-                </div>
+        );
+      })}
+    </div>
+  );
+}
 
-                <blockquote className="font-bold text-black text-base mb-2 leading-snug">
-                  &ldquo;{quote.text}&rdquo;
-                </blockquote>
-                {quote.author && <p className="text-sm text-gray-600 font-semibold mb-3">— {quote.author}</p>}
+function UsersTab({ qc, toast, currentUserId }: any) {
+  const { data: users = [], isLoading } = useQuery<User[]>({
+    queryKey: ["/api/admin/users"],
+    queryFn: () => fetch("/api/admin/users", { credentials: "include" }).then((r) => r.json()),
+  });
 
-                {quote.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {quote.tags.map((tag) => (
-                      <span key={tag.id} className="px-2 py-0.5 bg-gray-100 border border-gray-300 text-xs font-bold rounded">#{tag.slug}</span>
-                    ))}
-                  </div>
-                )}
+  const { mutate: update } = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => apiRequest("PATCH", `/api/admin/users/${id}`, data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["/api/admin/users"] }); toast({ title: "User diperbarui!" }); },
+    onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
+  });
 
-                <div className="flex gap-2 pt-3 border-t-2 border-dashed border-gray-200">
-                  <button
-                    onClick={() => updateStatus({ id: quote.id, status: "approved" })}
-                    disabled={updating}
-                    className="flex-1 flex items-center justify-center gap-2 py-2 bg-[#A8FF78] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-60"
-                    data-testid={`button-approve-${quote.id}`}
-                  >
-                    <Check className="w-4 h-4" />
-                    Setujui
-                  </button>
-                  <button
-                    onClick={() => updateStatus({ id: quote.id, status: "rejected" })}
-                    disabled={updating}
-                    className="flex-1 flex items-center justify-center gap-2 py-2 bg-[#FF7878] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-60"
-                    data-testid={`button-reject-${quote.id}`}
-                  >
-                    <X className="w-4 h-4" />
-                    Tolak
-                  </button>
-                </div>
+  if (isLoading) return <LoadingBox />;
+  if (!users.length) return <EmptyBox msg="Tidak ada user" />;
+
+  return (
+    <div className="flex flex-col gap-3">
+      {users.map((u) => (
+        <div key={u.id} className="border-3 border-black rounded-xl bg-white p-4 shadow-[4px_4px_0px_black]" data-testid={`row-user-${u.id}`}>
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="font-black">@{u.username}</p>
+              <p className="text-sm text-gray-500 font-semibold">{u.email}</p>
+              <div className="flex gap-2 mt-1 flex-wrap">
+                <span className={`text-xs px-2 py-0.5 rounded border font-bold ${u.isActive ? "bg-green-100 border-green-400" : "bg-red-100 border-red-400"}`}>{u.isActive ? "Aktif" : "Nonaktif"}</span>
+                <span className={`text-xs px-2 py-0.5 rounded border font-bold ${u.role === "admin" ? "bg-blue-100 border-blue-400" : "bg-gray-100 border-gray-300"}`}>{u.role}</span>
+                {u.isGiveEnabled && <span className="text-xs px-2 py-0.5 rounded border border-pink-400 bg-pink-100 font-bold">Give ✓</span>}
               </div>
-            );
-          })}
+            </div>
+            {u.id !== currentUserId && (
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => update({ id: u.id, data: { isActive: !u.isActive } })} className="px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-white shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[1px] hover:translate-y-[1px] transition-all" data-testid={`button-toggle-user-${u.id}`}>
+                  {u.isActive ? "Nonaktifkan" : "Aktifkan"}
+                </button>
+                <button onClick={() => update({ id: u.id, data: { isGiveEnabled: !u.isGiveEnabled } })} className="px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-pink-50 shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid={`button-toggle-give-${u.id}`}>
+                  {u.isGiveEnabled ? "Non Give" : "Aktifkan Give"}
+                </button>
+              </div>
+            )}
+          </div>
+          {u.isGiveEnabled && (
+            <div className="mt-2 pt-2 border-t border-gray-100 flex items-center gap-2">
+              <Flower className="w-3 h-3 text-pink-500" />
+              <span className="text-sm font-bold">{u.flowersBalance} bunga</span>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function WaitlistTab({ qc, toast }: any) {
+  const { data: waitlist = [], isLoading } = useQuery<Waitlist[]>({
+    queryKey: ["/api/admin/waitlist"],
+    queryFn: () => fetch("/api/admin/waitlist", { credentials: "include" }).then((r) => r.json()),
+  });
+
+  const { mutate: update } = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => apiRequest("PATCH", `/api/admin/waitlist/${id}`, { status }).then((r) => r.json()),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["/api/admin/waitlist"] });
+      if (data.betaCode) toast({ title: "Approved!", description: `Kode beta: ${data.betaCode}` });
+      else toast({ title: "Status diperbarui!" });
+    },
+    onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
+  });
+
+  if (isLoading) return <LoadingBox />;
+  if (!waitlist.length) return <EmptyBox msg="Waitlist kosong" />;
+
+  return (
+    <div className="flex flex-col gap-3">
+      {waitlist.map((w) => (
+        <div key={w.id} className="border-3 border-black rounded-xl bg-white p-4 shadow-[4px_4px_0px_black] flex items-center justify-between gap-4 flex-wrap" data-testid={`row-waitlist-${w.id}`}>
+          <div>
+            <p className="font-black text-sm">{w.name || "—"}</p>
+            <p className="text-sm text-gray-500 font-semibold">{w.email}</p>
+            <p className="text-xs text-gray-400">{new Date(w.createdAt).toLocaleDateString("id-ID")}</p>
+            {w.betaCode && <p className="text-xs font-black text-green-700 mt-1">Kode: {w.betaCode}</p>}
+          </div>
+          <div className="flex gap-2">
+            {w.status === "pending" ? (
+              <>
+                <button onClick={() => update({ id: w.id, status: "approved" })} className="px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-[#A8FF78] shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid={`button-approve-waitlist-${w.id}`}>
+                  Approve
+                </button>
+                <button onClick={() => update({ id: w.id, status: "rejected" })} className="px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-[#FF7878] shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid={`button-reject-waitlist-${w.id}`}>
+                  Reject
+                </button>
+              </>
+            ) : (
+              <span className={`text-xs font-black px-2 py-1 rounded border-2 ${w.status === "approved" ? "bg-green-100 border-green-400" : "bg-red-100 border-red-400"}`}>{w.status}</span>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function GiftsTab({ qc, toast }: any) {
+  const [form, setForm] = useState({ name: "", icon: "flower", costFlowers: "10" });
+  const { data: gifts = [], isLoading } = useQuery<GiftType[]>({
+    queryKey: ["/api/admin/gifts"],
+    queryFn: () => fetch("/api/admin/gifts", { credentials: "include" }).then((r) => r.json()),
+  });
+
+  const { mutate: create } = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/admin/gifts", { ...form, costFlowers: parseInt(form.costFlowers) }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["/api/admin/gifts"] }); toast({ title: "Hadiah ditambah!" }); setForm({ name: "", icon: "flower", costFlowers: "10" }); },
+    onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
+  });
+
+  if (isLoading) return <LoadingBox />;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="border-4 border-black rounded-xl bg-[#FFE34D] p-5 shadow-[6px_6px_0px_black]">
+        <h3 className="font-black mb-3">Tambah Jenis Hadiah</h3>
+        <div className="flex gap-2 flex-wrap">
+          <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Nama hadiah" className="px-3 py-2 border-2 border-black rounded-lg font-semibold text-sm flex-1 min-w-[120px]" data-testid="input-gift-name" />
+          <input value={form.icon} onChange={(e) => setForm((p) => ({ ...p, icon: e.target.value }))} placeholder="Icon (rose/star/diamond)" className="px-3 py-2 border-2 border-black rounded-lg font-semibold text-sm w-36" data-testid="input-gift-icon" />
+          <input type="number" value={form.costFlowers} onChange={(e) => setForm((p) => ({ ...p, costFlowers: e.target.value }))} placeholder="Harga bunga" className="px-3 py-2 border-2 border-black rounded-lg font-semibold text-sm w-28" data-testid="input-gift-cost" />
+          <button onClick={() => create()} disabled={!form.name} className="px-4 py-2 bg-black text-[#FFE34D] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_#333]" data-testid="button-add-gift">Tambah</button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {gifts.map((g) => (
+          <div key={g.id} className="border-3 border-black rounded-xl bg-white p-4 shadow-[4px_4px_0px_black] text-center" data-testid={`card-gift-${g.id}`}>
+            <p className="text-3xl mb-2">{g.icon === "rose" ? "🌹" : g.icon === "star" ? "⭐" : g.icon === "diamond" ? "💎" : "🌸"}</p>
+            <p className="font-black">{g.name}</p>
+            <p className="text-sm text-gray-500 font-semibold">{g.costFlowers} bunga</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function WithdrawalsTab({ qc, toast }: any) {
+  const { data: requests = [], isLoading } = useQuery<WithdrawalRequest[]>({
+    queryKey: ["/api/admin/withdrawals"],
+    queryFn: () => fetch("/api/admin/withdrawals", { credentials: "include" }).then((r) => r.json()),
+  });
+
+  const [notes, setNotes] = useState<Record<string, string>>({});
+
+  const { mutate: update } = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => apiRequest("PATCH", `/api/admin/withdrawals/${id}`, { status, adminNote: notes[id] || "" }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["/api/admin/withdrawals"] }); toast({ title: "Status diperbarui!" }); },
+    onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
+  });
+
+  if (isLoading) return <LoadingBox />;
+  if (!requests.length) return <EmptyBox msg="Tidak ada permintaan penarikan" />;
+
+  return (
+    <div className="flex flex-col gap-4">
+      {requests.map((req) => (
+        <div key={req.id} className="border-4 border-black rounded-xl bg-white p-5 shadow-[6px_6px_0px_black]" data-testid={`card-withdrawal-${req.id}`}>
+          <div className="flex items-start justify-between flex-wrap gap-3 mb-3">
+            <div>
+              <p className="font-black text-lg">{req.flowersAmount} bunga = Rp {req.idrAmount.toLocaleString("id-ID")}</p>
+              <p className="text-sm text-gray-500 font-semibold">{req.accountName} • {req.accountNumber}</p>
+              <p className="text-xs text-gray-400">{new Date(req.createdAt).toLocaleDateString("id-ID")}</p>
+            </div>
+            <span className={`text-xs font-black px-2 py-1 rounded border-2 ${req.status === "pending" ? "bg-yellow-100 border-yellow-400" : req.status === "paid" ? "bg-green-100 border-green-400" : req.status === "approved" ? "bg-blue-100 border-blue-400" : "bg-red-100 border-red-400"}`}>{req.status}</span>
+          </div>
+          {req.status === "pending" && (
+            <div className="flex flex-col gap-2">
+              <input value={notes[req.id] || ""} onChange={(e) => setNotes((p) => ({ ...p, [req.id]: e.target.value }))} placeholder="Catatan admin (opsional)" className="px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid={`input-admin-note-${req.id}`} />
+              <div className="flex gap-2">
+                <button onClick={() => update({ id: req.id, status: "approved" })} className="px-4 py-2 bg-[#78C1FF] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black]" data-testid={`button-approve-withdrawal-${req.id}`}>Setujui</button>
+                <button onClick={() => update({ id: req.id, status: "paid" })} className="px-4 py-2 bg-[#A8FF78] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black]" data-testid={`button-paid-withdrawal-${req.id}`}>Tandai Dibayar</button>
+                <button onClick={() => update({ id: req.id, status: "rejected" })} className="px-4 py-2 bg-[#FF7878] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black]" data-testid={`button-reject-withdrawal-${req.id}`}>Tolak</button>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SettingsTab({ qc, toast }: any) {
+  const { data: s } = useQuery<Record<string, string>>({
+    queryKey: ["/api/admin/settings"],
+    queryFn: () => fetch("/api/admin/settings", { credentials: "include" }).then((r) => r.json()),
+  });
+
+  const { mutate: save } = useMutation({
+    mutationFn: ({ key, value }: { key: string; value: string }) => apiRequest("POST", "/api/admin/settings", { key, value }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["/api/admin/settings"] });
+      qc.invalidateQueries({ queryKey: ["/api/settings/public"] });
+      toast({ title: "Pengaturan disimpan!" });
+    },
+    onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
+  });
+
+  if (!s) return <LoadingBox />;
+
+  const isMaintenanceMode = s.maintenance_mode === "true";
+  const isBetaMode = s.beta_mode === "true";
+  const betaAccessType = s.beta_access_type || "open";
+
+  return (
+    <div className="flex flex-col gap-4">
+      <SettingToggle label="Mode Maintenance" desc="Semua halaman ditampilkan sebagai halaman maintenance" icon={<Lock className="w-5 h-5" />} enabled={isMaintenanceMode} onChange={(v) => save({ key: "maintenance_mode", value: String(v) })} testId="toggle-maintenance" />
+      <SettingToggle label="Mode Beta" desc="Aktifkan kontrol akses beta" icon={<Shield className="w-5 h-5" />} enabled={isBetaMode} onChange={(v) => save({ key: "beta_mode", value: String(v) })} testId="toggle-beta" />
+
+      {isBetaMode && (
+        <div className="border-4 border-black rounded-xl bg-white p-5 shadow-[6px_6px_0px_black]">
+          <h3 className="font-black mb-3">Tipe Akses Beta</h3>
+          <div className="flex gap-2 flex-wrap">
+            {[{ v: "open", l: "Terbuka" }, { v: "code", l: "Pakai Kode" }, { v: "waitlist", l: "Waitlist" }].map(({ v, l }) => (
+              <button key={v} onClick={() => save({ key: "beta_access_type", value: v })} className={`px-4 py-2 border-2 border-black rounded-lg font-bold text-sm transition-all ${betaAccessType === v ? "bg-black text-[#FFE34D] shadow-[2px_2px_0px_#FFE34D]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black]"}`} data-testid={`button-beta-type-${v}`}>
+                {l}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-gray-400 font-semibold mt-2">
+            {betaAccessType === "open" ? "Semua orang bisa daftar" : betaAccessType === "code" ? "Hanya dengan kode beta valid" : "Hanya dari waitlist yang diapprove"}
+          </p>
         </div>
       )}
+
+      <SiteInfoSettings s={s} save={save} />
+    </div>
+  );
+}
+
+function SettingToggle({ label, desc, icon, enabled, onChange, testId }: any) {
+  return (
+    <div className={`border-4 border-black rounded-xl p-5 shadow-[6px_6px_0px_black] transition-colors ${enabled ? "bg-[#FFE34D]" : "bg-white"}`}>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className={`w-10 h-10 border-3 border-black rounded-lg flex items-center justify-center flex-shrink-0 ${enabled ? "bg-black text-[#FFE34D]" : "bg-gray-100"}`}>{icon}</div>
+          <div>
+            <h3 className="font-black">{label}</h3>
+            <p className="text-sm font-semibold text-black/60">{desc}</p>
+          </div>
+        </div>
+        <button onClick={() => onChange(!enabled)} className={`w-14 h-8 border-3 border-black rounded-full transition-colors relative flex-shrink-0 ${enabled ? "bg-black" : "bg-gray-200"}`} data-testid={testId}>
+          <span className={`absolute top-1 w-5 h-5 bg-white border-2 border-black rounded-full transition-all ${enabled ? "left-7" : "left-1"}`} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SiteInfoSettings({ s, save }: { s: Record<string, string>; save: (args: { key: string; value: string }) => void }) {
+  const [siteName, setSiteName] = useState(s.site_name || "");
+  const [siteDesc, setSiteDesc] = useState(s.site_description || "");
+  return (
+    <div className="border-4 border-black rounded-xl bg-white p-5 shadow-[6px_6px_0px_black]">
+      <h3 className="font-black mb-3">Info Site</h3>
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2 items-end">
+          <div className="flex-1">
+            <label className="font-bold text-xs text-gray-500 mb-1 block">Nama Site</label>
+            <input value={siteName} onChange={(e) => setSiteName(e.target.value)} className="w-full px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid="input-setting-site_name" />
+          </div>
+          <button onClick={() => save({ key: "site_name", value: siteName })} className="px-3 py-2 bg-[#FFE34D] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid="button-save-setting-site_name">Simpan</button>
+        </div>
+        <div className="flex gap-2 items-end">
+          <div className="flex-1">
+            <label className="font-bold text-xs text-gray-500 mb-1 block">Deskripsi</label>
+            <input value={siteDesc} onChange={(e) => setSiteDesc(e.target.value)} className="w-full px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid="input-setting-site_description" />
+          </div>
+          <button onClick={() => save({ key: "site_description", value: siteDesc })} className="px-3 py-2 bg-[#FFE34D] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid="button-save-setting-site_description">Simpan</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LoadingBox() {
+  return <div className="border-4 border-black rounded-xl h-40 bg-gray-100 animate-pulse shadow-[6px_6px_0px_black]" />;
+}
+
+function EmptyBox({ msg }: { msg: string }) {
+  return (
+    <div className="border-4 border-black rounded-xl bg-[#FFE34D] p-8 text-center shadow-[6px_6px_0px_black]">
+      <Clock className="w-12 h-12 mx-auto mb-2 opacity-40" />
+      <p className="font-black">{msg}</p>
     </div>
   );
 }

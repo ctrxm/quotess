@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -9,9 +9,23 @@ import Explore from "@/pages/explore";
 import QuoteDetail from "@/pages/quote-detail";
 import Submit from "@/pages/submit";
 import Admin from "@/pages/admin";
+import Auth from "@/pages/auth";
+import Waitlist from "@/pages/waitlist";
+import Profile from "@/pages/profile";
+import Withdraw from "@/pages/withdraw";
 import Layout from "@/components/layout";
+import { AuthProvider } from "@/lib/auth";
+import { SettingsProvider } from "@/lib/settings";
+import MaintenanceScreen from "@/components/maintenance-screen";
+import { useSettings } from "@/lib/settings";
 
-function Router() {
+function AppContent() {
+  const settings = useSettings();
+
+  if (settings.maintenanceMode) {
+    return <MaintenanceScreen />;
+  }
+
   return (
     <Layout>
       <Switch>
@@ -20,6 +34,10 @@ function Router() {
         <Route path="/q/:id" component={QuoteDetail} />
         <Route path="/submit" component={Submit} />
         <Route path="/admin" component={Admin} />
+        <Route path="/auth" component={Auth} />
+        <Route path="/waitlist" component={Waitlist} />
+        <Route path="/profile" component={Profile} />
+        <Route path="/withdraw" component={Withdraw} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
@@ -30,8 +48,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Router />
+        <AuthProvider>
+          <SettingsProvider>
+            <Toaster />
+            <AppContent />
+          </SettingsProvider>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

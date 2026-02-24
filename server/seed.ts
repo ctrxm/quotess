@@ -1,7 +1,8 @@
 import { db } from "./storage";
-import { quotes, tags, quoteTags } from "@shared/schema";
+import { quotes, tags, quoteTags, giftTypes, withdrawalMethods, settings, users } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 
 const SEED_QUOTES = [
   { text: "Hidup itu bukan soal seberapa keras kamu jatuh, tapi seberapa cepat kamu bangkit.", author: "Anonim", mood: "semangat", tags: ["motivasi", "kehidupan"] },
@@ -14,7 +15,7 @@ const SEED_QUOTES = [
   { text: "Jangan pernah menyesal atas sesuatu yang pernah membuatmu tersenyum.", author: "Mark Twain", mood: "healing", tags: ["moveon", "kehidupan"] },
   { text: "Bukan seberapa pintar kamu, tapi seberapa kamu mau berusaha.", author: "Anonim", mood: "kerja", tags: ["produktif", "mindset"] },
   { text: "Waktu itu tidak menunggu siapapun. Mulai sekarang atau tidak sama sekali.", author: "Anonim", mood: "kerja", tags: ["produktif", "motivasi"] },
-  { text: "Yang paling menyakitkan bukan ketika mereka pergi, tapi ketika kamu sadar kamu masih menunggu.", author: "Anonim", mood: "galau", tags: ["patahhati", "galau"] },
+  { text: "Yang paling menyakitkan bukan ketika mereka pergi, tapi ketika kamu sadar kamu masih menunggu.", author: "Anonim", mood: "galau", tags: ["patahhati"] },
   { text: "Cinta bukan tentang berapa lama, tapi tentang seberapa dalam.", author: "Kahlil Gibran", mood: "cinta", tags: ["cinta", "bucin"] },
   { text: "Kamu tidak perlu disukai semua orang. Jadilah dirimu sendiri.", author: "Anonim", mood: "healing", tags: ["selflove", "mindset"] },
   { text: "Berhenti membandingkan hidupmu dengan orang lain. Kamu tidak tahu apa yang sudah mereka lalui.", author: "Anonim", mood: "healing", tags: ["selflove", "kehidupan"] },
@@ -40,59 +41,96 @@ const SEED_QUOTES = [
 ];
 
 const ALL_TAGS: Record<string, string> = {
-  moveon: "Move On",
-  produktif: "Produktif",
-  sukses: "Sukses",
-  patahhati: "Patah Hati",
-  motivasi: "Motivasi",
-  friendship: "Friendship",
-  chill: "Chill",
-  mindset: "Mindset",
-  selflove: "Self Love",
-  random: "Random",
-  kehidupan: "Kehidupan",
-  bucin: "Bucin",
-  galau: "Galau",
-  cinta: "Cinta",
+  moveon: "Move On", produktif: "Produktif", sukses: "Sukses", patahhati: "Patah Hati",
+  motivasi: "Motivasi", friendship: "Friendship", chill: "Chill", mindset: "Mindset",
+  selflove: "Self Love", random: "Random", kehidupan: "Kehidupan", bucin: "Bucin",
 };
+
+const DEFAULT_SETTINGS: Record<string, string> = {
+  maintenance_mode: "false",
+  beta_mode: "false",
+  beta_access_type: "open",
+  site_name: "KataViral",
+  site_description: "Quote Indonesia yang Bikin Viral",
+};
+
+const DEFAULT_GIFT_TYPES = [
+  { name: "Bunga Mawar", icon: "rose", costFlowers: 10 },
+  { name: "Bintang", icon: "star", costFlowers: 25 },
+  { name: "Berlian", icon: "diamond", costFlowers: 100 },
+];
+
+const DEFAULT_WITHDRAWAL_METHODS = [
+  { name: "Bank BCA", type: "bank", code: "BCA" },
+  { name: "Bank BRI", type: "bank", code: "BRI" },
+  { name: "Bank Mandiri", type: "bank", code: "MANDIRI" },
+  { name: "OVO", type: "ewallet", code: "OVO" },
+  { name: "GoPay", type: "ewallet", code: "GOPAY" },
+  { name: "Dana", type: "ewallet", code: "DANA" },
+];
 
 export async function seedDatabase() {
   try {
     const [{ quoteCount }] = await db.select({ quoteCount: sql<number>`count(*)` }).from(quotes);
-    if (Number(quoteCount) > 0) {
-      console.log(`[seed] Database already has ${quoteCount} quotes, skipping seed.`);
-      return;
-    }
+    if (Number(quoteCount) === 0) {
+      console.log("[seed] Seeding quotes...");
+      const tagMap = new Map<string, string>();
+      for (const [slug, name] of Object.entries(ALL_TAGS)) {
+        const id = randomUUID();
+        await db.insert(tags).values({ id, name, slug }).onConflictDoNothing();
+        tagMap.set(slug, id);
+      }
+      const existingTags = await db.select().from(tags);
+      for (const tag of existingTags) tagMap.set(tag.slug, tag.id);
 
-    console.log("[seed] Seeding database...");
-
-    const tagMap = new Map<string, string>();
-    for (const [slug, name] of Object.entries(ALL_TAGS)) {
-      const id = randomUUID();
-      await db.insert(tags).values({ id, name, slug }).onConflictDoNothing();
-      tagMap.set(slug, id);
-    }
-
-    const existingTags = await db.select().from(tags);
-    for (const tag of existingTags) tagMap.set(tag.slug, tag.id);
-
-    for (const q of SEED_QUOTES) {
-      const id = randomUUID();
-      await db.insert(quotes).values({ id, text: q.text, author: q.author, mood: q.mood, status: "approved" });
-      for (const tagSlug of q.tags) {
-        let tagId = tagMap.get(tagSlug);
-        if (!tagId) {
-          const newTagId = randomUUID();
-          await db.insert(tags).values({ id: newTagId, name: tagSlug, slug: tagSlug }).onConflictDoNothing();
-          tagMap.set(tagSlug, newTagId);
-          tagId = newTagId;
+      for (const q of SEED_QUOTES) {
+        const id = randomUUID();
+        await db.insert(quotes).values({ id, text: q.text, author: q.author, mood: q.mood, status: "approved" });
+        for (const tagSlug of q.tags) {
+          let tagId = tagMap.get(tagSlug);
+          if (!tagId) {
+            const newTagId = randomUUID();
+            await db.insert(tags).values({ id: newTagId, name: tagSlug, slug: tagSlug }).onConflictDoNothing();
+            tagMap.set(tagSlug, newTagId);
+            tagId = newTagId;
+          }
+          await db.insert(quoteTags).values({ quoteId: id, tagId }).onConflictDoNothing();
         }
-        await db.insert(quoteTags).values({ quoteId: id, tagId }).onConflictDoNothing();
+      }
+      console.log(`[seed] Seeded ${SEED_QUOTES.length} quotes!`);
+    }
+
+    // Seed default settings
+    for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
+      await db.insert(settings).values({ key, value }).onConflictDoNothing();
+    }
+
+    // Seed gift types
+    const [{ giftCount }] = await db.select({ giftCount: sql<number>`count(*)` }).from(giftTypes);
+    if (Number(giftCount) === 0) {
+      for (const gt of DEFAULT_GIFT_TYPES) {
+        await db.insert(giftTypes).values({ id: randomUUID(), ...gt }).onConflictDoNothing();
       }
     }
 
-    console.log(`[seed] Seeded ${SEED_QUOTES.length} quotes successfully!`);
+    // Seed withdrawal methods
+    const [{ wmCount }] = await db.select({ wmCount: sql<number>`count(*)` }).from(withdrawalMethods);
+    if (Number(wmCount) === 0) {
+      for (const wm of DEFAULT_WITHDRAWAL_METHODS) {
+        await db.insert(withdrawalMethods).values({ id: randomUUID(), ...wm }).onConflictDoNothing();
+      }
+    }
+
+    // Create admin user if not exists
+    const [{ adminCount }] = await db.select({ adminCount: sql<number>`count(*)` }).from(users).where(eq(users.role, "admin"));
+    if (Number(adminCount) === 0) {
+      const passwordHash = await bcrypt.hash("admin123", 10);
+      await db.insert(users).values({ id: randomUUID(), email: "admin@kataviral.id", username: "admin", passwordHash, role: "admin", hasBetaAccess: true }).onConflictDoNothing();
+      console.log("[seed] Admin user created: admin@kataviral.id / admin123");
+    }
+
+    console.log("[seed] Database ready!");
   } catch (e) {
-    console.error("[seed] Error seeding:", e);
+    console.error("[seed] Error:", e);
   }
 }
