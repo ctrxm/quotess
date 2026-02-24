@@ -550,7 +550,20 @@ async function getMyGiftRoleApplication(userId) {
   return rows[0] || null;
 }
 async function getAllGiftRoleApplications() {
-  return db.select().from(giftRoleApplications).orderBy(desc(giftRoleApplications.createdAt));
+  const rows = await db.select({
+    id: giftRoleApplications.id,
+    userId: giftRoleApplications.userId,
+    type: giftRoleApplications.type,
+    reason: giftRoleApplications.reason,
+    socialLink: giftRoleApplications.socialLink,
+    status: giftRoleApplications.status,
+    adminNote: giftRoleApplications.adminNote,
+    createdAt: giftRoleApplications.createdAt,
+    updatedAt: giftRoleApplications.updatedAt,
+    username: users.username,
+    email: users.email
+  }).from(giftRoleApplications).leftJoin(users, eq(giftRoleApplications.userId, users.id)).orderBy(desc(giftRoleApplications.createdAt));
+  return rows;
 }
 async function updateGiftRoleApplication(id, status, adminNote) {
   await db.update(giftRoleApplications).set({ status, adminNote: adminNote || null, updatedAt: /* @__PURE__ */ new Date() }).where(eq(giftRoleApplications.id, id));

@@ -382,8 +382,25 @@ export async function getMyGiftRoleApplication(userId: string): Promise<GiftRole
   return rows[0] || null;
 }
 
-export async function getAllGiftRoleApplications(): Promise<GiftRoleApplication[]> {
-  return db.select().from(giftRoleApplications).orderBy(desc(giftRoleApplications.createdAt));
+export async function getAllGiftRoleApplications(): Promise<(GiftRoleApplication & { username: string; email: string })[]> {
+  const rows = await db
+    .select({
+      id: giftRoleApplications.id,
+      userId: giftRoleApplications.userId,
+      type: giftRoleApplications.type,
+      reason: giftRoleApplications.reason,
+      socialLink: giftRoleApplications.socialLink,
+      status: giftRoleApplications.status,
+      adminNote: giftRoleApplications.adminNote,
+      createdAt: giftRoleApplications.createdAt,
+      updatedAt: giftRoleApplications.updatedAt,
+      username: users.username,
+      email: users.email,
+    })
+    .from(giftRoleApplications)
+    .leftJoin(users, eq(giftRoleApplications.userId, users.id))
+    .orderBy(desc(giftRoleApplications.createdAt));
+  return rows as any;
 }
 
 export async function updateGiftRoleApplication(id: string, status: "approved" | "rejected", adminNote?: string): Promise<void> {

@@ -626,12 +626,18 @@ function GiftRolesTab({ qc, toast }: any) {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const { data: apps = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/admin/gift-role"],
-    queryFn: () => fetch("/api/admin/gift-role", { credentials: "include" }).then((r) => r.json()),
+    queryFn: async () => {
+      const r = await fetch("/api/admin/gift-role", { credentials: "include" });
+      if (!r.ok) return [];
+      const data = await r.json();
+      return Array.isArray(data) ? data : [];
+    },
   });
   const { mutate: update, isPending } = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
       apiRequest("PATCH", `/api/admin/gift-role/${id}`, { status, adminNote: notes[id] || "" }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["/api/admin/gift-role"] }); toast({ title: "Status diperbarui!" }); },
+    onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
   });
 
   const TYPE_LABELS: Record<string, string> = { giver: "Pemberi", receiver: "Penerima", both: "Pemberi & Penerima" };
@@ -651,7 +657,8 @@ function GiftRolesTab({ qc, toast }: any) {
         <div key={app.id} className="border-4 border-black rounded-xl bg-white p-5 shadow-[6px_6px_0px_black]" data-testid={`card-giftrole-${app.id}`}>
           <div className="flex items-start justify-between gap-2 mb-3">
             <div>
-              <p className="font-black">{app.userId}</p>
+              <p className="font-black">@{app.username || app.userId}</p>
+              <p className="text-xs text-gray-400">{app.email}</p>
               <div className="flex gap-2 mt-1">
                 <span className="text-xs font-bold px-2 py-0.5 bg-[#FFE34D] border border-black rounded">{TYPE_LABELS[app.type] ?? app.type}</span>
                 <span className={`text-xs font-bold px-2 py-0.5 border rounded ${STATUS_STYLES[app.status]}`}>{app.status}</span>
