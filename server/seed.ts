@@ -69,7 +69,88 @@ const DEFAULT_WITHDRAWAL_METHODS = [
   { name: "Dana", type: "ewallet", code: "DANA" },
 ];
 
+async function ensureTable(name: string, ddl: string) {
+  try {
+    await db.execute(sql.raw(ddl));
+  } catch (e: any) {
+    console.error(`[migrate] ${name}: ${e.message}`);
+  }
+}
+
+async function runMigrations() {
+  await ensureTable("gift_role_applications", `
+    CREATE TABLE IF NOT EXISTS gift_role_applications (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      type varchar NOT NULL DEFAULT 'both',
+      reason text NOT NULL,
+      social_link varchar,
+      status varchar NOT NULL DEFAULT 'pending',
+      admin_note text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+
+  await ensureTable("beta_codes", `
+    CREATE TABLE IF NOT EXISTS beta_codes (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      code text NOT NULL UNIQUE,
+      is_used boolean NOT NULL DEFAULT false,
+      used_by uuid REFERENCES users(id),
+      created_at timestamptz NOT NULL DEFAULT now(),
+      used_at timestamptz
+    )
+  `);
+
+  await ensureTable("topup_packages", `
+    CREATE TABLE IF NOT EXISTS topup_packages (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      name text NOT NULL,
+      flowers integer NOT NULL,
+      price_idr integer NOT NULL,
+      is_active boolean NOT NULL DEFAULT true
+    )
+  `);
+
+  await ensureTable("topup_requests", `
+    CREATE TABLE IF NOT EXISTS topup_requests (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      package_id uuid REFERENCES topup_packages(id),
+      flowers integer NOT NULL,
+      price_idr integer NOT NULL,
+      status varchar NOT NULL DEFAULT 'pending',
+      payment_proof text,
+      admin_note text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+
+  await ensureTable("ads", `
+    CREATE TABLE IF NOT EXISTS ads (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      type text NOT NULL DEFAULT 'text',
+      title text,
+      description text,
+      image_url text,
+      link_url text,
+      is_active boolean NOT NULL DEFAULT true,
+      position text NOT NULL DEFAULT 'inline',
+      bg_color text NOT NULL DEFAULT '#78C1FF',
+      text_color text NOT NULL DEFAULT '#000000',
+      click_count integer NOT NULL DEFAULT 0,
+      sort_order integer NOT NULL DEFAULT 0,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+
+  console.log("[migrate] Tables ensured.");
+}
+
 export async function seedDatabase() {
+  await runMigrations();
   try {
     const [{ quoteCount }] = await db.select({ quoteCount: sql<number>`count(*)` }).from(quotes);
     if (Number(quoteCount) === 0) {
