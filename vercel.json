@@ -1,5 +1,6 @@
 {
   "buildCommand": "npx vite build && npx esbuild api/_source.ts --bundle --platform=node --format=cjs --target=node18 --outfile=api/index.js --packages=external --footer:js=\"module.exports=module.exports.default||module.exports;\"",
+  "outputDirectory": "dist/public",
   "functions": {
     "api/index.js": {
       "memory": 512,
@@ -7,6 +8,7 @@
     }
   },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/api" }
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

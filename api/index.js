@@ -763,7 +763,7 @@ __export(source_exports, {
   default: () => handler
 });
 module.exports = __toCommonJS(source_exports);
-var import_express2 = __toESM(require("express"), 1);
+var import_express = __toESM(require("express"), 1);
 var import_express_session = __toESM(require("express-session"), 1);
 var import_connect_pg_simple = __toESM(require("connect-pg-simple"), 1);
 var import_pg2 = require("pg");
@@ -1243,26 +1243,9 @@ async function registerRoutes(httpServer2, app2) {
   return httpServer2;
 }
 
-// server/static.ts
-var import_express = __toESM(require("express"), 1);
-var import_fs = __toESM(require("fs"), 1);
-var import_path = __toESM(require("path"), 1);
-function serveStatic(app2) {
-  const distPath = import_path.default.resolve(process.cwd(), "dist/public");
-  if (!import_fs.default.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`
-    );
-  }
-  app2.use(import_express.default.static(distPath));
-  app2.use("/{*path}", (_req, res) => {
-    res.sendFile(import_path.default.resolve(distPath, "index.html"));
-  });
-}
-
 // api/_source.ts
 var PgSession = (0, import_connect_pg_simple.default)(import_express_session.default);
-var app = (0, import_express2.default)();
+var app = (0, import_express.default)();
 var httpServer = (0, import_http.createServer)(app);
 var DB_URL2 = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 var sessionPool = new import_pg2.Pool({
@@ -1271,13 +1254,13 @@ var sessionPool = new import_pg2.Pool({
 });
 app.set("trust proxy", 1);
 app.use(
-  import_express2.default.json({
+  import_express.default.json({
     verify: (req, _res, buf) => {
       req.rawBody = buf;
     }
   })
 );
-app.use(import_express2.default.urlencoded({ extended: false }));
+app.use(import_express.default.urlencoded({ extended: false }));
 app.use(
   (0, import_express_session.default)({
     store: new PgSession({
@@ -1312,7 +1295,6 @@ var initPromise = (async () => {
     if (res.headersSent) return next(err);
     return res.status(status).json({ message });
   });
-  serveStatic(app);
   initialized = true;
 })();
 async function handler(req, res) {

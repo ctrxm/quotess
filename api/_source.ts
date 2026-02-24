@@ -5,7 +5,6 @@ import { Pool } from "pg";
 import { createServer } from "http";
 import { registerRoutes } from "../server/routes";
 import { loadUser } from "../server/auth";
-import { serveStatic } from "../server/static";
 
 const PgSession = connectPgSimple(session);
 
@@ -65,7 +64,6 @@ const initPromise = (async () => {
     if (res.headersSent) return next(err);
     return res.status(status).json({ message });
   });
-  serveStatic(app);
   initialized = true;
 })();
 
