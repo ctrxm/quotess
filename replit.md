@@ -21,10 +21,10 @@ client/src/
     submit.tsx        - Submit quote form
     auth.tsx          - Login/register page
     waitlist.tsx      - Waitlist signup page
-    profile.tsx       - User profile + flower balance
+    profile.tsx       - Enhanced user profile: flower balance, gift role application form, transaction history
     withdraw.tsx      - Flower withdrawal page
     topup.tsx         - Flower top-up purchase page
-    admin.tsx         - Full admin panel (quotes, users, waitlist, gifts, withdrawals, topup, betacodes, settings)
+    admin.tsx         - Full admin panel (quotes, users, waitlist, gifts, giftroles, withdrawals, topup, betacodes, settings)
   components/
     layout.tsx        - Header/footer/nav (with user menu)
     quote-card.tsx    - Card with like + give buttons

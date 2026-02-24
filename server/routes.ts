@@ -388,6 +388,35 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
+  // ─── GIFT ROLE APPLICATIONS ──────────────────────────────
+  app.post("/api/gift-role/apply", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { type, reason, socialLink } = req.body;
+      if (!reason || reason.trim().length < 10) return res.status(400).json({ error: "Alasan minimal 10 karakter" });
+      const result = await storage.applyForGiftRole(req.user!.id, type || "both", reason.trim(), socialLink);
+      res.status(201).json(result);
+    } catch (e: any) { res.status(400).json({ error: e.message }); }
+  });
+
+  app.get("/api/gift-role/my", requireAuth, async (req: Request, res: Response) => {
+    try { res.json(await storage.getMyGiftRoleApplication(req.user!.id)); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.get("/api/admin/gift-role", requireAdmin, async (_req: Request, res: Response) => {
+    try { res.json(await storage.getAllGiftRoleApplications()); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.patch("/api/admin/gift-role/:id", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const { status, adminNote } = req.body;
+      if (status !== "approved" && status !== "rejected") return res.status(400).json({ error: "Status tidak valid" });
+      await storage.updateGiftRoleApplication(req.params.id, status, adminNote);
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
   // ─── BETA CODES ─────────────────────────────────────
   app.get("/api/admin/beta-codes", requireAdmin, async (_req: Request, res: Response) => {
     try { res.json(await storage.getBetaCodes()); }

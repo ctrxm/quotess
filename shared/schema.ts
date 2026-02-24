@@ -166,6 +166,21 @@ export const topupRequests = pgTable("topup_requests", {
 });
 export type TopupRequest = typeof topupRequests.$inferSelect;
 
+// ─── GIFT ROLE APPLICATIONS ──────────────────────────────
+export const giftRoleApplications = pgTable("gift_role_applications", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  type: text("type").notNull().default("both"), // "giver", "receiver", "both"
+  reason: text("reason").notNull(),
+  socialLink: text("social_link"),
+  status: text("status").notNull().default("pending"), // "pending", "approved", "rejected"
+  adminNote: text("admin_note"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+export type GiftRoleApplication = typeof giftRoleApplications.$inferSelect;
+export const insertGiftRoleApplicationSchema = createInsertSchema(giftRoleApplications).omit({ id: true, userId: true, status: true, adminNote: true, createdAt: true, updatedAt: true });
+
 // ─── BETA CODES ──────────────────────────────────────────
 export const betaCodes = pgTable("beta_codes", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),

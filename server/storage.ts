@@ -5,12 +5,12 @@ import {
   quotes, tags, quoteTags, quoteLikes,
   users, waitlist, settings, giftTypes, giftTransactions,
   flowerTransactions, withdrawalMethods, withdrawalRequests,
-  topupPackages, topupRequests, betaCodes,
+  topupPackages, topupRequests, betaCodes, giftRoleApplications,
   type Quote, type Tag, type QuoteWithTags, type InsertQuote,
   type User, type PublicUser, type Setting, type GiftType,
   type WithdrawalMethod, type WithdrawalRequest, type Waitlist,
   type GiftTransaction, type FlowerTransaction,
-  type TopupPackage, type TopupRequest, type BetaCode,
+  type TopupPackage, type TopupRequest, type BetaCode, type GiftRoleApplication,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
@@ -363,6 +363,37 @@ export async function updateTopupStatus(id: string, status: string, adminNote?: 
   }
 }
 
+// ─── GIFT ROLE APPLICATIONS ──────────────────────────────
+
+export async function applyForGiftRole(userId: string, type: string, reason: string, socialLink?: string): Promise<GiftRoleApplication> {
+  const existing = await db.select().from(giftRoleApplications)
+    .where(and(eq(giftRoleApplications.userId, userId), eq(giftRoleApplications.status, "pending"))).limit(1);
+  if (existing.length > 0) throw new Error("Kamu sudah punya pengajuan yang sedang menunggu review");
+  const [app] = await db.insert(giftRoleApplications).values({
+    userId, type, reason, socialLink: socialLink || null,
+  }).returning();
+  return app;
+}
+
+export async function getMyGiftRoleApplication(userId: string): Promise<GiftRoleApplication | null> {
+  const rows = await db.select().from(giftRoleApplications)
+    .where(eq(giftRoleApplications.userId, userId))
+    .orderBy(desc(giftRoleApplications.createdAt)).limit(1);
+  return rows[0] || null;
+}
+
+export async function getAllGiftRoleApplications(): Promise<GiftRoleApplication[]> {
+  return db.select().from(giftRoleApplications).orderBy(desc(giftRoleApplications.createdAt));
+}
+
+export async function updateGiftRoleApplication(id: string, status: "approved" | "rejected", adminNote?: string): Promise<void> {
+  await db.update(giftRoleApplications).set({ status, adminNote: adminNote || null, updatedAt: new Date() }).where(eq(giftRoleApplications.id, id));
+  if (status === "approved") {
+    const [app] = await db.select().from(giftRoleApplications).where(eq(giftRoleApplications.id, id)).limit(1);
+    if (app) await db.update(users).set({ isGiveEnabled: true }).where(eq(users.id, app.userId));
+  }
+}
+
 // ─── BETA CODES ──────────────────────────────────────────
 
 export async function generateBetaCode(): Promise<BetaCode> {
@@ -400,6 +431,7 @@ export const storage = {
   getTopupPackages, getAllTopupPackages, createTopupPackage, updateTopupPackage,
   createTopupRequest, getTopupRequests, updateTopupStatus,
   generateBetaCode, getBetaCodes, validateBetaCodeStandalone, markBetaCodeUsed,
+  applyForGiftRole, getMyGiftRoleApplication, getAllGiftRoleApplications, updateGiftRoleApplication,
 };
 
-export type { User, PublicUser, Tag, Quote, QuoteWithTags, GiftType, WithdrawalMethod, WithdrawalRequest, Waitlist, FlowerTransaction, TopupPackage, TopupRequest, BetaCode };
+export type { User, PublicUser, Tag, Quote, QuoteWithTags, GiftType, WithdrawalMethod, WithdrawalRequest, Waitlist, FlowerTransaction, TopupPackage, TopupRequest, BetaCode, GiftRoleApplication };

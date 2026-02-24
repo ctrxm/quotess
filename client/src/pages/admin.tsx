@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Check, X, Clock, Users, Settings, Flower, Wallet, ListOrdered, Lock, Mail, Toggle, ArrowRight, Copy, Plus, KeyRound, ShoppingBag } from "lucide-react";
+import { Shield, Check, X, Clock, Users, Settings, Flower, Wallet, ListOrdered, Lock, Mail, Toggle, ArrowRight, Copy, Plus, KeyRound, ShoppingBag, Gift } from "lucide-react";
 import type { QuoteWithTags, User, Waitlist, GiftType, WithdrawalRequest, WithdrawalMethod, TopupPackage, TopupRequest, BetaCode } from "@shared/schema";
 import { MOOD_LABELS, MOOD_COLORS } from "@shared/schema";
 import type { Mood } from "@shared/schema";
@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { Link, useLocation } from "wouter";
 
-type Tab = "quotes" | "users" | "waitlist" | "gifts" | "withdrawals" | "topup" | "betacodes" | "settings";
+type Tab = "quotes" | "users" | "waitlist" | "gifts" | "giftroles" | "withdrawals" | "topup" | "betacodes" | "settings";
 
 export default function Admin() {
   const { user, isLoading: authLoading } = useAuth();
@@ -37,6 +37,7 @@ export default function Admin() {
     { id: "users", label: "Users", icon: Users },
     { id: "waitlist", label: "Waitlist", icon: Mail },
     { id: "gifts", label: "Hadiah", icon: Flower },
+    { id: "giftroles", label: "Role Hadiah", icon: Gift },
     { id: "withdrawals", label: "Tarik Dana", icon: Wallet },
     { id: "topup", label: "Top Up", icon: ShoppingBag },
     { id: "betacodes", label: "Beta Code", icon: KeyRound },
@@ -65,6 +66,7 @@ export default function Admin() {
       {tab === "users" && <UsersTab qc={qc} toast={toast} currentUserId={user.id} />}
       {tab === "waitlist" && <WaitlistTab qc={qc} toast={toast} />}
       {tab === "gifts" && <GiftsTab qc={qc} toast={toast} />}
+      {tab === "giftroles" && <GiftRolesTab qc={qc} toast={toast} />}
       {tab === "withdrawals" && <WithdrawalsTab qc={qc} toast={toast} />}
       {tab === "topup" && <TopupTab qc={qc} toast={toast} />}
       {tab === "betacodes" && <BetaCodesTab qc={qc} toast={toast} />}
@@ -616,6 +618,76 @@ function BetaCodesTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; to
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function GiftRolesTab({ qc, toast }: any) {
+  const [notes, setNotes] = useState<Record<string, string>>({});
+  const { data: apps = [], isLoading } = useQuery<any[]>({
+    queryKey: ["/api/admin/gift-role"],
+    queryFn: () => fetch("/api/admin/gift-role", { credentials: "include" }).then((r) => r.json()),
+  });
+  const { mutate: update, isPending } = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      apiRequest("PATCH", `/api/admin/gift-role/${id}`, { status, adminNote: notes[id] || "" }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["/api/admin/gift-role"] }); toast({ title: "Status diperbarui!" }); },
+  });
+
+  const TYPE_LABELS: Record<string, string> = { giver: "Pemberi", receiver: "Penerima", both: "Pemberi & Penerima" };
+  const STATUS_STYLES: Record<string, string> = {
+    pending: "bg-yellow-100 border-yellow-400 text-yellow-800",
+    approved: "bg-green-100 border-green-400 text-green-800",
+    rejected: "bg-red-100 border-red-400 text-red-800",
+  };
+
+  if (isLoading) return <LoadingBox />;
+  if (apps.length === 0) return <EmptyBox msg="Belum ada pengajuan role hadiah" />;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="font-bold text-sm text-black/60">{apps.length} pengajuan</p>
+      {apps.map((app) => (
+        <div key={app.id} className="border-4 border-black rounded-xl bg-white p-5 shadow-[6px_6px_0px_black]" data-testid={`card-giftrole-${app.id}`}>
+          <div className="flex items-start justify-between gap-2 mb-3">
+            <div>
+              <p className="font-black">{app.userId}</p>
+              <div className="flex gap-2 mt-1">
+                <span className="text-xs font-bold px-2 py-0.5 bg-[#FFE34D] border border-black rounded">{TYPE_LABELS[app.type] ?? app.type}</span>
+                <span className={`text-xs font-bold px-2 py-0.5 border rounded ${STATUS_STYLES[app.status]}`}>{app.status}</span>
+              </div>
+            </div>
+            <span className="text-xs text-gray-400">{new Date(app.createdAt).toLocaleDateString("id-ID")}</span>
+          </div>
+          <p className="text-sm text-gray-700 border-l-2 border-gray-300 pl-2 italic mb-3">"{app.reason}"</p>
+          {app.socialLink && (
+            <a href={app.socialLink} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-600 underline mb-3 block">{app.socialLink}</a>
+          )}
+          {app.adminNote && (
+            <p className="text-xs bg-gray-50 border border-gray-200 rounded p-2 mb-3">Catatan: {app.adminNote}</p>
+          )}
+          {app.status === "pending" && (
+            <div className="flex flex-col gap-2">
+              <input
+                type="text"
+                placeholder="Catatan admin (opsional)"
+                value={notes[app.id] || ""}
+                onChange={(e) => setNotes({ ...notes, [app.id]: e.target.value })}
+                className="border-2 border-black rounded-lg px-3 py-1.5 text-sm font-semibold focus:outline-none w-full"
+                data-testid={`input-admin-note-${app.id}`}
+              />
+              <div className="flex gap-2">
+                <button onClick={() => update({ id: app.id, status: "approved" })} disabled={isPending} className="flex-1 px-4 py-2 bg-[#A8FF78] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50" data-testid={`button-approve-giftrole-${app.id}`}>
+                  <Check className="w-4 h-4 inline mr-1" /> Setujui
+                </button>
+                <button onClick={() => update({ id: app.id, status: "rejected" })} disabled={isPending} className="flex-1 px-4 py-2 bg-[#FF7878] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50" data-testid={`button-reject-giftrole-${app.id}`}>
+                  <X className="w-4 h-4 inline mr-1" /> Tolak
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
