@@ -147,12 +147,22 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   app.get("/api/author/:name", async (req: Request, res: Response) => {
     try {
-      const author = decodeURIComponent(req.params.name);
-      const [quotesResult, stats] = await Promise.all([
-        storage.getQuotesByAuthor(author, req.user?.id),
-        storage.getAuthorStats(author),
-      ]);
-      res.json({ author, quotes: quotesResult, stats });
+      const param = decodeURIComponent(req.params.name);
+      if (param.startsWith("@")) {
+        const username = param.slice(1);
+        const [quotesResult, stats] = await Promise.all([
+          storage.getQuotesByUsername(username, req.user?.id),
+          storage.getUserStatsByUsername(username),
+        ]);
+        if (!stats) return res.json({ author: `@${username}`, quotes: [], stats: { totalQuotes: 0, totalLikes: 0, totalViews: 0 } });
+        res.json({ author: `@${username}`, quotes: quotesResult, stats });
+      } else {
+        const [quotesResult, stats] = await Promise.all([
+          storage.getQuotesByAuthor(param, req.user?.id),
+          storage.getAuthorStats(param),
+        ]);
+        res.json({ author: param, quotes: quotesResult, stats });
+      }
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 

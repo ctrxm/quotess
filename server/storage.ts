@@ -207,6 +207,26 @@ export async function getQuotesByAuthor(author: string, userId?: string): Promis
   return attachTags(rows, userId);
 }
 
+export async function getQuotesByUsername(username: string, currentUserId?: string): Promise<QuoteWithTags[]> {
+  const [targetUser] = await db.select({ id: users.id }).from(users).where(eq(users.username, username)).limit(1);
+  if (!targetUser) return [];
+  const rows = await db.select().from(quotes)
+    .where(and(eq(quotes.status, "approved"), eq(quotes.userId, targetUser.id)))
+    .orderBy(desc(quotes.createdAt));
+  return attachTags(rows, currentUserId);
+}
+
+export async function getUserStatsByUsername(username: string): Promise<{ totalQuotes: number; totalLikes: number; totalViews: number } | null> {
+  const [targetUser] = await db.select({ id: users.id }).from(users).where(eq(users.username, username)).limit(1);
+  if (!targetUser) return null;
+  const [stats] = await db.select({
+    totalQuotes: sql<number>`count(*)`,
+    totalLikes: sql<number>`COALESCE(sum(likes_count), 0)`,
+    totalViews: sql<number>`COALESCE(sum(COALESCE(view_count, 0)), 0)`,
+  }).from(quotes).where(and(eq(quotes.status, "approved"), eq(quotes.userId, targetUser.id)));
+  return { totalQuotes: Number(stats.totalQuotes), totalLikes: Number(stats.totalLikes), totalViews: Number(stats.totalViews) };
+}
+
 export async function getAuthorStats(author: string): Promise<{ totalQuotes: number; totalLikes: number; totalViews: number }> {
   const [stats] = await db.select({
     totalQuotes: sql<number>`count(*)`,
@@ -897,7 +917,7 @@ export async function getAuthorLeaderboard(): Promise<{ author: string; totalQuo
 export const storage = {
   getQuotes, getQuoteById, searchQuotes, submitQuote, getPendingQuotes, updateQuoteStatus,
   getTags, getRelatedQuotes, toggleLike,
-  incrementViewCount, getQuoteOfTheDay, getTrendingQuotes, getQuotesByAuthor, getAuthorStats,
+  incrementViewCount, getQuoteOfTheDay, getTrendingQuotes, getQuotesByAuthor, getQuotesByUsername, getUserStatsByUsername, getAuthorStats,
   createUser, getUserByEmail, getUserById, getAllUsers, searchUsers, updateUser, verifyPassword,
   addToWaitlist, getWaitlist, updateWaitlistStatus, validateBetaCode,
   getAllSettings, getSetting, setSetting,

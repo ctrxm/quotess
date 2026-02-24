@@ -104,7 +104,11 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
     setShowGive(true);
   };
 
-  const displayAuthor = quote.author || (!quote.isAnonymous && quote.authorUser ? `@${quote.authorUser.username}` : null);
+  const hasUserProfile = !quote.isAnonymous && quote.authorUser;
+  const displayAuthor = hasUserProfile ? `@${quote.authorUser!.username}` : (quote.author || null);
+  const authorLink = hasUserProfile
+    ? `/author/@${encodeURIComponent(quote.authorUser!.username)}`
+    : quote.author ? `/author/${encodeURIComponent(quote.author)}` : null;
 
   const cardContent = (
     <div className={`border-4 border-black rounded-lg shadow-[6px_6px_0px_black] ${cardColor} transition-all duration-100 hover:shadow-[3px_3px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] flex flex-col h-full`} data-testid={`card-quote-${quote.id}`}>
@@ -128,7 +132,7 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                navigate(`/author/${encodeURIComponent(quote.author || quote.authorUser?.username || "")}`);
+                if (authorLink) navigate(authorLink);
               }}
               data-testid={`link-author-${quote.id}`}
             >
