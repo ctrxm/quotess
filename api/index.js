@@ -913,7 +913,12 @@ async function registerRoutes(httpServer2, app2) {
         betaMode: s.beta_mode === "true",
         betaAccessType: s.beta_access_type || "open",
         siteName: s.site_name || "KataViral",
-        siteDescription: s.site_description || "Quote Indonesia yang Bikin Viral"
+        siteDescription: s.site_description || "Quote Indonesia yang Bikin Viral",
+        notificationEnabled: s.notification_enabled === "true",
+        notificationType: s.notification_type || "banner",
+        notificationMessage: s.notification_message || "",
+        notificationBg: s.notification_bg || "#FFE34D",
+        notificationTextColor: s.notification_text_color || "#000000"
       });
     } catch (e) {
       res.status(500).json({ error: e.message });

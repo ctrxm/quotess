@@ -7,6 +7,11 @@ interface PublicSettings {
   betaAccessType: string;
   siteName: string;
   siteDescription: string;
+  notificationEnabled: boolean;
+  notificationType: string;
+  notificationMessage: string;
+  notificationBg: string;
+  notificationTextColor: string;
 }
 
 const SettingsContext = createContext<PublicSettings | null>(null);
@@ -21,6 +26,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const settings: PublicSettings = data || {
     maintenanceMode: false, betaMode: false, betaAccessType: "open",
     siteName: "KataViral", siteDescription: "Quote Indonesia yang Bikin Viral",
+    notificationEnabled: false, notificationType: "banner",
+    notificationMessage: "", notificationBg: "#FFE34D", notificationTextColor: "#000000",
   };
 
   return <SettingsContext.Provider value={settings}>{children}</SettingsContext.Provider>;

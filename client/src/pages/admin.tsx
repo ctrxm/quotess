@@ -347,6 +347,7 @@ function SettingsTab({ qc, toast }: any) {
         </div>
       )}
 
+      <NotificationSettings s={s} save={save} />
       <SiteInfoSettings s={s} save={save} />
       <TopupPaymentSettings s={s} save={save} />
     </div>
@@ -367,6 +368,162 @@ function SettingToggle({ label, desc, icon, enabled, onChange, testId }: any) {
         <button onClick={() => onChange(!enabled)} className={`w-14 h-8 border-3 border-black rounded-full transition-colors relative flex-shrink-0 ${enabled ? "bg-black" : "bg-gray-200"}`} data-testid={testId}>
           <span className={`absolute top-1 w-5 h-5 bg-white border-2 border-black rounded-full transition-all ${enabled ? "left-7" : "left-1"}`} />
         </button>
+      </div>
+    </div>
+  );
+}
+
+function NotificationSettings({ s, save }: { s: Record<string, string>; save: (args: { key: string; value: string }) => void }) {
+  const [msg, setMsg] = useState(s.notification_message || "");
+  const [bg, setBg] = useState(s.notification_bg || "#FFE34D");
+  const [textColor, setTextColor] = useState(s.notification_text_color || "#000000");
+  const isEnabled = s.notification_enabled === "true";
+  const currentType = s.notification_type || "banner";
+
+  const PRESETS = [
+    { bg: "#FFE34D", text: "#000000", label: "Kuning" },
+    { bg: "#A8FF78", text: "#000000", label: "Hijau" },
+    { bg: "#78C1FF", text: "#000000", label: "Biru" },
+    { bg: "#FF7878", text: "#ffffff", label: "Merah" },
+    { bg: "#000000", text: "#FFE34D", label: "Hitam" },
+    { bg: "#ffffff", text: "#000000", label: "Putih" },
+  ];
+
+  return (
+    <div className="border-4 border-black rounded-xl bg-white p-5 shadow-[6px_6px_0px_black]">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="font-black">Notifikasi Situs</h3>
+          <p className="text-xs text-gray-500 font-semibold">Banner atas halaman atau popup di tengah layar</p>
+        </div>
+        <button
+          onClick={() => save({ key: "notification_enabled", value: String(!isEnabled) })}
+          className={`w-14 h-8 border-3 border-black rounded-full transition-colors relative flex-shrink-0 ${isEnabled ? "bg-black" : "bg-gray-200"}`}
+          data-testid="toggle-notification"
+        >
+          <span className={`absolute top-1 w-5 h-5 bg-white border-2 border-black rounded-full transition-all ${isEnabled ? "left-7" : "left-1"}`} />
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <div>
+          <label className="font-black text-xs uppercase tracking-wide text-gray-500 mb-2 block">Tipe</label>
+          <div className="flex gap-2">
+            {[{ v: "banner", l: "🔔 Banner (atas halaman)" }, { v: "popup", l: "💬 Popup (tengah layar)" }].map(({ v, l }) => (
+              <button
+                key={v}
+                onClick={() => save({ key: "notification_type", value: v })}
+                className={`flex-1 px-3 py-2 border-2 border-black rounded-lg font-bold text-xs transition-all ${currentType === v ? "bg-black text-[#FFE34D] shadow-[2px_2px_0px_#FFE34D]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black]"}`}
+                data-testid={`button-notif-type-${v}`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="font-black text-xs uppercase tracking-wide text-gray-500 mb-1 block">Pesan</label>
+          <div className="flex gap-2">
+            <input
+              value={msg}
+              onChange={(e) => setMsg(e.target.value)}
+              placeholder="Tulis pesan notifikasi..."
+              className="flex-1 px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold focus:outline-none"
+              data-testid="input-notification-message"
+            />
+            <button
+              onClick={() => save({ key: "notification_message", value: msg })}
+              className="px-3 py-2 bg-[#FFE34D] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all"
+              data-testid="button-save-notification-message"
+            >
+              Simpan
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label className="font-black text-xs uppercase tracking-wide text-gray-500 mb-2 block">Warna Preset</label>
+          <div className="flex gap-2 flex-wrap">
+            {PRESETS.map((p) => (
+              <button
+                key={p.bg}
+                onClick={() => {
+                  setBg(p.bg);
+                  setTextColor(p.text);
+                  save({ key: "notification_bg", value: p.bg });
+                  save({ key: "notification_text_color", value: p.text });
+                }}
+                className="w-8 h-8 border-2 border-black rounded-lg shadow-[2px_2px_0px_black] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                style={{ backgroundColor: p.bg }}
+                title={p.label}
+                data-testid={`button-notif-color-${p.label}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <label className="font-black text-xs uppercase tracking-wide text-gray-500 mb-1 block">Warna BG</label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={bg}
+                onChange={(e) => setBg(e.target.value)}
+                className="w-10 h-10 border-2 border-black rounded-lg cursor-pointer p-0.5"
+                data-testid="input-notif-bg-color"
+              />
+              <input
+                value={bg}
+                onChange={(e) => setBg(e.target.value)}
+                className="flex-1 px-2 py-1.5 border-2 border-black rounded-lg text-xs font-mono font-bold"
+                data-testid="input-notif-bg-hex"
+              />
+            </div>
+          </div>
+          <div className="flex-1">
+            <label className="font-black text-xs uppercase tracking-wide text-gray-500 mb-1 block">Warna Teks</label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={textColor}
+                onChange={(e) => setTextColor(e.target.value)}
+                className="w-10 h-10 border-2 border-black rounded-lg cursor-pointer p-0.5"
+                data-testid="input-notif-text-color"
+              />
+              <input
+                value={textColor}
+                onChange={(e) => setTextColor(e.target.value)}
+                className="flex-1 px-2 py-1.5 border-2 border-black rounded-lg text-xs font-mono font-bold"
+                data-testid="input-notif-text-hex"
+              />
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+            save({ key: "notification_bg", value: bg });
+            save({ key: "notification_text_color", value: textColor });
+          }}
+          className="py-2 bg-[#78C1FF] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all"
+          data-testid="button-save-notif-colors"
+        >
+          Simpan Warna
+        </button>
+
+        {s.notification_message && (
+          <div className="mt-1">
+            <label className="font-black text-xs uppercase tracking-wide text-gray-500 mb-2 block">Preview</label>
+            <div
+              className="border-3 border-black rounded-lg px-4 py-2.5 flex items-center gap-2 font-black text-sm shadow-[4px_4px_0px_black]"
+              style={{ backgroundColor: bg, color: textColor }}
+            >
+              🔔 {s.notification_message}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
