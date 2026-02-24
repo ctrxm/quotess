@@ -148,6 +148,7 @@ async function runMigrations() {
 
   await ensureTable("quotes_user_id", `ALTER TABLE quotes ADD COLUMN IF NOT EXISTS user_id uuid REFERENCES users(id) ON DELETE SET NULL`);
   await ensureTable("quotes_is_anonymous", `ALTER TABLE quotes ADD COLUMN IF NOT EXISTS is_anonymous boolean NOT NULL DEFAULT true`);
+  await ensureTable("quotes_view_count", `ALTER TABLE quotes ADD COLUMN IF NOT EXISTS view_count integer NOT NULL DEFAULT 0`);
 
   console.log("[migrate] Tables ensured.");
 }

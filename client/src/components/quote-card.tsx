@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Copy, Check, Share2, Heart, Flower } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -32,6 +32,7 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
   const [showGive, setShowGive] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const [, navigate] = useLocation();
   const qc = useQueryClient();
   const cardColor = getCardColor(quote.id);
   const mood = quote.mood as Mood;
@@ -97,7 +98,22 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
         <blockquote className={`font-bold leading-snug text-black flex-1 ${variant === "detail" ? "text-2xl md:text-3xl" : "text-base md:text-lg"}`}>
           &ldquo;{quote.text}&rdquo;
         </blockquote>
-        {quote.author && <p className="text-sm font-semibold text-black/70">— {quote.author}</p>}
+        {quote.author && (
+          <p className="text-sm font-semibold text-black/70">
+            —{" "}
+            <span
+              className="hover:underline cursor-pointer hover:text-black"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigate(`/author/${encodeURIComponent(quote.author!)}`);
+              }}
+              data-testid={`link-author-${quote.id}`}
+            >
+              {quote.author}
+            </span>
+          </p>
+        )}
         {!quote.isAnonymous && quote.authorUser && !quote.author && (
           <p className="text-sm font-semibold text-black/70">— @{quote.authorUser.username}</p>
         )}

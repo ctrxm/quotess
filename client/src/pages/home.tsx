@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Search, ChevronLeft, ChevronRight, Zap, TrendingUp, Sparkles } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Zap, TrendingUp, Sparkles, Sun, Palette } from "lucide-react";
 import QuoteCard from "@/components/quote-card";
 import AdCard from "@/components/ad-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { QuoteWithTags, Mood, Ad } from "@shared/schema";
-import { MOODS, MOOD_LABELS } from "@shared/schema";
+import { MOODS, MOOD_LABELS, MOOD_COLORS } from "@shared/schema";
 
 function QuoteCardSkeleton() {
   return (
@@ -43,6 +43,10 @@ export default function Home() {
     queryKey: ["/api/quotes/search", debouncedSearch],
     queryFn: () => fetch(`/api/quotes/search?q=${encodeURIComponent(debouncedSearch)}`).then((r) => r.json()),
     enabled: !!debouncedSearch,
+  });
+
+  const { data: dailyQuote } = useQuery<QuoteWithTags>({
+    queryKey: ["/api/quotes/daily"],
   });
 
   const { data: adsData } = useQuery<Ad[]>({
@@ -102,6 +106,31 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {dailyQuote && (
+        <section className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Sun className="w-5 h-5 fill-yellow-400 text-yellow-500" />
+            <h2 className="text-lg font-black uppercase tracking-wider">Quote Hari Ini</h2>
+          </div>
+          <div className="max-w-2xl">
+            <QuoteCard quote={dailyQuote} />
+          </div>
+        </section>
+      )}
+
+      <div className="flex flex-wrap gap-3 mb-8">
+        <Link href="/trending">
+          <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FFD1A9] font-black text-sm border-3 border-black rounded-lg shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer" data-testid="link-trending">
+            <TrendingUp className="w-4 h-4" /> Trending
+          </span>
+        </Link>
+        <Link href="/maker">
+          <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#DDB8FF] font-black text-sm border-3 border-black rounded-lg shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer" data-testid="link-maker">
+            <Palette className="w-4 h-4" /> Quote Maker
+          </span>
+        </Link>
+      </div>
 
       <div className="mb-6 relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black/50" />

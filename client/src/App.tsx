@@ -14,6 +14,9 @@ import Waitlist from "@/pages/waitlist";
 import Profile from "@/pages/profile";
 import Withdraw from "@/pages/withdraw";
 import Topup from "@/pages/topup";
+import QuoteMaker from "@/pages/quote-maker";
+import Trending from "@/pages/trending";
+import AuthorPage from "@/pages/author";
 import Layout from "@/components/layout";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { SettingsProvider } from "@/lib/settings";
@@ -38,6 +41,9 @@ function AppContent() {
           <Route path="/explore" component={Explore} />
           <Route path="/q/:id" component={QuoteDetail} />
           <Route path="/submit" component={Submit} />
+          <Route path="/maker" component={QuoteMaker} />
+          <Route path="/trending" component={Trending} />
+          <Route path="/author/:name" component={AuthorPage} />
           <Route path="/admin" component={Admin} />
           <Route path="/auth" component={Auth} />
           <Route path="/waitlist" component={Waitlist} />

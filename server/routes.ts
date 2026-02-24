@@ -129,10 +129,38 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
+  app.get("/api/quotes/daily", async (req: Request, res: Response) => {
+    try {
+      const quote = await storage.getQuoteOfTheDay(req.user?.id);
+      if (!quote) return res.status(404).json({ error: "Belum ada quote" });
+      res.json(quote);
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.get("/api/quotes/trending", async (req: Request, res: Response) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+      const trending = await storage.getTrendingQuotes(limit, req.user?.id);
+      res.json(trending);
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.get("/api/author/:name", async (req: Request, res: Response) => {
+    try {
+      const author = decodeURIComponent(req.params.name);
+      const [quotesResult, stats] = await Promise.all([
+        storage.getQuotesByAuthor(author, req.user?.id),
+        storage.getAuthorStats(author),
+      ]);
+      res.json({ author, quotes: quotesResult, stats });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
   app.get("/api/quotes/:id", async (req: Request, res: Response) => {
     try {
       const quote = await storage.getQuoteById(req.params.id, req.user?.id);
       if (!quote) return res.status(404).json({ error: "Quote tidak ditemukan" });
+      storage.incrementViewCount(req.params.id).catch(() => {});
       res.json(quote);
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });

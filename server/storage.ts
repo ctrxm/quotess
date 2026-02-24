@@ -148,6 +148,55 @@ export async function getRelatedQuotes(mood: string, excludeId: string, userId?:
   return attachTags(rows, userId);
 }
 
+// ─── VIEW COUNT ─────────────────────────────────────────
+
+export async function incrementViewCount(id: string): Promise<void> {
+  await db.update(quotes).set({ viewCount: sql`COALESCE(view_count, 0) + 1` }).where(eq(quotes.id, id));
+}
+
+// ─── QUOTE OF THE DAY ───────────────────────────────────
+
+export async function getQuoteOfTheDay(userId?: string): Promise<QuoteWithTags | undefined> {
+  const today = new Date().toISOString().slice(0, 10);
+  const seed = Array.from(today).reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const [countRow] = await db.select({ total: sql<number>`count(*)` }).from(quotes).where(eq(quotes.status, "approved"));
+  const total = Number(countRow.total);
+  if (total === 0) return undefined;
+  const offset = seed % total;
+  const rows = await db.select().from(quotes).where(eq(quotes.status, "approved")).orderBy(quotes.id).limit(1).offset(offset);
+  if (rows.length === 0) return undefined;
+  const [withTags] = await attachTags(rows, userId);
+  return withTags;
+}
+
+// ─── TRENDING QUOTES ────────────────────────────────────
+
+export async function getTrendingQuotes(limit = 20, userId?: string): Promise<QuoteWithTags[]> {
+  const rows = await db.select().from(quotes)
+    .where(eq(quotes.status, "approved"))
+    .orderBy(desc(sql`COALESCE(view_count, 0) + (likes_count * 5)`))
+    .limit(limit);
+  return attachTags(rows, userId);
+}
+
+// ─── AUTHOR QUOTES ──────────────────────────────────────
+
+export async function getQuotesByAuthor(author: string, userId?: string): Promise<QuoteWithTags[]> {
+  const rows = await db.select().from(quotes)
+    .where(and(eq(quotes.status, "approved"), eq(quotes.author, author)))
+    .orderBy(desc(quotes.createdAt));
+  return attachTags(rows, userId);
+}
+
+export async function getAuthorStats(author: string): Promise<{ totalQuotes: number; totalLikes: number; totalViews: number }> {
+  const [stats] = await db.select({
+    totalQuotes: sql<number>`count(*)`,
+    totalLikes: sql<number>`COALESCE(sum(likes_count), 0)`,
+    totalViews: sql<number>`COALESCE(sum(COALESCE(view_count, 0)), 0)`,
+  }).from(quotes).where(and(eq(quotes.status, "approved"), eq(quotes.author, author)));
+  return { totalQuotes: Number(stats.totalQuotes), totalLikes: Number(stats.totalLikes), totalViews: Number(stats.totalViews) };
+}
+
 // ─── LIKES ───────────────────────────────────────────────
 
 export async function toggleLike(userId: string, quoteId: string): Promise<{ liked: boolean; count: number }> {
@@ -514,6 +563,7 @@ export async function markBetaCodeUsed(code: string, userId: string): Promise<vo
 export const storage = {
   getQuotes, getQuoteById, searchQuotes, submitQuote, getPendingQuotes, updateQuoteStatus,
   getTags, getRelatedQuotes, toggleLike,
+  incrementViewCount, getQuoteOfTheDay, getTrendingQuotes, getQuotesByAuthor, getAuthorStats,
   createUser, getUserByEmail, getUserById, getAllUsers, searchUsers, updateUser, verifyPassword,
   addToWaitlist, getWaitlist, updateWaitlistStatus, validateBetaCode,
   getAllSettings, getSetting, setSetting,

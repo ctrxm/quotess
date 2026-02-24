@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Menu, X, Feather, Heart, User, LogOut, Shield, Flower } from "lucide-react";
+import { Menu, X, Feather, Heart, User, LogOut, Shield, Flower, Palette, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useSettings } from "@/lib/settings";
@@ -18,6 +18,8 @@ export default function Layout({ children }: LayoutProps) {
   const navLinks = [
     { href: "/", label: "Beranda" },
     { href: "/explore", label: "Jelajahi" },
+    { href: "/trending", label: "Trending" },
+    { href: "/maker", label: "Maker" },
     { href: "/submit", label: "Submit" },
   ];
 

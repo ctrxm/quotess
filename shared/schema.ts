@@ -62,6 +62,7 @@ export const quotes = pgTable("quotes", {
   isAnonymous: boolean("is_anonymous").notNull().default(true),
   status: text("status").notNull().default("approved"),
   likesCount: integer("likes_count").notNull().default(0),
+  viewCount: integer("view_count").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
 });
 

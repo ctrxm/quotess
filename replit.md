@@ -15,10 +15,13 @@ Quote-sharing website Indonesia dengan desain Neobrutalism. Platform untuk berba
 ```
 client/src/
   pages/
-    home.tsx          - Homepage hero + quote grid
+    home.tsx          - Homepage hero + quote of the day + quote grid
     explore.tsx       - Filter/search quote browser
     quote-detail.tsx  - Single quote view + related
     submit.tsx        - Submit quote form
+    quote-maker.tsx   - Custom quote maker (text/background/font/download)
+    trending.tsx      - Trending quotes page (sorted by views + likes)
+    author.tsx        - Author profile page (stats + all quotes by author)
     auth.tsx          - Login/register page
     waitlist.tsx      - Waitlist signup page
     profile.tsx       - Enhanced user profile: flower balance, gift role application form, transaction history
@@ -26,8 +29,8 @@ client/src/
     topup.tsx         - Flower top-up purchase page
     admin.tsx         - Full admin panel (quotes, users, waitlist, gifts, giftroles, withdrawals, topup, betacodes, settings)
   components/
-    layout.tsx        - Header/footer/nav (with user menu)
-    quote-card.tsx    - Card with like + give buttons
+    layout.tsx        - Header/footer/nav (with user menu, Trending + Maker nav links)
+    quote-card.tsx    - Card with like + give buttons + clickable author name
     give-modal.tsx    - Send gift modal
     maintenance-screen.tsx
   lib/
@@ -76,6 +79,11 @@ The `/api/*` routes go to the serverless function; all other routes serve the SP
 - Submit requires login; choice of anonymous or username display
 - Anonymous posts still track userId internally for gift routing
 - Like system (toggle), share/copy buttons
+- View count tracking (incremented on quote detail view)
+- Quote of the Day: deterministic daily random quote (seed from date)
+- Trending Quotes: sorted by views + likes score
+- Custom Quote Maker: text editor with background/font/size picker + download as PNG
+- Author Profile: click author name → view all their quotes with stats
 - Admin approval workflow with auto-approve toggle setting
 
 ### Gift Economy (Flowers)
@@ -130,6 +138,8 @@ The `/api/*` routes go to the serverless function; all other routes serve the SP
 ### Public
 - GET /api/settings/public
 - GET /api/quotes, /api/quotes/search, /api/quotes/:id, /api/quotes/:id/related
+- GET /api/quotes/daily, /api/quotes/trending
+- GET /api/author/:name
 - GET /api/tags, /api/gifts/types, /api/withdrawal/methods
 - POST /api/auth/register, /api/auth/login, /api/auth/logout, /api/waitlist
 - GET /api/auth/me
