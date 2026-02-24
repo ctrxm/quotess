@@ -1,0 +1,133 @@
+import { useState } from "react";
+import { Link } from "wouter";
+import { Copy, Check, Share2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import type { QuoteWithTags, Mood } from "@shared/schema";
+import { MOOD_LABELS, MOOD_COLORS } from "@shared/schema";
+
+interface QuoteCardProps {
+  quote: QuoteWithTags;
+  variant?: "feed" | "detail";
+}
+
+const CARD_ACCENT_COLORS = [
+  "bg-[#FFE34D]",
+  "bg-[#A8FF78]",
+  "bg-[#78C1FF]",
+  "bg-[#FF9F78]",
+  "bg-[#E478FF]",
+  "bg-[#FF7878]",
+];
+
+function getCardColor(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash + id.charCodeAt(i)) % CARD_ACCENT_COLORS.length;
+  return CARD_ACCENT_COLORS[hash];
+}
+
+export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+  const cardColor = getCardColor(quote.id);
+  const mood = quote.mood as Mood;
+  const moodColor = MOOD_COLORS[mood];
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const text = `"${quote.text}"${quote.author ? ` — ${quote.author}` : ""}\n\n#KataViral`;
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast({ title: "Tersalin!", description: "Quote berhasil disalin ke clipboard" });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = `${window.location.origin}/q/${quote.id}`;
+    const text = `"${quote.text}"${quote.author ? ` — ${quote.author}` : ""}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "KataViral", text, url });
+      } catch {
+        await navigator.clipboard.writeText(url);
+        toast({ title: "Link disalin!", description: "Link quote berhasil disalin" });
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast({ title: "Link disalin!", description: "Link quote berhasil disalin" });
+    }
+  };
+
+  const cardContent = (
+    <div
+      className={`border-4 border-black rounded-lg shadow-[6px_6px_0px_black] ${cardColor} transition-all duration-100 hover:shadow-[3px_3px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] flex flex-col h-full`}
+      data-testid={`card-quote-${quote.id}`}
+    >
+      <div className="p-5 flex-1 flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-2">
+          <span
+            className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold border-2 border-black ${moodColor.bg} ${moodColor.text}`}
+            data-testid={`badge-mood-${quote.id}`}
+          >
+            {MOOD_LABELS[mood]}
+          </span>
+        </div>
+
+        <blockquote className={`font-bold leading-snug text-black flex-1 ${variant === "detail" ? "text-2xl md:text-3xl" : "text-base md:text-lg"}`}>
+          &ldquo;{quote.text}&rdquo;
+        </blockquote>
+
+        {quote.author && (
+          <p className="text-sm font-semibold text-black/70" data-testid={`text-author-${quote.id}`}>
+            — {quote.author}
+          </p>
+        )}
+
+        {quote.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {quote.tags.map((tag) => (
+              <span
+                key={tag.id}
+                className="px-2 py-0.5 bg-black text-white text-xs font-bold rounded border border-black"
+                data-testid={`tag-${tag.slug}-${quote.id}`}
+              >
+                #{tag.slug}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="border-t-3 border-black flex">
+        <button
+          onClick={handleCopy}
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 font-bold text-sm border-r-3 border-black bg-white/50 hover:bg-white transition-colors"
+          data-testid={`button-copy-${quote.id}`}
+        >
+          {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+          {copied ? "Tersalin!" : "Salin"}
+        </button>
+        <button
+          onClick={handleShare}
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 font-bold text-sm bg-white/50 hover:bg-white transition-colors"
+          data-testid={`button-share-${quote.id}`}
+        >
+          <Share2 className="w-4 h-4" />
+          Share
+        </button>
+      </div>
+    </div>
+  );
+
+  if (variant === "feed") {
+    return (
+      <Link href={`/q/${quote.id}`}>
+        <div className="cursor-pointer h-full">{cardContent}</div>
+      </Link>
+    );
+  }
+
+  return cardContent;
+}
