@@ -1,0 +1,182 @@
+Buat sebuah project web FULLSTACK menggunakan Next.js terbaru (App Router) dengan TypeScript dan Tailwind CSS.
+Tujuan project: website share quotes berbahasa Indonesia yang ramai/viral, dengan tampilan NEOBRUTALISM, terintegrasi Supabase, dan siap deploy ke Vercel.
+
+==================================================
+1) TECH STACK & KONFIGURASI DASAR
+==================================================
+- Framework: Next.js App Router + TypeScript
+- Styling: Tailwind CSS
+- Database: Supabase Postgres
+- Library DB: @supabase/supabase-js
+- OG Image: @vercel/og
+- Target deploy: Vercel
+
+Gunakan environment variables:
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_ANON_KEY
+- SUPABASE_SERVICE_ROLE_KEY (OPTIONAL, server-only)
+- ADMIN_SECRET (optional untuk admin panel)
+
+Jika env Supabase belum diisi, aplikasi harus tetap jalan dengan dummy data dan menampilkan warning kecil di UI.
+
+==================================================
+2) DESAIN UI (NEOBRUTALISM)
+==================================================
+Gaya visual:
+- Background terang (putih/cream)
+- Border hitam tebal 3–4px
+- Shadow offset kasar (mis: 6px 6px hitam)
+- Warna aksen solid (kuning / hijau / biru terang)
+- Typography besar, tegas
+- Hover: geser sedikit + shadow berubah
+
+Buat reusable components:
+- BrutalButton
+- QuoteCard
+- TagPill
+- MoodFilter
+- Container
+
+==================================================
+3) STRUKTUR HALAMAN
+==================================================
+Routes:
+- /                → Home (feed quote)
+- /explore         → Filter by mood & tag
+- /q/[id]          → Detail quote (SEO + shareable)
+- /submit          → Submit quote (UGC)
+- /admin           → Moderasi sederhana (optional)
+
+Layout global:
+- Header: nama website, link Home, Explore, Submit
+- Footer kecil: “Made for sharing quotes 🇮🇩”
+
+==================================================
+4) DATA MODEL (SUPABASE)
+==================================================
+Buat file /supabase/schema.sql dengan tabel:
+
+quotes:
+- id uuid PK default gen_random_uuid()
+- text text not null
+- author text
+- mood text not null
+- status text default 'approved'
+- created_at timestamptz default now()
+
+tags:
+- id uuid PK
+- name text unique
+- slug text unique
+
+quote_tags:
+- quote_id uuid FK → quotes.id
+- tag_id uuid FK → tags.id
+- primary key (quote_id, tag_id)
+
+Tambahkan index untuk:
+- quotes(status, created_at desc)
+- quotes(mood)
+
+Buat /supabase/seed.sql:
+- 30+ quotes bahasa Indonesia
+- Mood: galau, semangat, sindir, healing, kerja, cinta
+- 10–15 tags populer Indo (moveon, produktif, sukses, patahhati, dll)
+
+==================================================
+5) SUPABASE CLIENT
+==================================================
+Buat:
+- lib/supabase/client.ts (client-side)
+- lib/supabase/server.ts (server-side)
+
+Gunakan anon key untuk read & submit quote.
+Service role key hanya dipakai di server routes jika tersedia.
+
+==================================================
+6) API ROUTES
+==================================================
+Buat API di App Router:
+
+GET /api/quotes
+- filter: mood, tag
+- pagination
+- hanya status='approved'
+
+GET /api/quotes/search?q=
+- search di text & author (ILIKE)
+
+POST /api/quotes
+- submit quote UGC
+- status default 'pending'
+- auto-create tags
+- rate limit IP sederhana (max 5 submit / 10 menit)
+
+PATCH /api/admin/quotes
+- approve / reject
+- hanya jalan jika ADMIN_SECRET benar
+- jika service role key tidak ada, tampilkan error aman
+
+==================================================
+7) FRONTEND LOGIC
+==================================================
+Home:
+- tampilkan feed quotes terbaru
+- tombol Copy (clipboard)
+- tombol Share (Web Share API + fallback copy link)
+
+Explore:
+- filter mood
+- filter tag
+- responsive mobile
+
+Detail Quote (/q/[id]):
+- Quote besar
+- Tags
+- “More like this” (mood sama)
+- SEO metadata (title + description)
+
+Submit:
+- form submit
+- feedback sukses / pending approval
+
+==================================================
+8) OG IMAGE (SHARE PREVIEW)
+==================================================
+Buat endpoint:
+- /api/og?id=QUOTE_ID
+Return image 1200x630:
+- background terang
+- border tebal
+- quote text besar
+- author kecil
+
+Gunakan @vercel/og ImageResponse.
+
+Set openGraph metadata di halaman /q/[id].
+
+==================================================
+9) ADMIN PANEL (SIMPLE)
+==================================================
+/admin?key=ADMIN_SECRET
+- list quote status pending
+- tombol Approve / Reject
+- UI minimal neobrutal
+
+==================================================
+10) POLISH & FINAL
+==================================================
+- Loading & empty state
+- Mobile-friendly
+- Tidak ada TypeScript error
+- Build harus sukses (npm run build)
+
+Buat README.md berisi:
+- Cara isi env
+- Cara setup Supabase schema & seed
+- Cara run di Replit
+- Cara deploy ke Vercel
+- Catatan keamanan (anon key vs service role)
+
+HASIL AKHIR:
+Satu project Next.js lengkap, siap dikembangkan, dan siap deploy ke Vercel untuk website share quotes Indonesia yang viral.
