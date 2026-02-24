@@ -15,7 +15,7 @@ import {
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 
-const DB_URL = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL!;
+const DB_URL = process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL!;
 const pool = new Pool({ connectionString: DB_URL, ssl: { rejectUnauthorized: false } });
 export const db = drizzle(pool);
 
