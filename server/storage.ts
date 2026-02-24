@@ -308,6 +308,11 @@ export async function getWaitlist(): Promise<Waitlist[]> {
   return db.select().from(waitlist).orderBy(desc(waitlist.createdAt));
 }
 
+export async function getWaitlistById(id: string): Promise<Waitlist | null> {
+  const rows = await db.select().from(waitlist).where(eq(waitlist.id, id)).limit(1);
+  return rows[0] || null;
+}
+
 export async function updateWaitlistStatus(id: string, status: "approved" | "rejected", betaCode?: string): Promise<void> {
   await db.update(waitlist).set({ status, betaCode: betaCode || null }).where(eq(waitlist.id, id));
 }
@@ -919,7 +924,7 @@ export const storage = {
   getTags, getRelatedQuotes, toggleLike,
   incrementViewCount, getQuoteOfTheDay, getTrendingQuotes, getQuotesByAuthor, getQuotesByUsername, getUserStatsByUsername, getAuthorStats,
   createUser, getUserByEmail, getUserById, getAllUsers, searchUsers, updateUser, verifyPassword,
-  addToWaitlist, getWaitlist, updateWaitlistStatus, validateBetaCode,
+  addToWaitlist, getWaitlist, getWaitlistById, updateWaitlistStatus, validateBetaCode,
   getAllSettings, getSetting, setSetting,
   getGiftTypes, getAllGiftTypes, createGiftType, updateGiftType, sendGift, getFlowerHistory,
   getWithdrawalMethods, getAllWithdrawalMethods, createWithdrawalMethod, updateWithdrawalMethod,

@@ -5,6 +5,7 @@ import { submitQuoteSchema, registerSchema, loginSchema, FLOWERS_TO_IDR_RATE, MI
 import { requireAuth, requireAdmin } from "./auth";
 import { randomUUID } from "crypto";
 import type { TopupPackage } from "@shared/schema";
+import { sendBetaCodeEmail } from "./email";
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 function checkRateLimit(ip: string, max = 5, windowMs = 10 * 60 * 1000): boolean {
@@ -320,6 +321,19 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const { status } = req.body;
       const betaCode = status === "approved" ? randomUUID().slice(0, 8).toUpperCase() : undefined;
       await storage.updateWaitlistStatus(req.params.id, status, betaCode);
+
+      if (status === "approved" && betaCode) {
+        const entry = await storage.getWaitlistById(req.params.id);
+        if (entry?.email) {
+          try {
+            await sendBetaCodeEmail(entry.email, entry.name, betaCode);
+            console.log(`[email] Beta code sent to ${entry.email}`);
+          } catch (emailErr: any) {
+            console.error(`[email] Failed to send to ${entry.email}:`, emailErr.message);
+          }
+        }
+      }
+
       res.json({ success: true, betaCode });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });

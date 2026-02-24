@@ -49,6 +49,7 @@ server/
   storage.ts         - Database layer (all CRUD)
   auth.ts            - loadUser/requireAuth/requireAdmin middleware
   seed.ts            - Database seed + migrations (all tables + indexes)
+  email.ts           - Brevo SMTP email utility (sends beta code on waitlist approval)
 
 shared/
   schema.ts          - Drizzle tables, Zod schemas, types, constants, badge definitions
