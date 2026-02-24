@@ -1,17 +1,20 @@
 import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.BREVO_SMTP_LOGIN,
-    pass: process.env.BREVO_SMTP_KEY,
-  },
-});
+function createTransporter() {
+  return nodemailer.createTransport({
+    host: "smtp-relay.brevo.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.BREVO_SMTP_LOGIN,
+      pass: process.env.BREVO_SMTP_KEY,
+    },
+  });
+}
 
 export async function sendBetaCodeEmail(to: string, name: string | null, betaCode: string): Promise<void> {
   const displayName = name || "Kamu";
+  const transporter = createTransporter();
 
   await transporter.sendMail({
     from: `"KataViral" <${process.env.BREVO_SMTP_LOGIN}>`,
@@ -37,7 +40,7 @@ export async function sendBetaCodeEmail(to: string, name: string | null, betaCod
           <tr>
             <td style="padding:40px;">
               <h2 style="margin:0 0 16px;font-size:22px;font-weight:700;color:#000;">
-                Hai ${displayName}! 👋
+                Hai ${displayName}!
               </h2>
               <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#333;">
                 Selamat! Pendaftaran waitlist kamu sudah di-approve. Kamu sekarang bisa masuk ke KataViral menggunakan kode beta akses di bawah ini:
