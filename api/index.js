@@ -2278,14 +2278,6 @@ async function registerRoutes(httpServer2, app2) {
       res.status(500).json({ error: e.message });
     }
   });
-  app2.get("/api/topup/test-qris", async (_req, res) => {
-    try {
-      const qris = await createQrisPayment(1e3);
-      res.json({ qris, envKeyExists: !!process.env.BAYAR_GG_API_KEY, envKeyLength: (process.env.BAYAR_GG_API_KEY || "").length });
-    } catch (e) {
-      res.json({ error: e.message });
-    }
-  });
   app2.post("/api/topup/request", requireAuth, async (req, res) => {
     try {
       const { packageId } = req.body;
