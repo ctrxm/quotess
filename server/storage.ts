@@ -9,7 +9,7 @@ import {
   quoteComments, quoteBookmarks, authorFollows,
   collections, collectionQuotes, quoteBattles, battleVotes,
   userBadges, userStreaks, referralCodes, referralUses,
-  verificationRequests, donations,
+  verificationRequests, donations, quoteReactions, notifications,
   REFERRAL_BONUS_FLOWERS,
   type Quote, type Tag, type QuoteWithTags, type InsertQuote,
   type User, type PublicUser, type Setting, type GiftType,
@@ -17,7 +17,7 @@ import {
   type GiftTransaction, type FlowerTransaction,
   type TopupPackage, type TopupRequest, type BetaCode, type GiftRoleApplication, type Ad,
   type QuoteCommentWithUser, type CollectionWithMeta, type QuoteBattleWithQuotes, type UserBadge, type UserStreak,
-  type Donation,
+  type Donation, type QuoteReaction, type Notification,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
@@ -62,9 +62,26 @@ async function attachTags(qs: Quote[], userId?: string): Promise<QuoteWithTags[]
     likedSet = new Set(liked.map((r) => r.quoteId));
     bookmarkSet = new Set(bookmarked.map((r) => r.quoteId));
   }
-  const commentCounts = await db.select({ quoteId: quoteComments.quoteId, cnt: sql<number>`count(*)` })
-    .from(quoteComments).where(inArray(quoteComments.quoteId, quoteIds)).groupBy(quoteComments.quoteId);
+  const [commentCounts, reactionRows] = await Promise.all([
+    db.select({ quoteId: quoteComments.quoteId, cnt: sql<number>`count(*)` })
+      .from(quoteComments).where(inArray(quoteComments.quoteId, quoteIds)).groupBy(quoteComments.quoteId),
+    db.select({ quoteId: quoteReactions.quoteId, reactionType: quoteReactions.reactionType, cnt: sql<number>`count(*)` })
+      .from(quoteReactions).where(inArray(quoteReactions.quoteId, quoteIds)).groupBy(quoteReactions.quoteId, quoteReactions.reactionType),
+  ]);
   const commentMap = new Map(commentCounts.map((r) => [r.quoteId, Number(r.cnt)]));
+
+  const reactionsMap = new Map<string, Record<string, number>>();
+  for (const r of reactionRows) {
+    if (!reactionsMap.has(r.quoteId)) reactionsMap.set(r.quoteId, {});
+    reactionsMap.get(r.quoteId)![r.reactionType] = Number(r.cnt);
+  }
+
+  let myReactionMap = new Map<string, string>();
+  if (userId) {
+    const myReactions = await db.select({ quoteId: quoteReactions.quoteId, reactionType: quoteReactions.reactionType })
+      .from(quoteReactions).where(and(eq(quoteReactions.userId, userId), inArray(quoteReactions.quoteId, quoteIds)));
+    for (const r of myReactions) myReactionMap.set(r.quoteId, r.reactionType);
+  }
 
   const authorUserIds = qs.map((q) => q.userId).filter(Boolean) as string[];
   const authorMap = new Map<string, { id: string; username: string; isVerified: boolean }>();
@@ -78,6 +95,8 @@ async function attachTags(qs: Quote[], userId?: string): Promise<QuoteWithTags[]
     likedByMe: likedSet.has(q.id),
     bookmarkedByMe: bookmarkSet.has(q.id),
     commentsCount: commentMap.get(q.id) || 0,
+    reactions: reactionsMap.get(q.id) || {},
+    myReaction: myReactionMap.get(q.id) || null,
     authorUser: q.userId ? authorMap.get(q.userId) || null : null,
   }));
 }
@@ -268,6 +287,11 @@ export async function createUser(data: { email: string; username: string; passwo
 
 export async function getUserByEmail(email: string): Promise<User | undefined> {
   const rows = await db.select().from(users).where(eq(users.email, email.toLowerCase())).limit(1);
+  return rows[0];
+}
+
+export async function getUserByUsername(username: string): Promise<User | undefined> {
+  const rows = await db.select().from(users).where(eq(users.username, username)).limit(1);
   return rows[0];
 }
 
@@ -941,7 +965,7 @@ export const storage = {
   getQuotes, getQuoteById, searchQuotes, submitQuote, getPendingQuotes, updateQuoteStatus,
   getTags, getRelatedQuotes, toggleLike,
   incrementViewCount, getQuoteOfTheDay, getTrendingQuotes, getQuotesByAuthor, getQuotesByUsername, getUserStatsByUsername, getAuthorStats,
-  createUser, getUserByEmail, getUserById, getAllUsers, searchUsers, updateUser, verifyPassword,
+  createUser, getUserByEmail, getUserByUsername, getUserById, getAllUsers, searchUsers, updateUser, verifyPassword,
   addToWaitlist, getWaitlist, getWaitlistById, updateWaitlistStatus, validateBetaCode,
   getAllSettings, getSetting, setSetting,
   getGiftTypes, getAllGiftTypes, createGiftType, updateGiftType, sendGift, getFlowerHistory,
@@ -1045,4 +1069,71 @@ export async function getRecentDonations(limit: number = 20): Promise<Donation[]
   return db.select().from(donations).where(eq(donations.status, "paid")).orderBy(desc(donations.createdAt)).limit(limit);
 }
 
-export type { User, PublicUser, Tag, Quote, QuoteWithTags, GiftType, WithdrawalMethod, WithdrawalRequest, Waitlist, FlowerTransaction, TopupPackage, TopupRequest, BetaCode, GiftRoleApplication, Ad, QuoteCommentWithUser, CollectionWithMeta, QuoteBattleWithQuotes, UserBadge, UserStreak, Donation };
+export async function toggleReaction(userId: string, quoteId: string, reactionType: string): Promise<{ reactions: Record<string, number>; myReaction: string | null }> {
+  const existing = await db.select().from(quoteReactions)
+    .where(and(eq(quoteReactions.userId, userId), eq(quoteReactions.quoteId, quoteId))).limit(1);
+  if (existing.length > 0 && existing[0].reactionType === reactionType) {
+    await db.delete(quoteReactions).where(eq(quoteReactions.id, existing[0].id));
+    const counts = await db.select({ reactionType: quoteReactions.reactionType, cnt: sql<number>`count(*)` })
+      .from(quoteReactions).where(eq(quoteReactions.quoteId, quoteId)).groupBy(quoteReactions.reactionType);
+    const reactions: Record<string, number> = {};
+    for (const c of counts) reactions[c.reactionType] = Number(c.cnt);
+    return { reactions, myReaction: null };
+  }
+  if (existing.length > 0) {
+    await db.update(quoteReactions).set({ reactionType }).where(eq(quoteReactions.id, existing[0].id));
+  } else {
+    await db.insert(quoteReactions).values({ id: randomUUID(), userId, quoteId, reactionType });
+  }
+  const counts = await db.select({ reactionType: quoteReactions.reactionType, cnt: sql<number>`count(*)` })
+    .from(quoteReactions).where(eq(quoteReactions.quoteId, quoteId)).groupBy(quoteReactions.reactionType);
+  const reactions: Record<string, number> = {};
+  for (const c of counts) reactions[c.reactionType] = Number(c.cnt);
+  return { reactions, myReaction: reactionType };
+}
+
+export async function createNotification(userId: string, type: string, message: string, linkUrl?: string): Promise<void> {
+  await db.insert(notifications).values({ id: randomUUID(), userId, type, message, linkUrl: linkUrl || null });
+}
+
+export async function getNotifications(userId: string, limit: number = 30): Promise<Notification[]> {
+  return db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt)).limit(limit);
+}
+
+export async function getUnreadCount(userId: string): Promise<number> {
+  const [{ cnt }] = await db.select({ cnt: sql<number>`count(*)` }).from(notifications)
+    .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+  return Number(cnt);
+}
+
+export async function markAllNotificationsRead(userId: string): Promise<void> {
+  await db.update(notifications).set({ isRead: true }).where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+}
+
+export async function getUserDashboardStats(userId: string) {
+  const userQuotes = await db.select().from(quotes).where(eq(quotes.userId, userId));
+  const quoteIds = userQuotes.map(q => q.id);
+  const totalQuotes = userQuotes.length;
+  const totalLikes = userQuotes.reduce((sum, q) => sum + (q.likesCount || 0), 0);
+  const totalViews = userQuotes.reduce((sum, q) => sum + (q.viewCount || 0), 0);
+
+  let totalComments = 0;
+  let totalReactions = 0;
+  if (quoteIds.length > 0) {
+    const [{ cCnt }] = await db.select({ cCnt: sql<number>`count(*)` }).from(quoteComments).where(inArray(quoteComments.quoteId, quoteIds));
+    totalComments = Number(cCnt);
+    const [{ rCnt }] = await db.select({ rCnt: sql<number>`count(*)` }).from(quoteReactions).where(inArray(quoteReactions.quoteId, quoteIds));
+    totalReactions = Number(rCnt);
+  }
+
+  const bestQuote = userQuotes.length > 0 ? userQuotes.reduce((best, q) => (q.likesCount || 0) > (best.likesCount || 0) ? q : best) : null;
+
+  const moodBreakdown: Record<string, number> = {};
+  for (const q of userQuotes) {
+    moodBreakdown[q.mood] = (moodBreakdown[q.mood] || 0) + 1;
+  }
+
+  return { totalQuotes, totalLikes, totalViews, totalComments, totalReactions, bestQuote, moodBreakdown };
+}
+
+export type { User, PublicUser, Tag, Quote, QuoteWithTags, GiftType, WithdrawalMethod, WithdrawalRequest, Waitlist, FlowerTransaction, TopupPackage, TopupRequest, BetaCode, GiftRoleApplication, Ad, QuoteCommentWithUser, CollectionWithMeta, QuoteBattleWithQuotes, UserBadge, UserStreak, Donation, QuoteReaction, Notification };

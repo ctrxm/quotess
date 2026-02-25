@@ -35,14 +35,16 @@ client/src/
     donate.tsx        - Public donation page (QRIS payment, no login required)
     admin.tsx         - Full admin panel
     verification.tsx  - Blue checkmark request page
+    stats.tsx         - User stats dashboard (total quotes/likes/views/reactions, mood breakdown, streak)
   components/
-    layout.tsx        - Header/footer/nav (compact: Beranda, Jelajahi dropdown, Battle)
-    quote-card.tsx    - Card with like + bookmark + comment + give + copy + share buttons
+    layout.tsx        - Header/footer/nav (compact: Beranda, Jelajahi dropdown, Battle) + dark mode toggle + notification bell
+    quote-card.tsx    - Card with like + reactions (🔥😢💪😂) + comment + give + copy + share buttons
     give-modal.tsx    - Send gift modal
     maintenance-screen.tsx
   lib/
     auth.tsx          - AuthProvider + useAuth hook
     settings.tsx      - SettingsProvider + useSettings hook
+    theme.tsx         - ThemeProvider + useTheme hook (dark mode toggle, localStorage persistence)
     queryClient.ts    - TanStack Query config
 
 server/
@@ -104,6 +106,32 @@ shared/
 - Env var: `BAYAR_GG_API_KEY`
 - Tables: `topup_requests` (invoiceId, paymentUrl, finalAmount, paymentExpiry columns), `donations`
 
+### Dark Mode
+- Toggle between light/dark themes via Sun/Moon button in header
+- Class-based dark mode (`darkMode: ["class"]` in Tailwind config)
+- Persisted to localStorage, respects system preference on first visit
+- Dark palette: bg #1a1a18, card #2a2a28, text #f5f0e0, border #555
+
+### Quote Reactions
+- 4 reaction types: 🔥 Api, 😢 Sedih, 💪 Kuat, 😂 Lucu
+- Toggle reaction per quote (one reaction per user per quote)
+- Reaction bar expandable from fire button on quote card
+- Table: `quote_reactions` (userId, quoteId, reactionType)
+
+### In-App Notifications
+- Bell icon in header with unread count badge
+- Dropdown shows recent notifications with type icons
+- Triggers: like, comment, follow, gift, reaction events
+- Auto-marks as read when dropdown opened
+- Table: `notifications` (userId, type, message, linkUrl, isRead)
+- Polls every 30 seconds for new notification count
+
+### User Stats Dashboard (/stats)
+- Total quotes, likes, views, reactions
+- Best/most popular quote
+- Mood distribution chart with colored bars
+- Streak info (current + longest)
+
 ### Verified Badge System
 - `isVerified` boolean on users table
 - Blue checkmark (BadgeCheck icon) shown on quote-card, author page, profile, layout
@@ -139,6 +167,7 @@ shared/
 - quote_battles, battle_votes
 - user_badges, user_streaks
 - referral_codes, referral_uses
+- quote_reactions, notifications
 
 ### Verification
 - verification_requests
@@ -181,8 +210,10 @@ shared/
 - GET /api/auth/me
 
 ### Protected (auth required)
-- POST /api/quotes, /api/quotes/:id/like, /api/quotes/:id/bookmark
+- POST /api/quotes, /api/quotes/:id/like, /api/quotes/:id/bookmark, /api/quotes/:id/react
 - POST /api/quotes/:id/comments, DELETE /api/comments/:id
+- GET /api/notifications, /api/notifications/count, POST /api/notifications/read
+- GET /api/user/stats
 - POST /api/author/:name/follow, GET /api/author/:name/following
 - POST /api/collections, /api/collections/:id/quotes
 - POST /api/battles/:id/vote

@@ -306,6 +306,31 @@ async function runMigrations() {
   await ensureTable("idx_follows_user", `CREATE INDEX IF NOT EXISTS idx_follows_user ON author_follows(user_id)`);
   await ensureTable("idx_battle_votes_user", `CREATE INDEX IF NOT EXISTS idx_battle_votes_user ON battle_votes(user_id, battle_id)`);
 
+  await ensureTable("quote_reactions", `
+    CREATE TABLE IF NOT EXISTS quote_reactions (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      quote_id uuid NOT NULL REFERENCES quotes(id) ON DELETE CASCADE,
+      reaction_type text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+  await ensureTable("idx_reactions_quote", `CREATE INDEX IF NOT EXISTS idx_reactions_quote ON quote_reactions(quote_id)`);
+  await ensureTable("idx_reactions_user_quote", `CREATE INDEX IF NOT EXISTS idx_reactions_user_quote ON quote_reactions(user_id, quote_id)`);
+
+  await ensureTable("notifications", `
+    CREATE TABLE IF NOT EXISTS notifications (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      type text NOT NULL,
+      message text NOT NULL,
+      link_url text,
+      is_read boolean NOT NULL DEFAULT false,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+  await ensureTable("idx_notifications_user", `CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read, created_at DESC)`);
+
   console.log("[migrate] Tables ensured.");
 }
 

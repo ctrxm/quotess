@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
-import { storage, getSetting, setSetting } from "./storage";
+import { storage, getSetting, setSetting, toggleReaction, createNotification, getNotifications, getUnreadCount, markAllNotificationsRead, getUserDashboardStats } from "./storage";
 import { submitQuoteSchema, registerSchema, loginSchema, FLOWERS_TO_IDR_RATE, MIN_WITHDRAWAL_FLOWERS } from "@shared/schema";
 import { requireAuth, requireAdmin } from "./auth";
 import { randomUUID } from "crypto";
@@ -205,6 +205,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.post("/api/quotes/:id/like", requireAuth, async (req: Request, res: Response) => {
     try {
       const result = await storage.toggleLike(req.user!.id, req.params.id);
+      if (result.liked) {
+        const quote = await storage.getQuoteById(req.params.id);
+        if (quote && quote.userId && quote.userId !== req.user!.id) {
+          createNotification(quote.userId, "like", `@${req.user!.username} menyukai quote kamu`, `/q/${quote.id}`).catch(() => {});
+        }
+      }
       res.json(result);
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
@@ -235,6 +241,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const { receiverId, giftTypeId, quoteId, message } = req.body;
       if (!receiverId || !giftTypeId) return res.status(400).json({ error: "Data tidak lengkap" });
       await storage.sendGift(req.user!.id, receiverId, giftTypeId, quoteId, message);
+      createNotification(receiverId, "gift", `@${req.user!.username} mengirim hadiah ke kamu`, quoteId ? `/q/${quoteId}` : undefined).catch(() => {});
       res.json({ success: true });
     } catch (e: any) { res.status(400).json({ error: e.message }); }
   });
@@ -594,6 +601,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       if (!text || typeof text !== "string" || text.trim().length < 1) return res.status(400).json({ error: "Komentar tidak boleh kosong" });
       if (text.length > 500) return res.status(400).json({ error: "Komentar maksimal 500 karakter" });
       const comment = await storage.addComment(req.user!.id, req.params.id, text.trim());
+      const cQuote = await storage.getQuoteById(req.params.id);
+      if (cQuote && cQuote.userId && cQuote.userId !== req.user!.id) {
+        createNotification(cQuote.userId, "comment", `@${req.user!.username} mengomentari quote kamu`, `/q/${cQuote.id}`).catch(() => {});
+      }
       res.status(201).json(comment);
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
@@ -616,10 +627,56 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
+  // ─── QUOTE REACTIONS ───────────────────────────────────
+  app.post("/api/quotes/:id/react", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { reactionType } = req.body;
+      if (!reactionType) return res.status(400).json({ error: "reactionType required" });
+      const result = await toggleReaction(req.user!.id, req.params.id, reactionType);
+      const quote = await storage.getQuoteById(req.params.id);
+      if (quote && quote.userId && quote.userId !== req.user!.id && result.myReaction) {
+        const emoji = { fire: "🔥", sad: "😢", strong: "💪", laugh: "😂" }[reactionType] || "";
+        await createNotification(quote.userId, "reaction", `@${req.user!.username} bereaksi ${emoji} ke quote kamu`, `/q/${quote.id}`);
+      }
+      res.json(result);
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── NOTIFICATIONS ─────────────────────────────────────
+  app.get("/api/notifications", requireAuth, async (req: Request, res: Response) => {
+    try { res.json(await getNotifications(req.user!.id)); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.get("/api/notifications/count", requireAuth, async (req: Request, res: Response) => {
+    try { res.json({ count: await getUnreadCount(req.user!.id) }); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/notifications/read", requireAuth, async (req: Request, res: Response) => {
+    try { await markAllNotificationsRead(req.user!.id); res.json({ ok: true }); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── USER STATS DASHBOARD ──────────────────────────────
+  app.get("/api/user/stats", requireAuth, async (req: Request, res: Response) => {
+    try { res.json(await getUserDashboardStats(req.user!.id)); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
   // ─── AUTHOR FOLLOWS ───────────────────────────────────
   app.post("/api/author/:name/follow", requireAuth, async (req: Request, res: Response) => {
-    try { res.json(await storage.toggleFollow(req.user!.id, decodeURIComponent(req.params.name))); }
-    catch (e: any) { res.status(500).json({ error: e.message }); }
+    try {
+      const authorName = decodeURIComponent(req.params.name);
+      const result = await storage.toggleFollow(req.user!.id, authorName);
+      if (result.following && authorName.startsWith("@")) {
+        const targetUser = await storage.getUserByUsername(authorName.slice(1));
+        if (targetUser && targetUser.id !== req.user!.id) {
+          createNotification(targetUser.id, "follow", `@${req.user!.username} mulai mengikuti kamu`, `/author/${authorName}`).catch(() => {});
+        }
+      }
+      res.json(result);
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
   app.get("/api/author/:name/following", requireAuth, async (req: Request, res: Response) => {

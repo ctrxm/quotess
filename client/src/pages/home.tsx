@@ -10,7 +10,7 @@ import { MOODS, MOOD_LABELS, MOOD_COLORS } from "@shared/schema";
 
 function QuoteCardSkeleton() {
   return (
-    <div className="border-4 border-black rounded-lg shadow-[6px_6px_0px_black] bg-gray-100 h-52 animate-pulse" />
+    <div className="border-4 border-black dark:border-[#555] rounded-lg shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#333] bg-gray-100 dark:bg-[#2a2a28] h-52 animate-pulse" />
   );
 }
 
@@ -77,28 +77,28 @@ export default function Home() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <section className="mb-10">
-        <div className="border-4 border-black bg-[#FFF3B0] rounded-xl p-6 md:p-10 shadow-[8px_8px_0px_black] relative overflow-hidden">
-          <div className="absolute top-4 right-4 opacity-20 text-8xl font-black select-none">"</div>
+        <div className="border-4 border-black dark:border-[#555] bg-[#FFF3B0] dark:bg-[#3d3a20] rounded-xl p-6 md:p-10 shadow-[8px_8px_0px_black] dark:shadow-[8px_8px_0px_#333] relative overflow-hidden">
+          <div className="absolute top-4 right-4 opacity-20 text-8xl font-black select-none text-black dark:text-[#f5f0e0]">"</div>
           <div className="flex items-center gap-2 mb-3">
-            <Zap className="w-5 h-5 fill-black" />
-            <span className="text-sm font-black uppercase tracking-widest">CTRXL.ID</span>
+            <Zap className="w-5 h-5 fill-black dark:fill-[#f5f0e0] text-black dark:text-[#f5f0e0]" />
+            <span className="text-sm font-black uppercase tracking-widest text-black dark:text-[#f5f0e0]">CTRXL.ID</span>
           </div>
-          <h1 className="text-3xl md:text-5xl font-black leading-tight text-black mb-3">
+          <h1 className="text-3xl md:text-5xl font-black leading-tight text-black dark:text-[#f5f0e0] mb-3">
             Quote Indonesia<br />
-            <span className="text-black/60">yang Bikin Viral</span>
+            <span className="text-black/60 dark:text-[#f5f0e0]/60">yang Bikin Viral</span>
           </h1>
-          <p className="text-black/70 font-semibold mb-6 max-w-lg">
+          <p className="text-black/70 dark:text-[#f5f0e0]/70 font-semibold mb-6 max-w-lg">
             Temukan, bagikan, dan submit kata-kata bijak, galau, semangat, & lebih dari ribuan quote berbahasa Indonesia.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link href="/explore">
-              <button className="px-6 py-3 bg-black text-[#FFF3B0] font-black border-3 border-black rounded-lg shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm" data-testid="button-explore-hero">
+              <button className="px-6 py-3 bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#1a1a18] font-black border-3 border-black dark:border-[#555] rounded-lg shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm" data-testid="button-explore-hero">
                 <TrendingUp className="w-4 h-4 inline mr-1" />
                 Jelajahi Semua
               </button>
             </Link>
             <Link href="/submit">
-              <button className="px-6 py-3 bg-white text-black font-black border-3 border-black rounded-lg shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm" data-testid="button-submit-hero">
+              <button className="px-6 py-3 bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0] font-black border-3 border-black dark:border-[#555] rounded-lg shadow-[4px_4px_0px_black] dark:shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_black] dark:hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm" data-testid="button-submit-hero">
                 <Sparkles className="w-4 h-4 inline mr-1" />
                 Submit Quote
               </button>
@@ -111,7 +111,7 @@ export default function Home() {
         <section className="mb-8">
           <div className="flex items-center gap-2 mb-4">
             <Sun className="w-5 h-5 fill-yellow-400 text-yellow-500" />
-            <h2 className="text-lg font-black uppercase tracking-wider">Quote Hari Ini</h2>
+            <h2 className="text-lg font-black uppercase tracking-wider text-black dark:text-[#f5f0e0]">Quote Hari Ini</h2>
           </div>
           <div className="max-w-2xl">
             <QuoteCard quote={dailyQuote} />
@@ -121,25 +121,25 @@ export default function Home() {
 
       <div className="flex flex-wrap gap-3 mb-8">
         <Link href="/trending">
-          <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FFD1A9] font-black text-sm border-3 border-black rounded-lg shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer" data-testid="link-trending">
+          <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FFD1A9] dark:bg-[#3d2a1a] font-black text-sm border-3 border-black dark:border-[#555] rounded-lg shadow-[4px_4px_0px_black] dark:shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_black] dark:hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer text-black dark:text-[#f5f0e0]" data-testid="link-trending">
             <TrendingUp className="w-4 h-4" /> Trending
           </span>
         </Link>
         <Link href="/maker">
-          <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#DDB8FF] font-black text-sm border-3 border-black rounded-lg shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer" data-testid="link-maker">
+          <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#DDB8FF] dark:bg-[#2d1f3d] font-black text-sm border-3 border-black dark:border-[#555] rounded-lg shadow-[4px_4px_0px_black] dark:shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_black] dark:hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer text-black dark:text-[#f5f0e0]" data-testid="link-maker">
             <Palette className="w-4 h-4" /> Quote Maker
           </span>
         </Link>
       </div>
 
       <div className="mb-6 relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black/50" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black/50 dark:text-[#f5f0e0]/50" />
         <input
           type="search"
           placeholder="Cari quote atau penulis..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 border-3 border-black rounded-lg font-semibold bg-white shadow-[4px_4px_0px_black] focus:outline-none focus:shadow-[2px_2px_0px_black] focus:translate-x-[2px] focus:translate-y-[2px] transition-all text-sm"
+          className="w-full pl-12 pr-4 py-3 border-3 border-black dark:border-[#555] rounded-lg font-semibold bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0] shadow-[4px_4px_0px_black] dark:shadow-[4px_4px_0px_#333] focus:outline-none focus:shadow-[2px_2px_0px_black] dark:focus:shadow-[2px_2px_0px_#333] focus:translate-x-[2px] focus:translate-y-[2px] transition-all text-sm placeholder:text-black/40 dark:placeholder:text-[#f5f0e0]/40"
           data-testid="input-search"
         />
       </div>
@@ -148,8 +148,8 @@ export default function Home() {
         <div className="flex flex-wrap gap-2 mb-6">
           <button
             onClick={() => setActiveMood("")}
-            className={`px-4 py-2 font-bold text-sm border-2 border-black rounded-md transition-all duration-100 ${
-              activeMood === "" ? "bg-black text-white shadow-[2px_2px_0px_#FFF3B0]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"
+            className={`px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md transition-all duration-100 ${
+              activeMood === "" ? "bg-black dark:bg-[#f5f0e0] text-white dark:text-[#1a1a18] shadow-[2px_2px_0px_#FFF3B0] dark:shadow-[2px_2px_0px_#555]" : "bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px]"
             }`}
             data-testid="button-mood-all"
           >
@@ -159,8 +159,8 @@ export default function Home() {
             <button
               key={mood}
               onClick={() => setActiveMood(mood === activeMood ? "" : mood)}
-              className={`px-4 py-2 font-bold text-sm border-2 border-black rounded-md transition-all duration-100 ${
-                activeMood === mood ? "bg-black text-white shadow-[2px_2px_0px_#FFF3B0]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"
+              className={`px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md transition-all duration-100 ${
+                activeMood === mood ? "bg-black dark:bg-[#f5f0e0] text-white dark:text-[#1a1a18] shadow-[2px_2px_0px_#FFF3B0] dark:shadow-[2px_2px_0px_#555]" : "bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px]"
               }`}
               data-testid={`button-mood-${mood}`}
             >
@@ -175,10 +175,10 @@ export default function Home() {
           {Array.from({ length: 6 }).map((_, i) => <QuoteCardSkeleton key={i} />)}
         </div>
       ) : quotes.length === 0 ? (
-        <div className="border-4 border-black rounded-xl bg-white p-12 text-center shadow-[6px_6px_0px_black]">
-          <div className="text-6xl mb-4 font-black text-gray-200">"</div>
-          <h3 className="text-xl font-black mb-2">Tidak ada quote ditemukan</h3>
-          <p className="text-gray-500 font-semibold">Coba cari dengan kata kunci lain atau ganti filter mood</p>
+        <div className="border-4 border-black dark:border-[#555] rounded-xl bg-white dark:bg-[#2a2a28] p-12 text-center shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#333]">
+          <div className="text-6xl mb-4 font-black text-gray-200 dark:text-gray-600">"</div>
+          <h3 className="text-xl font-black mb-2 text-black dark:text-[#f5f0e0]">Tidak ada quote ditemukan</h3>
+          <p className="text-gray-500 dark:text-gray-400 font-semibold">Coba cari dengan kata kunci lain atau ganti filter mood</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -201,18 +201,18 @@ export default function Home() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="w-10 h-10 border-2 border-black rounded-md bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center font-bold"
+            className="w-10 h-10 border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center font-bold"
             data-testid="button-prev-page"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <span className="font-black text-sm border-2 border-black px-4 py-2 bg-[#FFF3B0] rounded-md shadow-[3px_3px_0px_black]">
+          <span className="font-black text-sm border-2 border-black dark:border-[#555] px-4 py-2 bg-[#FFF3B0] dark:bg-[#3d3a20] text-black dark:text-[#f5f0e0] rounded-md shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333]">
             {page} / {totalPages}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="w-10 h-10 border-2 border-black rounded-md bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center font-bold"
+            className="w-10 h-10 border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center font-bold"
             data-testid="button-next-page"
           >
             <ChevronRight className="w-5 h-5" />

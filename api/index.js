@@ -18,6 +18,7 @@ __export(schema_exports, {
   MOOD_COLORS: () => MOOD_COLORS,
   MOOD_LABELS: () => MOOD_LABELS,
   POPULAR_TAGS: () => POPULAR_TAGS,
+  REACTION_TYPES: () => REACTION_TYPES,
   REFERRAL_BONUS_FLOWERS: () => REFERRAL_BONUS_FLOWERS,
   ads: () => ads,
   authorFollows: () => authorFollows,
@@ -36,10 +37,12 @@ __export(schema_exports, {
   insertTagSchema: () => insertTagSchema,
   insertUserSchema: () => insertUserSchema,
   loginSchema: () => loginSchema,
+  notifications: () => notifications,
   quoteBattles: () => quoteBattles,
   quoteBookmarks: () => quoteBookmarks,
   quoteComments: () => quoteComments,
   quoteLikes: () => quoteLikes,
+  quoteReactions: () => quoteReactions,
   quoteTags: () => quoteTags,
   quotes: () => quotes,
   referralCodes: () => referralCodes,
@@ -62,7 +65,7 @@ import { sql } from "drizzle-orm";
 import { pgTable, text, uuid, timestamp, integer, boolean, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-var users, insertUserSchema, registerSchema, loginSchema, waitlist, settings, quotes, tags, quoteTags, quoteLikes, giftTypes, giftTransactions, flowerTransactions, withdrawalMethods, withdrawalRequests, topupPackages, topupRequests, donations, giftRoleApplications, insertGiftRoleApplicationSchema, ads, insertAdSchema, betaCodes, quoteComments, quoteBookmarks, authorFollows, collections, collectionQuotes, quoteBattles, battleVotes, userBadges, BADGE_DEFINITIONS, userStreaks, referralCodes, referralUses, REFERRAL_BONUS_FLOWERS, insertQuoteSchema, submitQuoteSchema, insertTagSchema, MOODS, MOOD_LABELS, MOOD_COLORS, POPULAR_TAGS, verificationRequests, FLOWERS_TO_IDR_RATE, MIN_WITHDRAWAL_FLOWERS;
+var users, insertUserSchema, registerSchema, loginSchema, waitlist, settings, quotes, tags, quoteTags, quoteLikes, giftTypes, giftTransactions, flowerTransactions, withdrawalMethods, withdrawalRequests, topupPackages, topupRequests, donations, giftRoleApplications, insertGiftRoleApplicationSchema, ads, insertAdSchema, betaCodes, quoteComments, quoteBookmarks, authorFollows, collections, collectionQuotes, quoteBattles, battleVotes, userBadges, BADGE_DEFINITIONS, userStreaks, referralCodes, referralUses, REFERRAL_BONUS_FLOWERS, insertQuoteSchema, submitQuoteSchema, insertTagSchema, MOODS, MOOD_LABELS, MOOD_COLORS, POPULAR_TAGS, verificationRequests, FLOWERS_TO_IDR_RATE, MIN_WITHDRAWAL_FLOWERS, quoteReactions, REACTION_TYPES, notifications;
 var init_schema = __esm({
   "shared/schema.ts"() {
     "use strict";
@@ -393,6 +396,28 @@ var init_schema = __esm({
     });
     FLOWERS_TO_IDR_RATE = 10;
     MIN_WITHDRAWAL_FLOWERS = 1e3;
+    quoteReactions = pgTable("quote_reactions", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+      quoteId: uuid("quote_id").notNull().references(() => quotes.id, { onDelete: "cascade" }),
+      reactionType: text("reaction_type").notNull(),
+      createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`)
+    });
+    REACTION_TYPES = [
+      { type: "fire", emoji: "\u{1F525}", label: "Api" },
+      { type: "sad", emoji: "\u{1F622}", label: "Sedih" },
+      { type: "strong", emoji: "\u{1F4AA}", label: "Kuat" },
+      { type: "laugh", emoji: "\u{1F602}", label: "Lucu" }
+    ];
+    notifications = pgTable("notifications", {
+      id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+      type: text("type").notNull(),
+      message: text("message").notNull(),
+      linkUrl: text("link_url"),
+      isRead: boolean("is_read").notNull().default(false),
+      createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`)
+    });
   }
 });
 
@@ -426,8 +451,21 @@ async function attachTags(qs, userId) {
     likedSet = new Set(liked.map((r) => r.quoteId));
     bookmarkSet = new Set(bookmarked.map((r) => r.quoteId));
   }
-  const commentCounts = await db.select({ quoteId: quoteComments.quoteId, cnt: sql2`count(*)` }).from(quoteComments).where(inArray(quoteComments.quoteId, quoteIds)).groupBy(quoteComments.quoteId);
+  const [commentCounts, reactionRows] = await Promise.all([
+    db.select({ quoteId: quoteComments.quoteId, cnt: sql2`count(*)` }).from(quoteComments).where(inArray(quoteComments.quoteId, quoteIds)).groupBy(quoteComments.quoteId),
+    db.select({ quoteId: quoteReactions.quoteId, reactionType: quoteReactions.reactionType, cnt: sql2`count(*)` }).from(quoteReactions).where(inArray(quoteReactions.quoteId, quoteIds)).groupBy(quoteReactions.quoteId, quoteReactions.reactionType)
+  ]);
   const commentMap = new Map(commentCounts.map((r) => [r.quoteId, Number(r.cnt)]));
+  const reactionsMap = /* @__PURE__ */ new Map();
+  for (const r of reactionRows) {
+    if (!reactionsMap.has(r.quoteId)) reactionsMap.set(r.quoteId, {});
+    reactionsMap.get(r.quoteId)[r.reactionType] = Number(r.cnt);
+  }
+  let myReactionMap = /* @__PURE__ */ new Map();
+  if (userId) {
+    const myReactions = await db.select({ quoteId: quoteReactions.quoteId, reactionType: quoteReactions.reactionType }).from(quoteReactions).where(and(eq(quoteReactions.userId, userId), inArray(quoteReactions.quoteId, quoteIds)));
+    for (const r of myReactions) myReactionMap.set(r.quoteId, r.reactionType);
+  }
   const authorUserIds = qs.map((q) => q.userId).filter(Boolean);
   const authorMap = /* @__PURE__ */ new Map();
   if (authorUserIds.length > 0) {
@@ -440,6 +478,8 @@ async function attachTags(qs, userId) {
     likedByMe: likedSet.has(q.id),
     bookmarkedByMe: bookmarkSet.has(q.id),
     commentsCount: commentMap.get(q.id) || 0,
+    reactions: reactionsMap.get(q.id) || {},
+    myReaction: myReactionMap.get(q.id) || null,
     authorUser: q.userId ? authorMap.get(q.userId) || null : null
   }));
 }
@@ -583,6 +623,10 @@ async function createUser(data) {
 }
 async function getUserByEmail(email) {
   const rows = await db.select().from(users).where(eq(users.email, email.toLowerCase())).limit(1);
+  return rows[0];
+}
+async function getUserByUsername(username) {
+  const rows = await db.select().from(users).where(eq(users.username, username)).limit(1);
   return rows[0];
 }
 async function getUserById(id) {
@@ -1192,6 +1236,59 @@ async function updateDonationStatus(invoiceId, status) {
 async function getRecentDonations(limit = 20) {
   return db.select().from(donations).where(eq(donations.status, "paid")).orderBy(desc(donations.createdAt)).limit(limit);
 }
+async function toggleReaction(userId, quoteId, reactionType) {
+  const existing = await db.select().from(quoteReactions).where(and(eq(quoteReactions.userId, userId), eq(quoteReactions.quoteId, quoteId))).limit(1);
+  if (existing.length > 0 && existing[0].reactionType === reactionType) {
+    await db.delete(quoteReactions).where(eq(quoteReactions.id, existing[0].id));
+    const counts2 = await db.select({ reactionType: quoteReactions.reactionType, cnt: sql2`count(*)` }).from(quoteReactions).where(eq(quoteReactions.quoteId, quoteId)).groupBy(quoteReactions.reactionType);
+    const reactions2 = {};
+    for (const c of counts2) reactions2[c.reactionType] = Number(c.cnt);
+    return { reactions: reactions2, myReaction: null };
+  }
+  if (existing.length > 0) {
+    await db.update(quoteReactions).set({ reactionType }).where(eq(quoteReactions.id, existing[0].id));
+  } else {
+    await db.insert(quoteReactions).values({ id: randomUUID(), userId, quoteId, reactionType });
+  }
+  const counts = await db.select({ reactionType: quoteReactions.reactionType, cnt: sql2`count(*)` }).from(quoteReactions).where(eq(quoteReactions.quoteId, quoteId)).groupBy(quoteReactions.reactionType);
+  const reactions = {};
+  for (const c of counts) reactions[c.reactionType] = Number(c.cnt);
+  return { reactions, myReaction: reactionType };
+}
+async function createNotification(userId, type, message, linkUrl) {
+  await db.insert(notifications).values({ id: randomUUID(), userId, type, message, linkUrl: linkUrl || null });
+}
+async function getNotifications(userId, limit = 30) {
+  return db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt)).limit(limit);
+}
+async function getUnreadCount(userId) {
+  const [{ cnt }] = await db.select({ cnt: sql2`count(*)` }).from(notifications).where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+  return Number(cnt);
+}
+async function markAllNotificationsRead(userId) {
+  await db.update(notifications).set({ isRead: true }).where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+}
+async function getUserDashboardStats(userId) {
+  const userQuotes = await db.select().from(quotes).where(eq(quotes.userId, userId));
+  const quoteIds = userQuotes.map((q) => q.id);
+  const totalQuotes = userQuotes.length;
+  const totalLikes = userQuotes.reduce((sum, q) => sum + (q.likesCount || 0), 0);
+  const totalViews = userQuotes.reduce((sum, q) => sum + (q.viewCount || 0), 0);
+  let totalComments = 0;
+  let totalReactions = 0;
+  if (quoteIds.length > 0) {
+    const [{ cCnt }] = await db.select({ cCnt: sql2`count(*)` }).from(quoteComments).where(inArray(quoteComments.quoteId, quoteIds));
+    totalComments = Number(cCnt);
+    const [{ rCnt }] = await db.select({ rCnt: sql2`count(*)` }).from(quoteReactions).where(inArray(quoteReactions.quoteId, quoteIds));
+    totalReactions = Number(rCnt);
+  }
+  const bestQuote = userQuotes.length > 0 ? userQuotes.reduce((best, q) => (q.likesCount || 0) > (best.likesCount || 0) ? q : best) : null;
+  const moodBreakdown = {};
+  for (const q of userQuotes) {
+    moodBreakdown[q.mood] = (moodBreakdown[q.mood] || 0) + 1;
+  }
+  return { totalQuotes, totalLikes, totalViews, totalComments, totalReactions, bestQuote, moodBreakdown };
+}
 var DB_URL, isSupabase, pool, db, storage;
 var init_storage = __esm({
   "server/storage.ts"() {
@@ -1224,6 +1321,7 @@ var init_storage = __esm({
       getAuthorStats,
       createUser,
       getUserByEmail,
+      getUserByUsername,
       getUserById,
       getAllUsers,
       searchUsers,
@@ -1530,6 +1628,29 @@ async function runMigrations() {
   await ensureTable("idx_bookmarks_user", `CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON quote_bookmarks(user_id)`);
   await ensureTable("idx_follows_user", `CREATE INDEX IF NOT EXISTS idx_follows_user ON author_follows(user_id)`);
   await ensureTable("idx_battle_votes_user", `CREATE INDEX IF NOT EXISTS idx_battle_votes_user ON battle_votes(user_id, battle_id)`);
+  await ensureTable("quote_reactions", `
+    CREATE TABLE IF NOT EXISTS quote_reactions (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      quote_id uuid NOT NULL REFERENCES quotes(id) ON DELETE CASCADE,
+      reaction_type text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+  await ensureTable("idx_reactions_quote", `CREATE INDEX IF NOT EXISTS idx_reactions_quote ON quote_reactions(quote_id)`);
+  await ensureTable("idx_reactions_user_quote", `CREATE INDEX IF NOT EXISTS idx_reactions_user_quote ON quote_reactions(user_id, quote_id)`);
+  await ensureTable("notifications", `
+    CREATE TABLE IF NOT EXISTS notifications (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      type text NOT NULL,
+      message text NOT NULL,
+      link_url text,
+      is_read boolean NOT NULL DEFAULT false,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+  await ensureTable("idx_notifications_user", `CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read, created_at DESC)`);
   console.log("[migrate] Tables ensured.");
 }
 async function seedDatabase() {
@@ -2044,6 +2165,13 @@ async function registerRoutes(httpServer2, app2) {
   app2.post("/api/quotes/:id/like", requireAuth, async (req, res) => {
     try {
       const result = await storage.toggleLike(req.user.id, req.params.id);
+      if (result.liked) {
+        const quote = await storage.getQuoteById(req.params.id);
+        if (quote && quote.userId && quote.userId !== req.user.id) {
+          createNotification(quote.userId, "like", `@${req.user.username} menyukai quote kamu`, `/q/${quote.id}`).catch(() => {
+          });
+        }
+      }
       res.json(result);
     } catch (e) {
       res.status(500).json({ error: e.message });
@@ -2077,6 +2205,8 @@ async function registerRoutes(httpServer2, app2) {
       const { receiverId, giftTypeId, quoteId, message } = req.body;
       if (!receiverId || !giftTypeId) return res.status(400).json({ error: "Data tidak lengkap" });
       await storage.sendGift(req.user.id, receiverId, giftTypeId, quoteId, message);
+      createNotification(receiverId, "gift", `@${req.user.username} mengirim hadiah ke kamu`, quoteId ? `/q/${quoteId}` : void 0).catch(() => {
+      });
       res.json({ success: true });
     } catch (e) {
       res.status(400).json({ error: e.message });
@@ -2494,6 +2624,11 @@ async function registerRoutes(httpServer2, app2) {
       if (!text2 || typeof text2 !== "string" || text2.trim().length < 1) return res.status(400).json({ error: "Komentar tidak boleh kosong" });
       if (text2.length > 500) return res.status(400).json({ error: "Komentar maksimal 500 karakter" });
       const comment = await storage.addComment(req.user.id, req.params.id, text2.trim());
+      const cQuote = await storage.getQuoteById(req.params.id);
+      if (cQuote && cQuote.userId && cQuote.userId !== req.user.id) {
+        createNotification(cQuote.userId, "comment", `@${req.user.username} mengomentari quote kamu`, `/q/${cQuote.id}`).catch(() => {
+        });
+      }
       res.status(201).json(comment);
     } catch (e) {
       res.status(500).json({ error: e.message });
@@ -2521,9 +2656,62 @@ async function registerRoutes(httpServer2, app2) {
       res.status(500).json({ error: e.message });
     }
   });
+  app2.post("/api/quotes/:id/react", requireAuth, async (req, res) => {
+    try {
+      const { reactionType } = req.body;
+      if (!reactionType) return res.status(400).json({ error: "reactionType required" });
+      const result = await toggleReaction(req.user.id, req.params.id, reactionType);
+      const quote = await storage.getQuoteById(req.params.id);
+      if (quote && quote.userId && quote.userId !== req.user.id && result.myReaction) {
+        const emoji = { fire: "\u{1F525}", sad: "\u{1F622}", strong: "\u{1F4AA}", laugh: "\u{1F602}" }[reactionType] || "";
+        await createNotification(quote.userId, "reaction", `@${req.user.username} bereaksi ${emoji} ke quote kamu`, `/q/${quote.id}`);
+      }
+      res.json(result);
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+  app2.get("/api/notifications", requireAuth, async (req, res) => {
+    try {
+      res.json(await getNotifications(req.user.id));
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+  app2.get("/api/notifications/count", requireAuth, async (req, res) => {
+    try {
+      res.json({ count: await getUnreadCount(req.user.id) });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+  app2.post("/api/notifications/read", requireAuth, async (req, res) => {
+    try {
+      await markAllNotificationsRead(req.user.id);
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+  app2.get("/api/user/stats", requireAuth, async (req, res) => {
+    try {
+      res.json(await getUserDashboardStats(req.user.id));
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
   app2.post("/api/author/:name/follow", requireAuth, async (req, res) => {
     try {
-      res.json(await storage.toggleFollow(req.user.id, decodeURIComponent(req.params.name)));
+      const authorName = decodeURIComponent(req.params.name);
+      const result = await storage.toggleFollow(req.user.id, authorName);
+      if (result.following && authorName.startsWith("@")) {
+        const targetUser = await storage.getUserByUsername(authorName.slice(1));
+        if (targetUser && targetUser.id !== req.user.id) {
+          createNotification(targetUser.id, "follow", `@${req.user.username} mulai mengikuti kamu`, `/author/${authorName}`).catch(() => {
+          });
+        }
+      }
+      res.json(result);
     } catch (e) {
       res.status(500).json({ error: e.message });
     }

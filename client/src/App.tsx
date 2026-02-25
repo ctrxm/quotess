@@ -24,9 +24,11 @@ import Referral from "@/pages/referral";
 import Embed from "@/pages/embed";
 import Verification from "@/pages/verification";
 import Donate from "@/pages/donate";
+import Stats from "@/pages/stats";
 import Layout from "@/components/layout";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { SettingsProvider } from "@/lib/settings";
+import { ThemeProvider } from "@/lib/theme";
 import MaintenanceScreen from "@/components/maintenance-screen";
 import { useSettings } from "@/lib/settings";
 import SiteNotification from "@/components/site-notification";
@@ -65,6 +67,7 @@ function AppContent() {
           <Route path="/topup" component={Topup} />
           <Route path="/verification" component={Verification} />
           <Route path="/donate" component={Donate} />
+          <Route path="/stats" component={Stats} />
           <Route component={NotFound} />
         </Switch>
       </Layout>
@@ -78,8 +81,10 @@ function App() {
       <TooltipProvider>
         <AuthProvider>
           <SettingsProvider>
-            <Toaster />
-            <AppContent />
+            <ThemeProvider>
+              <Toaster />
+              <AppContent />
+            </ThemeProvider>
           </SettingsProvider>
         </AuthProvider>
       </TooltipProvider>

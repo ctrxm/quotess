@@ -371,7 +371,7 @@ export type SubmitQuote = z.infer<typeof submitQuoteSchema>;
 export type Quote = typeof quotes.$inferSelect;
 export type Tag = typeof tags.$inferSelect;
 export type QuoteTag = typeof quoteTags.$inferSelect;
-export type QuoteWithTags = Quote & { tags: Tag[]; likedByMe?: boolean; bookmarkedByMe?: boolean; commentsCount?: number; authorUser?: { id: string; username: string; isVerified?: boolean } | null };
+export type QuoteWithTags = Quote & { tags: Tag[]; likedByMe?: boolean; bookmarkedByMe?: boolean; commentsCount?: number; reactions?: Record<string, number>; myReaction?: string | null; authorUser?: { id: string; username: string; isVerified?: boolean } | null };
 
 export const MOODS = ["galau", "semangat", "sindir", "healing", "kerja", "cinta"] as const;
 export type Mood = typeof MOODS[number];
@@ -412,3 +412,32 @@ export type VerificationRequest = typeof verificationRequests.$inferSelect;
 
 export const FLOWERS_TO_IDR_RATE = 10;
 export const MIN_WITHDRAWAL_FLOWERS = 1000;
+
+// ─── QUOTE REACTIONS ────────────────────────────────────
+export const quoteReactions = pgTable("quote_reactions", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  quoteId: uuid("quote_id").notNull().references(() => quotes.id, { onDelete: "cascade" }),
+  reactionType: text("reaction_type").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+export type QuoteReaction = typeof quoteReactions.$inferSelect;
+
+export const REACTION_TYPES = [
+  { type: "fire", emoji: "🔥", label: "Api" },
+  { type: "sad", emoji: "😢", label: "Sedih" },
+  { type: "strong", emoji: "💪", label: "Kuat" },
+  { type: "laugh", emoji: "😂", label: "Lucu" },
+] as const;
+
+// ─── NOTIFICATIONS ──────────────────────────────────────
+export const notifications = pgTable("notifications", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  type: text("type").notNull(),
+  message: text("message").notNull(),
+  linkUrl: text("link_url"),
+  isRead: boolean("is_read").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+export type Notification = typeof notifications.$inferSelect;
