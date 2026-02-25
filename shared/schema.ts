@@ -14,10 +14,11 @@ export const users = pgTable("users", {
   hasBetaAccess: boolean("has_beta_access").notNull().default(false),
   flowersBalance: integer("flowers_balance").notNull().default(0),
   isGiveEnabled: boolean("is_give_enabled").notNull().default(false),
+  isVerified: boolean("is_verified").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
 });
 
-export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, passwordHash: true, role: true, isActive: true, hasBetaAccess: true, flowersBalance: true, isGiveEnabled: true });
+export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, passwordHash: true, role: true, isActive: true, hasBetaAccess: true, flowersBalance: true, isGiveEnabled: true, isVerified: true });
 export const registerSchema = z.object({
   email: z.string().email("Email tidak valid"),
   username: z.string().min(3, "Username min 3 karakter").max(30, "Username max 30 karakter").regex(/^[a-zA-Z0-9_]+$/, "Hanya huruf, angka, dan underscore"),
@@ -352,7 +353,7 @@ export type SubmitQuote = z.infer<typeof submitQuoteSchema>;
 export type Quote = typeof quotes.$inferSelect;
 export type Tag = typeof tags.$inferSelect;
 export type QuoteTag = typeof quoteTags.$inferSelect;
-export type QuoteWithTags = Quote & { tags: Tag[]; likedByMe?: boolean; bookmarkedByMe?: boolean; commentsCount?: number; authorUser?: { id: string; username: string } | null };
+export type QuoteWithTags = Quote & { tags: Tag[]; likedByMe?: boolean; bookmarkedByMe?: boolean; commentsCount?: number; authorUser?: { id: string; username: string; isVerified?: boolean } | null };
 
 export const MOODS = ["galau", "semangat", "sindir", "healing", "kerja", "cinta"] as const;
 export type Mood = typeof MOODS[number];
@@ -378,6 +379,18 @@ export const POPULAR_TAGS = [
   { name: "Self Love", slug: "selflove" }, { name: "Random", slug: "random" },
   { name: "Kehidupan", slug: "kehidupan" }, { name: "Bucin", slug: "bucin" },
 ];
+
+// ─── VERIFICATION REQUESTS ──────────────────────────────
+export const verificationRequests = pgTable("verification_requests", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  reason: text("reason").notNull(),
+  socialLink: text("social_link"),
+  status: text("status").notNull().default("pending"),
+  adminNote: text("admin_note"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+export type VerificationRequest = typeof verificationRequests.$inferSelect;
 
 export const FLOWERS_TO_IDR_RATE = 10;
 export const MIN_WITHDRAWAL_FLOWERS = 1000;

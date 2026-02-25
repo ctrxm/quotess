@@ -22,6 +22,7 @@ import Battle from "@/pages/battle";
 import Leaderboard from "@/pages/leaderboard";
 import Referral from "@/pages/referral";
 import Embed from "@/pages/embed";
+import Verification from "@/pages/verification";
 import Layout from "@/components/layout";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { SettingsProvider } from "@/lib/settings";
@@ -61,6 +62,7 @@ function AppContent() {
           <Route path="/profile" component={Profile} />
           <Route path="/withdraw" component={Withdraw} />
           <Route path="/topup" component={Topup} />
+          <Route path="/verification" component={Verification} />
           <Route component={NotFound} />
         </Switch>
       </Layout>

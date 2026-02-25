@@ -7,7 +7,7 @@ import { z } from "zod";
 import {
   User, Flower, Clock, ArrowUpRight, ArrowDownLeft,
   Gift, Wallet, Plus, CheckCircle, XCircle, Send,
-  Bookmark, Zap, Award, Flame, Trophy,
+  Bookmark, Zap, Award, Flame, Trophy, BadgeCheck,
 } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -140,7 +140,10 @@ export default function Profile() {
             <User className="w-8 h-8 text-[#FFF3B0]" />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-black truncate" data-testid="text-username">@{user.username}</h1>
+            <h1 className="text-2xl font-black truncate flex items-center gap-2" data-testid="text-username">
+              @{user.username}
+              {user.isVerified && <BadgeCheck className="w-6 h-6 text-blue-500 fill-blue-500 flex-shrink-0" data-testid="verified-badge-profile" />}
+            </h1>
             <p className="text-black/60 font-semibold text-sm truncate" data-testid="text-email">{user.email}</p>
             <div className="flex flex-wrap gap-2 mt-2">
               <span className="px-2 py-1 bg-black text-[#FFF3B0] text-xs font-black rounded border-2 border-black" data-testid="badge-role">

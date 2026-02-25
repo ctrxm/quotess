@@ -33,8 +33,9 @@ client/src/
     withdraw.tsx      - Flower withdrawal page
     topup.tsx         - Flower top-up purchase page
     admin.tsx         - Full admin panel
+    verification.tsx  - Blue checkmark request page
   components/
-    layout.tsx        - Header/footer/nav (Beranda, Jelajahi, Trending, Battle, Koleksi, Top)
+    layout.tsx        - Header/footer/nav (compact: Beranda, Jelajahi dropdown, Battle)
     quote-card.tsx    - Card with like + bookmark + comment + give + copy + share buttons
     give-modal.tsx    - Send gift modal
     maintenance-screen.tsx
@@ -91,13 +92,20 @@ shared/
 - Withdrawal: 100 flowers = Rp 1,000, min 1,000 flowers
 - Referral bonus: 50 flowers for both referrer and referred
 
+### Verified Badge System
+- `isVerified` boolean on users table
+- Blue checkmark (BadgeCheck icon) shown on quote-card, author page, profile, layout
+- Verification request flow: user applies at /verification → admin reviews in admin panel (Verifikasi tab)
+- Admin can approve/reject with optional note
+
 ### Admin Panel
 - Quote moderation + auto-approve toggle
-- User management
-- Waitlist management
+- User management (set role, active, verified, flowers balance)
+- Waitlist management (with Brevo SMTP email notifications)
 - Gift type / withdrawal methods management
 - Site settings (maintenance, beta, notifications)
 - Ads management, Beta codes
+- Verification requests management (approve/reject with notes)
 
 ### Access Control
 - Maintenance mode, Beta mode (open/code/waitlist)
@@ -120,6 +128,9 @@ shared/
 - user_badges, user_streaks
 - referral_codes, referral_uses
 
+### Verification
+- verification_requests
+
 ### Other
 - gift_role_applications, ads
 
@@ -127,6 +138,8 @@ shared/
 
 - `DATABASE_URL` / `SUPABASE_DATABASE_URL` - PostgreSQL connection
 - `SESSION_SECRET` - Session encryption secret
+- `BREVO_SMTP_LOGIN` - Brevo SMTP login email
+- `BREVO_SMTP_KEY` - Brevo SMTP password key
 
 ## Default Credentials
 

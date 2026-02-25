@@ -9,6 +9,7 @@ import {
   quoteComments, quoteBookmarks, authorFollows,
   collections, collectionQuotes, quoteBattles, battleVotes,
   userBadges, userStreaks, referralCodes, referralUses,
+  verificationRequests,
   REFERRAL_BONUS_FLOWERS,
   type Quote, type Tag, type QuoteWithTags, type InsertQuote,
   type User, type PublicUser, type Setting, type GiftType,
@@ -65,9 +66,9 @@ async function attachTags(qs: Quote[], userId?: string): Promise<QuoteWithTags[]
   const commentMap = new Map(commentCounts.map((r) => [r.quoteId, Number(r.cnt)]));
 
   const authorUserIds = qs.map((q) => q.userId).filter(Boolean) as string[];
-  const authorMap = new Map<string, { id: string; username: string }>();
+  const authorMap = new Map<string, { id: string; username: string; isVerified: boolean }>();
   if (authorUserIds.length > 0) {
-    const authorUsers = await db.select({ id: users.id, username: users.username }).from(users).where(inArray(users.id, authorUserIds));
+    const authorUsers = await db.select({ id: users.id, username: users.username, isVerified: users.isVerified }).from(users).where(inArray(users.id, authorUserIds));
     for (const u of authorUsers) authorMap.set(u.id, u);
   }
   return qs.map((q) => ({
@@ -216,15 +217,15 @@ export async function getQuotesByUsername(username: string, currentUserId?: stri
   return attachTags(rows, currentUserId);
 }
 
-export async function getUserStatsByUsername(username: string): Promise<{ totalQuotes: number; totalLikes: number; totalViews: number } | null> {
-  const [targetUser] = await db.select({ id: users.id }).from(users).where(eq(users.username, username)).limit(1);
+export async function getUserStatsByUsername(username: string): Promise<{ totalQuotes: number; totalLikes: number; totalViews: number; isVerified: boolean } | null> {
+  const [targetUser] = await db.select({ id: users.id, isVerified: users.isVerified }).from(users).where(eq(users.username, username)).limit(1);
   if (!targetUser) return null;
   const [stats] = await db.select({
     totalQuotes: sql<number>`count(*)`,
     totalLikes: sql<number>`COALESCE(sum(likes_count), 0)`,
     totalViews: sql<number>`COALESCE(sum(COALESCE(view_count, 0)), 0)`,
   }).from(quotes).where(and(eq(quotes.status, "approved"), eq(quotes.userId, targetUser.id)));
-  return { totalQuotes: Number(stats.totalQuotes), totalLikes: Number(stats.totalLikes), totalViews: Number(stats.totalViews) };
+  return { totalQuotes: Number(stats.totalQuotes), totalLikes: Number(stats.totalLikes), totalViews: Number(stats.totalViews), isVerified: targetUser.isVerified };
 }
 
 export async function getAuthorStats(author: string): Promise<{ totalQuotes: number; totalLikes: number; totalViews: number }> {
@@ -287,7 +288,7 @@ export async function searchUsers(query: string, excludeUserId?: string): Promis
   return excludeUserId ? rows.filter(u => u.id !== excludeUserId) : rows;
 }
 
-export async function updateUser(id: string, data: Partial<Pick<User, "isActive" | "hasBetaAccess" | "isGiveEnabled" | "role" | "flowersBalance">>): Promise<void> {
+export async function updateUser(id: string, data: Partial<Pick<User, "isActive" | "hasBetaAccess" | "isGiveEnabled" | "role" | "flowersBalance" | "isVerified">>): Promise<void> {
   await db.update(users).set(data).where(eq(users.id, id));
 }
 
@@ -943,6 +944,58 @@ export const storage = {
   updateStreak, getStreak,
   getOrCreateReferralCode, useReferralCode, getReferralStats,
   getAuthorLeaderboard,
+  submitVerificationRequest, getMyVerificationRequest, getAllVerificationRequests, updateVerificationRequest,
 };
+
+// ─── VERIFICATION REQUESTS ──────────────────────────────
+
+export async function submitVerificationRequest(userId: string, reason: string, socialLink?: string): Promise<any> {
+  const existing = await db.select().from(verificationRequests)
+    .where(and(eq(verificationRequests.userId, userId), eq(verificationRequests.status, "pending")))
+    .limit(1);
+  if (existing.length > 0) throw new Error("Kamu sudah memiliki pengajuan yang masih pending");
+  const [created] = await db.insert(verificationRequests)
+    .values({ id: randomUUID(), userId, reason, socialLink: socialLink || null })
+    .returning();
+  return created;
+}
+
+export async function getMyVerificationRequest(userId: string) {
+  const rows = await db.select().from(verificationRequests)
+    .where(eq(verificationRequests.userId, userId))
+    .orderBy(desc(verificationRequests.createdAt))
+    .limit(1);
+  return rows[0] || null;
+}
+
+export async function getAllVerificationRequests() {
+  const rows = await db.select({
+    id: verificationRequests.id,
+    userId: verificationRequests.userId,
+    reason: verificationRequests.reason,
+    socialLink: verificationRequests.socialLink,
+    status: verificationRequests.status,
+    adminNote: verificationRequests.adminNote,
+    createdAt: verificationRequests.createdAt,
+    username: users.username,
+    email: users.email,
+  })
+    .from(verificationRequests)
+    .leftJoin(users, eq(verificationRequests.userId, users.id))
+    .orderBy(desc(verificationRequests.createdAt));
+  return rows;
+}
+
+export async function updateVerificationRequest(id: string, status: "approved" | "rejected", adminNote?: string): Promise<void> {
+  await db.update(verificationRequests)
+    .set({ status, adminNote: adminNote || null })
+    .where(eq(verificationRequests.id, id));
+  if (status === "approved") {
+    const [req] = await db.select().from(verificationRequests).where(eq(verificationRequests.id, id)).limit(1);
+    if (req) {
+      await db.update(users).set({ isVerified: true }).where(eq(users.id, req.userId));
+    }
+  }
+}
 
 export type { User, PublicUser, Tag, Quote, QuoteWithTags, GiftType, WithdrawalMethod, WithdrawalRequest, Waitlist, FlowerTransaction, TopupPackage, TopupRequest, BetaCode, GiftRoleApplication, Ad, QuoteCommentWithUser, CollectionWithMeta, QuoteBattleWithQuotes, UserBadge, UserStreak };

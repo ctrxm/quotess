@@ -261,6 +261,20 @@ async function runMigrations() {
     )
   `);
 
+  await ensureTable("users_is_verified", `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified boolean NOT NULL DEFAULT false`);
+
+  await ensureTable("verification_requests", `
+    CREATE TABLE IF NOT EXISTS verification_requests (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      reason text NOT NULL,
+      social_link text,
+      status varchar NOT NULL DEFAULT 'pending',
+      admin_note text,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+
   await ensureTable("idx_quotes_status", `CREATE INDEX IF NOT EXISTS idx_quotes_status ON quotes(status)`);
   await ensureTable("idx_quotes_mood", `CREATE INDEX IF NOT EXISTS idx_quotes_mood ON quotes(mood)`);
   await ensureTable("idx_quotes_author", `CREATE INDEX IF NOT EXISTS idx_quotes_author ON quotes(author)`);

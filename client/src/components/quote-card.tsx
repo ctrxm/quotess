@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Copy, Check, Share2, Heart, Flower, Bookmark, MessageCircle } from "lucide-react";
+import { Copy, Check, Share2, Heart, Flower, Bookmark, MessageCircle, BadgeCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -128,7 +128,7 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
           <p className="text-sm font-semibold text-black/70">
             —{" "}
             <span
-              className="hover:underline cursor-pointer hover:text-black"
+              className="hover:underline cursor-pointer hover:text-black inline-flex items-center gap-1"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -137,6 +137,9 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
               data-testid={`link-author-${quote.id}`}
             >
               {displayAuthor}
+              {quote.authorUser?.isVerified && (
+                <BadgeCheck className="w-4 h-4 text-blue-500 fill-blue-500 inline-block flex-shrink-0" data-testid={`verified-badge-${quote.id}`} />
+              )}
             </span>
           </p>
         )}

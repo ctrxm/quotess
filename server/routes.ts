@@ -155,8 +155,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           storage.getQuotesByUsername(username, req.user?.id),
           storage.getUserStatsByUsername(username),
         ]);
-        if (!stats) return res.json({ author: `@${username}`, quotes: [], stats: { totalQuotes: 0, totalLikes: 0, totalViews: 0 } });
-        res.json({ author: `@${username}`, quotes: quotesResult, stats });
+        if (!stats) return res.json({ author: `@${username}`, quotes: [], stats: { totalQuotes: 0, totalLikes: 0, totalViews: 0 }, isVerified: false });
+        res.json({ author: `@${username}`, quotes: quotesResult, stats, isVerified: stats.isVerified });
       } else {
         const [quotesResult, stats] = await Promise.all([
           storage.getQuotesByAuthor(param, req.user?.id),
@@ -299,13 +299,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   app.patch("/api/admin/users/:id", requireAdmin, async (req: Request, res: Response) => {
     try {
-      const { isActive, hasBetaAccess, isGiveEnabled, role, flowersBalance } = req.body;
+      const { isActive, hasBetaAccess, isGiveEnabled, role, flowersBalance, isVerified } = req.body;
       const data: any = {};
       if (isActive !== undefined) data.isActive = isActive;
       if (hasBetaAccess !== undefined) data.hasBetaAccess = hasBetaAccess;
       if (isGiveEnabled !== undefined) data.isGiveEnabled = isGiveEnabled;
       if (role !== undefined) data.role = role;
       if (flowersBalance !== undefined) data.flowersBalance = parseInt(flowersBalance);
+      if (isVerified !== undefined) data.isVerified = isVerified;
       await storage.updateUser(req.params.id, data);
       res.json({ success: true });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
@@ -676,13 +677,42 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
+  // ─── VERIFICATION ────────────────────────────────────
+  app.get("/api/verification/my", requireAuth, async (req: Request, res: Response) => {
+    try { res.json(await storage.getMyVerificationRequest(req.session.userId!)); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/verification/apply", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { reason, socialLink } = req.body;
+      if (!reason || reason.length < 10) return res.status(400).json({ error: "Alasan minimal 10 karakter" });
+      const result = await storage.submitVerificationRequest(req.session.userId!, reason, socialLink);
+      res.status(201).json(result);
+    } catch (e: any) { res.status(400).json({ error: e.message }); }
+  });
+
+  app.get("/api/admin/verifications", requireAdmin, async (_req: Request, res: Response) => {
+    try { res.json(await storage.getAllVerificationRequests()); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.patch("/api/admin/verifications/:id", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const { status, adminNote } = req.body;
+      await storage.updateVerificationRequest(req.params.id, status, adminNote);
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
   // ─── WIDGET EMBED ─────────────────────────────────────
   app.get("/api/embed/random", async (_req: Request, res: Response) => {
     try {
       const randomPage = Math.floor(Math.random() * 5) + 1;
-      const qs = await storage.getQuotes({ page: randomPage, limit: 1 });
-      if (qs.length === 0) return res.status(404).json({ error: "No quotes" });
-      res.json({ text: qs[0].text, author: qs[0].author, mood: qs[0].mood, id: qs[0].id });
+      const result = await storage.getQuotes({ page: randomPage, limit: 1 });
+      if (!result.quotes || result.quotes.length === 0) return res.status(404).json({ error: "No quotes" });
+      const q = result.quotes[0];
+      res.json({ text: q.text, author: q.author, mood: q.mood, id: q.id });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Check, X, Clock, Users, Settings, Flower, Wallet, ListOrdered, Lock, Mail, Toggle, ArrowRight, Copy, Plus, KeyRound, ShoppingBag, Gift, Megaphone, ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { Shield, Check, X, Clock, Users, Settings, Flower, Wallet, ListOrdered, Lock, Mail, Toggle, ArrowRight, Copy, Plus, KeyRound, ShoppingBag, Gift, Megaphone, ExternalLink, Pencil, Trash2, BadgeCheck } from "lucide-react";
 import type { QuoteWithTags, User, Waitlist, GiftType, WithdrawalRequest, WithdrawalMethod, TopupPackage, TopupRequest, BetaCode, Ad } from "@shared/schema";
 import { MOOD_LABELS, MOOD_COLORS } from "@shared/schema";
 import type { Mood } from "@shared/schema";
@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { Link, useLocation } from "wouter";
 
-type Tab = "quotes" | "users" | "waitlist" | "gifts" | "giftroles" | "withdrawals" | "topup" | "betacodes" | "ads" | "settings";
+type Tab = "quotes" | "users" | "waitlist" | "gifts" | "giftroles" | "withdrawals" | "topup" | "betacodes" | "ads" | "verifications" | "settings";
 
 export default function Admin() {
   const { user, isLoading: authLoading } = useAuth();
@@ -42,6 +42,7 @@ export default function Admin() {
     { id: "topup", label: "Top Up", icon: ShoppingBag },
     { id: "betacodes", label: "Beta Code", icon: KeyRound },
     { id: "ads", label: "Iklan", icon: Megaphone },
+    { id: "verifications", label: "Verifikasi", icon: BadgeCheck },
     { id: "settings", label: "Pengaturan", icon: Settings },
   ];
 
@@ -72,6 +73,7 @@ export default function Admin() {
       {tab === "topup" && <TopupTab qc={qc} toast={toast} />}
       {tab === "betacodes" && <BetaCodesTab qc={qc} toast={toast} />}
       {tab === "ads" && <AdsTab qc={qc} toast={toast} />}
+      {tab === "verifications" && <VerificationsTab qc={qc} toast={toast} />}
       {tab === "settings" && <SettingsTab qc={qc} toast={toast} />}
     </div>
   );
@@ -1144,6 +1146,152 @@ function AdsTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast: R
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+interface VerificationEntry {
+  id: string;
+  userId: string;
+  reason: string;
+  socialLink?: string | null;
+  status: string;
+  adminNote?: string | null;
+  createdAt: string;
+  username?: string | null;
+  email?: string | null;
+}
+
+function VerificationsTab({ qc, toast }: any) {
+  const { data: requests = [], isLoading } = useQuery<VerificationEntry[]>({
+    queryKey: ["/api/admin/verifications"],
+    queryFn: () => fetch("/api/admin/verifications", { credentials: "include" }).then(r => r.json()),
+  });
+  const [noteId, setNoteId] = useState<string | null>(null);
+  const [adminNote, setAdminNote] = useState("");
+
+  const { mutate: updateRequest } = useMutation({
+    mutationFn: ({ id, status, adminNote }: { id: string; status: string; adminNote?: string }) =>
+      apiRequest("PATCH", `/api/admin/verifications/${id}`, { status, adminNote }),
+    onSuccess: () => {
+      toast({ title: "Berhasil!", description: "Status verifikasi diperbarui" });
+      qc.invalidateQueries({ queryKey: ["/api/admin/verifications"] });
+      setNoteId(null);
+      setAdminNote("");
+    },
+    onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
+  });
+
+  if (isLoading) return <div className="border-4 border-black rounded-xl h-40 bg-gray-100 animate-pulse shadow-[6px_6px_0px_black]" />;
+
+  const pending = requests.filter(r => r.status === "pending");
+  const processed = requests.filter(r => r.status !== "pending");
+
+  return (
+    <div className="flex flex-col gap-4">
+      <h2 className="font-black text-lg flex items-center gap-2">
+        <BadgeCheck className="w-5 h-5 text-blue-500" />
+        Pengajuan Verifikasi ({pending.length} pending)
+      </h2>
+
+      {requests.length === 0 ? (
+        <div className="border-4 border-black rounded-xl bg-gray-50 p-8 shadow-[4px_4px_0px_black] text-center">
+          <BadgeCheck className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+          <p className="font-black text-sm text-gray-400">Belum ada pengajuan verifikasi</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {[...pending, ...processed].map((req) => (
+            <div key={req.id} className={`border-4 border-black rounded-xl p-4 shadow-[4px_4px_0px_black] ${req.status === "pending" ? "bg-yellow-50" : req.status === "approved" ? "bg-green-50" : "bg-red-50"}`}>
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex-1 min-w-0">
+                  <p className="font-black text-sm flex items-center gap-1">
+                    @{req.username || "unknown"}
+                    {req.status === "approved" && <BadgeCheck className="w-4 h-4 text-blue-500 fill-blue-500" />}
+                  </p>
+                  <p className="text-xs text-gray-500">{req.email}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {new Date(req.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                  </p>
+                </div>
+                <span className={`px-2 py-1 text-xs font-black rounded border-2 ${req.status === "pending" ? "bg-yellow-200 border-yellow-400" : req.status === "approved" ? "bg-green-200 border-green-400" : "bg-red-200 border-red-400"}`}>
+                  {req.status === "pending" ? "Pending" : req.status === "approved" ? "Approved" : "Rejected"}
+                </span>
+              </div>
+              <p className="text-sm font-semibold border-l-2 border-gray-300 pl-2 mb-2 italic">"{req.reason}"</p>
+              {req.socialLink && (
+                <a href={req.socialLink} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 font-semibold flex items-center gap-1 mb-2">
+                  <ExternalLink className="w-3 h-3" /> {req.socialLink}
+                </a>
+              )}
+              {req.adminNote && (
+                <p className="text-xs bg-white border border-gray-200 rounded p-2 mb-2">Admin: {req.adminNote}</p>
+              )}
+              {req.status === "pending" && (
+                <div className="flex flex-col gap-2 mt-2">
+                  {noteId === req.id ? (
+                    <div className="flex flex-col gap-2">
+                      <input
+                        value={adminNote}
+                        onChange={(e) => setAdminNote(e.target.value)}
+                        placeholder="Catatan admin (opsional)"
+                        className="border-2 border-black rounded-lg px-3 py-2 text-sm"
+                        data-testid={`input-admin-note-${req.id}`}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => updateRequest({ id: req.id, status: "approved", adminNote })}
+                          className="flex-1 flex items-center justify-center gap-1 py-2 bg-green-200 border-2 border-black rounded-lg font-black text-xs shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all"
+                          data-testid={`button-approve-verify-${req.id}`}
+                        >
+                          <Check className="w-3 h-3" /> Approve
+                        </button>
+                        <button
+                          onClick={() => updateRequest({ id: req.id, status: "rejected", adminNote })}
+                          className="flex-1 flex items-center justify-center gap-1 py-2 bg-red-200 border-2 border-black rounded-lg font-black text-xs shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all"
+                          data-testid={`button-reject-verify-${req.id}`}
+                        >
+                          <X className="w-3 h-3" /> Reject
+                        </button>
+                        <button
+                          onClick={() => { setNoteId(null); setAdminNote(""); }}
+                          className="py-2 px-3 bg-white border-2 border-black rounded-lg font-black text-xs shadow-[2px_2px_0px_black]"
+                        >
+                          Batal
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => updateRequest({ id: req.id, status: "approved" })}
+                        className="flex-1 flex items-center justify-center gap-1 py-2 bg-green-200 border-2 border-black rounded-lg font-black text-xs shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all"
+                        data-testid={`button-quick-approve-${req.id}`}
+                      >
+                        <Check className="w-3 h-3" /> Approve
+                      </button>
+                      <button
+                        onClick={() => updateRequest({ id: req.id, status: "rejected" })}
+                        className="flex-1 flex items-center justify-center gap-1 py-2 bg-red-200 border-2 border-black rounded-lg font-black text-xs shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all"
+                        data-testid={`button-quick-reject-${req.id}`}
+                      >
+                        <X className="w-3 h-3" /> Reject
+                      </button>
+                      <button
+                        onClick={() => setNoteId(req.id)}
+                        className="py-2 px-3 bg-[#FFF3B0] border-2 border-black rounded-lg font-black text-xs shadow-[2px_2px_0px_black]"
+                        data-testid={`button-note-verify-${req.id}`}
+                      >
+                        + Catatan
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

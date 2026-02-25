@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRoute } from "wouter";
-import { User, Heart, Eye, BookOpen, ArrowLeft, UserPlus, UserCheck, Users } from "lucide-react";
+import { User, Heart, Eye, BookOpen, ArrowLeft, UserPlus, UserCheck, Users, BadgeCheck } from "lucide-react";
 import { Link } from "wouter";
 import QuoteCard from "@/components/quote-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +13,7 @@ interface AuthorData {
   author: string;
   quotes: QuoteWithTags[];
   stats: { totalQuotes: number; totalLikes: number; totalViews: number };
+  isVerified?: boolean;
 }
 
 export default function Author() {
@@ -92,7 +93,10 @@ export default function Author() {
               <User className="w-8 h-8" />
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl md:text-4xl font-black text-black" data-testid="text-author-name">{data.author}</h1>
+              <h1 className="text-2xl md:text-4xl font-black text-black flex items-center gap-2" data-testid="text-author-name">
+                {data.author}
+                {data.isVerified && <BadgeCheck className="w-6 h-6 text-blue-500 fill-blue-500 flex-shrink-0" data-testid="verified-badge-author" />}
+              </h1>
               <div className="flex items-center gap-3 mt-1">
                 <span className="text-sm font-semibold text-black/60 flex items-center gap-1">
                   <Users className="w-4 h-4" /> {followersCount} pengikut
