@@ -1799,25 +1799,33 @@ function getApiKey() {
 async function createQrisPayment(amount, callbackUrl) {
   const apiKey = getApiKey();
   if (!apiKey) {
-    console.error("[bayar.gg] BAYAR_GG_API_KEY not set");
+    console.error("[bayar.gg] BAYAR_GG_API_KEY not set. Available env vars with BAYAR:", Object.keys(process.env).filter((k) => k.includes("BAYAR")).join(", ") || "none");
     return { success: false, error: "API key not configured" };
   }
+  console.log("[bayar.gg] API key found, length:", apiKey.length, "first 4 chars:", apiKey.substring(0, 4));
   try {
     const url = `${BAYAR_GG_BASE}/create-payment.php?apiKey=${apiKey}`;
+    const body = {
+      amount,
+      payment_method: "gopay_qris",
+      callback_url: callbackUrl || void 0
+    };
+    console.log("[bayar.gg] Request:", JSON.stringify({ url: url.replace(apiKey, "***"), body }));
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        amount,
-        payment_method: "gopay_qris",
-        callback_url: callbackUrl || void 0
-      })
+      body: JSON.stringify(body)
     });
-    const json = await res.json();
-    console.log("[bayar.gg] create-payment response:", JSON.stringify(json));
-    return json;
+    const text2 = await res.text();
+    console.log("[bayar.gg] Raw response status:", res.status, "body:", text2);
+    try {
+      const json = JSON.parse(text2);
+      return json;
+    } catch {
+      return { success: false, error: `Invalid JSON response: ${text2.substring(0, 200)}` };
+    }
   } catch (e) {
-    console.error("[bayar.gg] create-payment error:", e.message);
+    console.error("[bayar.gg] create-payment fetch error:", e.message, e.stack);
     return { success: false, error: e.message };
   }
 }
@@ -2270,6 +2278,14 @@ async function registerRoutes(httpServer2, app2) {
       res.status(500).json({ error: e.message });
     }
   });
+  app2.get("/api/topup/test-qris", async (_req, res) => {
+    try {
+      const qris = await createQrisPayment(1e3);
+      res.json({ qris, envKeyExists: !!process.env.BAYAR_GG_API_KEY, envKeyLength: (process.env.BAYAR_GG_API_KEY || "").length });
+    } catch (e) {
+      res.json({ error: e.message });
+    }
+  });
   app2.post("/api/topup/request", requireAuth, async (req, res) => {
     try {
       const { packageId } = req.body;
@@ -2282,8 +2298,9 @@ async function registerRoutes(httpServer2, app2) {
       const callbackUrl = `${protocol}://${host}/api/topup/callback`;
       const qris = await createQrisPayment(pkg.priceIdr, callbackUrl);
       if (!qris.success || !qris.data) {
-        console.error("[topup] QRIS payment creation failed:", qris.error || "Unknown error");
-        return res.status(500).json({ error: "Gagal membuat pembayaran QRIS. Silakan coba lagi." });
+        const detail = qris.error || "Unknown error";
+        console.error("[topup] QRIS payment creation failed:", detail, JSON.stringify(qris));
+        return res.status(500).json({ error: `Gagal membuat pembayaran QRIS: ${detail}` });
       }
       const result = await storage.createTopupRequest(req.user.id, packageId, {
         invoiceId: qris.data.invoice_id,

@@ -407,6 +407,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
+  app.get("/api/topup/test-qris", async (_req: Request, res: Response) => {
+    try {
+      const qris = await createQrisPayment(1000);
+      res.json({ qris, envKeyExists: !!process.env.BAYAR_GG_API_KEY, envKeyLength: (process.env.BAYAR_GG_API_KEY || "").length });
+    } catch (e: any) { res.json({ error: e.message }); }
+  });
+
   app.post("/api/topup/request", requireAuth, async (req: Request, res: Response) => {
     try {
       const { packageId } = req.body;
@@ -421,8 +428,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       const qris = await createQrisPayment(pkg.priceIdr, callbackUrl);
       if (!qris.success || !qris.data) {
-        console.error("[topup] QRIS payment creation failed:", qris.error || "Unknown error");
-        return res.status(500).json({ error: "Gagal membuat pembayaran QRIS. Silakan coba lagi." });
+        const detail = qris.error || "Unknown error";
+        console.error("[topup] QRIS payment creation failed:", detail, JSON.stringify(qris));
+        return res.status(500).json({ error: `Gagal membuat pembayaran QRIS: ${detail}` });
       }
 
       const result = await storage.createTopupRequest(req.user!.id, packageId, {
