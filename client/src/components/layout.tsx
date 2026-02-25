@@ -80,7 +80,7 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   const navBtnClass = (active: boolean) =>
-    `px-3 py-2 font-bold text-xs border-2 border-black dark:border-[#555] rounded-md cursor-pointer transition-all duration-100 inline-flex items-center gap-1 ${active ? "bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#1a1a18] shadow-[3px_3px_0px_#FFF3B0] dark:shadow-[3px_3px_0px_#555]" : "bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#555] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#555] hover:translate-x-[2px] hover:translate-y-[2px]"}`;
+    `px-3 py-2 font-bold text-xs border-2 border-black dark:border-[#555] rounded-md cursor-pointer transition-all duration-100 inline-flex items-center gap-1 ${active ? "bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#141420] shadow-[3px_3px_0px_#FFF3B0] dark:shadow-[3px_3px_0px_#555]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#555] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#555] hover:translate-x-[2px] hover:translate-y-[2px]"}`;
 
   const exploreLinks = [
     { href: "/explore", label: "Jelajahi", icon: <Compass className="w-3.5 h-3.5" /> },
@@ -93,12 +93,12 @@ export default function Layout({ children }: LayoutProps) {
   const unreadCount = notifCount?.count || 0;
 
   return (
-    <div className="min-h-screen bg-[#FFF8F0] dark:bg-[#1a1a18] flex flex-col transition-colors" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-      <header className="sticky top-0 z-50 bg-[#FFF8F0] dark:bg-[#1a1a18] border-b-4 border-black dark:border-[#555]">
+    <div className="min-h-screen bg-[#FFF8F0] dark:bg-[#141420] flex flex-col transition-colors" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+      <header className="sticky top-0 z-50 bg-[#FFF8F0] dark:bg-[#141420] border-b-4 border-black dark:border-[#555]">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <Link href="/" data-testid="link-logo">
             <div className="flex items-center gap-2 cursor-pointer">
-              <div className="w-9 h-9 bg-[#FFF3B0] dark:bg-[#3d3a20] border-3 border-black dark:border-[#555] rounded-md flex items-center justify-center shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333]">
+              <div className="w-9 h-9 bg-[#FFF3B0] dark:bg-[#7a7020] border-3 border-black dark:border-[#555] rounded-md flex items-center justify-center shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444]">
                 <Feather className="w-5 h-5 text-black dark:text-[#f5f0e0]" />
               </div>
               <span className="text-xl font-black tracking-tight text-black dark:text-[#f5f0e0] hidden sm:block">
@@ -123,10 +123,10 @@ export default function Layout({ children }: LayoutProps) {
                 <Compass className="w-3.5 h-3.5" /> Jelajahi <ChevronDown className={`w-3 h-3 transition-transform ${exploreOpen ? "rotate-180" : ""}`} />
               </button>
               {exploreOpen && (
-                <div className="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-[#2a2a28] border-3 border-black dark:border-[#555] rounded-xl shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#333] overflow-hidden z-50">
+                <div className="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-[#22222e] border-3 border-black dark:border-[#555] rounded-xl shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#444] overflow-hidden z-50">
                   {exploreLinks.map((link) => (
                     <Link key={link.href} href={link.href} onClick={() => setExploreOpen(false)}>
-                      <div className={`flex items-center gap-2 px-4 py-2.5 font-semibold text-sm cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 text-black dark:text-[#f5f0e0] ${isActive(link.href) ? "bg-[#FFF3B0] dark:bg-[#3d3a20] font-black" : "hover:bg-gray-50 dark:hover:bg-[#333]"}`} data-testid={`link-nav-${link.label.toLowerCase()}`}>
+                      <div className={`flex items-center gap-2 px-4 py-2.5 font-semibold text-sm cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 text-black dark:text-[#f5f0e0] ${isActive(link.href) ? "bg-[#FFF3B0] dark:bg-[#7a7020] font-black" : "hover:bg-gray-50 dark:hover:bg-[#333]"}`} data-testid={`link-nav-${link.label.toLowerCase()}`}>
                         {link.icon} {link.label}
                       </div>
                     </Link>
@@ -145,7 +145,7 @@ export default function Layout({ children }: LayoutProps) {
           <div className="hidden md:flex items-center gap-2">
             <button
               onClick={toggleTheme}
-              className="w-9 h-9 border-2 border-black dark:border-[#555] bg-white dark:bg-[#2a2a28] rounded-md flex items-center justify-center shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+              className="w-9 h-9 border-2 border-black dark:border-[#555] bg-white dark:bg-[#22222e] rounded-md flex items-center justify-center shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
               data-testid="button-theme-toggle"
             >
               {theme === "dark" ? <Sun className="w-4 h-4 text-yellow-400" /> : <Moon className="w-4 h-4 text-black" />}
@@ -156,19 +156,19 @@ export default function Layout({ children }: LayoutProps) {
                 <div className="relative" ref={notifRef}>
                   <button
                     onClick={() => { setNotifOpen(!notifOpen); if (!notifOpen && unreadCount > 0) markRead(); }}
-                    className="relative w-9 h-9 border-2 border-black dark:border-[#555] bg-white dark:bg-[#2a2a28] rounded-md flex items-center justify-center shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                    className="relative w-9 h-9 border-2 border-black dark:border-[#555] bg-white dark:bg-[#22222e] rounded-md flex items-center justify-center shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                     data-testid="button-notifications"
                   >
                     <Bell className="w-4 h-4 text-black dark:text-[#f5f0e0]" />
                     {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-[#2a2a28]" data-testid="badge-notif-count">
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-[#22222e]" data-testid="badge-notif-count">
                         {unreadCount > 9 ? "9+" : unreadCount}
                       </span>
                     )}
                   </button>
                   {notifOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-[#2a2a28] border-3 border-black dark:border-[#555] rounded-xl shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#333] overflow-hidden z-50 max-h-96 overflow-y-auto">
-                      <div className="p-3 border-b-2 border-black dark:border-[#555] bg-[#FFF3B0] dark:bg-[#3d3a20]">
+                    <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-[#22222e] border-3 border-black dark:border-[#555] rounded-xl shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#444] overflow-hidden z-50 max-h-96 overflow-y-auto">
+                      <div className="p-3 border-b-2 border-black dark:border-[#555] bg-[#FFF3B0] dark:bg-[#7a7020]">
                         <p className="font-black text-sm text-black dark:text-[#f5f0e0]">Notifikasi</p>
                       </div>
                       {notifs.length === 0 ? (
@@ -196,10 +196,10 @@ export default function Layout({ children }: LayoutProps) {
                 <div className="relative">
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className="flex items-center gap-2 px-3 py-2 border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#2a2a28] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold text-sm text-black dark:text-[#f5f0e0]"
+                    className="flex items-center gap-2 px-3 py-2 border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#22222e] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold text-sm text-black dark:text-[#f5f0e0]"
                     data-testid="button-user-menu"
                   >
-                    <div className="w-6 h-6 bg-[#FFF3B0] dark:bg-[#3d3a20] border-2 border-black dark:border-[#555] rounded-full flex items-center justify-center">
+                    <div className="w-6 h-6 bg-[#FFF3B0] dark:bg-[#7a7020] border-2 border-black dark:border-[#555] rounded-full flex items-center justify-center">
                       <User className="w-3 h-3" />
                     </div>
                     <span className="max-w-[100px] truncate">{user.username}</span>
@@ -208,8 +208,8 @@ export default function Layout({ children }: LayoutProps) {
                     <ChevronDown className="w-3 h-3" />
                   </button>
                   {userMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-[#2a2a28] border-3 border-black dark:border-[#555] rounded-xl shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#333] overflow-hidden z-50">
-                      <div className="p-3 border-b-2 border-black dark:border-[#555] bg-[#FFF3B0] dark:bg-[#3d3a20]">
+                    <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-[#22222e] border-3 border-black dark:border-[#555] rounded-xl shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#444] overflow-hidden z-50">
+                      <div className="p-3 border-b-2 border-black dark:border-[#555] bg-[#FFF3B0] dark:bg-[#7a7020]">
                         <p className="font-black text-sm flex items-center gap-1 text-black dark:text-[#f5f0e0]">
                           {user.username}
                           {user.isVerified && <BadgeCheck className="w-4 h-4 text-blue-500 fill-blue-500" />}
@@ -262,12 +262,12 @@ export default function Layout({ children }: LayoutProps) {
             ) : (
               <div className="flex items-center gap-2">
                 <Link href="/donate">
-                  <span className="px-3 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer bg-red-50 dark:bg-red-900/20 shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-1 text-black dark:text-[#f5f0e0]" data-testid="link-donate-guest">
+                  <span className="px-3 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer bg-red-50 dark:bg-red-900/20 shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-1 text-black dark:text-[#f5f0e0]" data-testid="link-donate-guest">
                     <Heart className="w-3.5 h-3.5 text-red-500" /> Donasi
                   </span>
                 </Link>
                 <Link href="/auth">
-                  <span className="px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#1a1a18] shadow-[3px_3px_0px_#FFF3B0] dark:shadow-[3px_3px_0px_#555] hover:shadow-[1px_1px_0px_#FFF3B0] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="link-login">
+                  <span className="px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#141420] shadow-[3px_3px_0px_#FFF3B0] dark:shadow-[3px_3px_0px_#555] hover:shadow-[1px_1px_0px_#FFF3B0] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="link-login">
                     Masuk
                   </span>
                 </Link>
@@ -278,7 +278,7 @@ export default function Layout({ children }: LayoutProps) {
           <div className="md:hidden flex items-center gap-2">
             <button
               onClick={toggleTheme}
-              className="w-9 h-9 border-2 border-black dark:border-[#555] bg-white dark:bg-[#2a2a28] rounded-md flex items-center justify-center shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333] active:shadow-[1px_1px_0px_black] active:translate-x-[2px] active:translate-y-[2px]"
+              className="w-9 h-9 border-2 border-black dark:border-[#555] bg-white dark:bg-[#22222e] rounded-md flex items-center justify-center shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444] active:shadow-[1px_1px_0px_black] active:translate-x-[2px] active:translate-y-[2px]"
               data-testid="button-theme-toggle-mobile"
             >
               {theme === "dark" ? <Sun className="w-4 h-4 text-yellow-400" /> : <Moon className="w-4 h-4 text-black" />}
@@ -286,66 +286,66 @@ export default function Layout({ children }: LayoutProps) {
             {user && (
               <button
                 onClick={() => { setNotifOpen(!notifOpen); if (!notifOpen && unreadCount > 0) markRead(); }}
-                className="relative w-9 h-9 border-2 border-black dark:border-[#555] bg-white dark:bg-[#2a2a28] rounded-md flex items-center justify-center shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333] active:shadow-[1px_1px_0px_black] active:translate-x-[2px] active:translate-y-[2px]"
+                className="relative w-9 h-9 border-2 border-black dark:border-[#555] bg-white dark:bg-[#22222e] rounded-md flex items-center justify-center shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444] active:shadow-[1px_1px_0px_black] active:translate-x-[2px] active:translate-y-[2px]"
                 data-testid="button-notifications-mobile"
               >
                 <Bell className="w-4 h-4 text-black dark:text-[#f5f0e0]" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-[#2a2a28]">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-[#22222e]">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
               </button>
             )}
-            <button className="w-9 h-9 border-2 border-black dark:border-[#555] bg-white dark:bg-[#2a2a28] rounded-md flex items-center justify-center shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333] active:shadow-[1px_1px_0px_black] active:translate-x-[2px] active:translate-y-[2px]" onClick={() => setMenuOpen(!menuOpen)} data-testid="button-mobile-menu">
+            <button className="w-9 h-9 border-2 border-black dark:border-[#555] bg-white dark:bg-[#22222e] rounded-md flex items-center justify-center shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444] active:shadow-[1px_1px_0px_black] active:translate-x-[2px] active:translate-y-[2px]" onClick={() => setMenuOpen(!menuOpen)} data-testid="button-mobile-menu">
               {menuOpen ? <X className="w-5 h-5 text-black dark:text-[#f5f0e0]" /> : <Menu className="w-5 h-5 text-black dark:text-[#f5f0e0]" />}
             </button>
           </div>
         </div>
 
         {menuOpen && (
-          <div className="md:hidden border-t-4 border-black dark:border-[#555] bg-[#FFF8F0] dark:bg-[#1a1a18] px-4 py-3 flex flex-col gap-2">
+          <div className="md:hidden border-t-4 border-black dark:border-[#555] bg-[#FFF8F0] dark:bg-[#141420] px-4 py-3 flex flex-col gap-2">
             <Link href="/" onClick={() => setMenuOpen(false)}>
-              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer ${isActive("/") && location === "/" ? "bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#1a1a18]" : "bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0]"}`}>Beranda</span>
+              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer ${isActive("/") && location === "/" ? "bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#141420]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0]"}`}>Beranda</span>
             </Link>
             {exploreLinks.map((link) => (
               <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)}>
-                <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer flex items-center gap-2 ${isActive(link.href) ? "bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#1a1a18]" : "bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0]"}`}>
+                <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer flex items-center gap-2 ${isActive(link.href) ? "bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#141420]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0]"}`}>
                   {link.icon} {link.label}
                 </span>
               </Link>
             ))}
             <Link href="/battle" onClick={() => setMenuOpen(false)}>
-              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer flex items-center gap-2 ${isActive("/battle") ? "bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#1a1a18]" : "bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0]"}`}>
+              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer flex items-center gap-2 ${isActive("/battle") ? "bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#141420]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0]"}`}>
                 <Swords className="w-3.5 h-3.5" /> Battle
               </span>
             </Link>
             <Link href="/submit" onClick={() => setMenuOpen(false)}>
-              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer text-black dark:text-[#f5f0e0] ${isActive("/submit") ? "bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#1a1a18]" : "bg-white dark:bg-[#2a2a28]"}`}>Submit Quote</span>
+              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer text-black dark:text-[#f5f0e0] ${isActive("/submit") ? "bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#141420]" : "bg-white dark:bg-[#22222e]"}`}>Submit Quote</span>
             </Link>
             {user ? (
               <>
                 <Link href="/profile" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#2a2a28] flex items-center gap-1 text-black dark:text-[#f5f0e0]">
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#22222e] flex items-center gap-1 text-black dark:text-[#f5f0e0]">
                     Profil (@{user.username})
                     {user.isVerified && <BadgeCheck className="w-4 h-4 text-blue-500 fill-blue-500" />}
                   </span>
                 </Link>
                 <Link href="/stats" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-[#C1F0C1] dark:bg-[#1a3d1a] flex items-center gap-1 text-black dark:text-[#f5f0e0]">
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-[#C1F0C1] dark:bg-[#1a6a2a] flex items-center gap-1 text-black dark:text-[#f5f0e0]">
                     <BarChart3 className="w-3.5 h-3.5" /> Statistik
                   </span>
                 </Link>
                 <Link href="/verification" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-[#B8DBFF] dark:bg-[#203040] flex items-center gap-1 text-black dark:text-[#f5f0e0]">
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-[#B8DBFF] dark:bg-[#1a4070] flex items-center gap-1 text-black dark:text-[#f5f0e0]">
                     <BadgeCheck className="w-3.5 h-3.5" /> Centang Biru
                   </span>
                 </Link>
                 <Link href="/referral" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-[#DDB8FF] dark:bg-[#2d1f3d] text-black dark:text-[#f5f0e0]">Referral</span>
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-[#DDB8FF] dark:bg-[#5a3090] text-black dark:text-[#f5f0e0]">Referral</span>
                 </Link>
                 <Link href="/topup" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-yellow-50 dark:bg-[#3d3a20] text-black dark:text-[#f5f0e0]">Top Up Bunga</span>
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-yellow-50 dark:bg-[#7a7020] text-black dark:text-[#f5f0e0]">Top Up Bunga</span>
                 </Link>
                 <Link href="/donate" onClick={() => setMenuOpen(false)}>
                   <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-red-50 dark:bg-red-900/20 flex items-center gap-1 text-black dark:text-[#f5f0e0]">
@@ -354,7 +354,7 @@ export default function Layout({ children }: LayoutProps) {
                 </Link>
                 {user.isGiveEnabled && (
                   <Link href="/withdraw" onClick={() => setMenuOpen(false)}>
-                    <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0]">Tarik Bunga ({user.flowersBalance})</span>
+                    <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0]">Tarik Bunga ({user.flowersBalance})</span>
                   </Link>
                 )}
                 {user.role === "admin" && (
@@ -374,7 +374,7 @@ export default function Layout({ children }: LayoutProps) {
                   </span>
                 </Link>
                 <Link href="/auth" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#1a1a18] text-center">Masuk / Daftar</span>
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#141420] text-center">Masuk / Daftar</span>
                 </Link>
               </>
             )}
@@ -382,7 +382,7 @@ export default function Layout({ children }: LayoutProps) {
         )}
 
         {notifOpen && (
-          <div className="md:hidden border-t-2 border-black dark:border-[#555] bg-white dark:bg-[#2a2a28] max-h-64 overflow-y-auto">
+          <div className="md:hidden border-t-2 border-black dark:border-[#555] bg-white dark:bg-[#22222e] max-h-64 overflow-y-auto">
             {notifs.length === 0 ? (
               <p className="text-sm text-gray-400 font-semibold text-center py-4">Belum ada notifikasi</p>
             ) : (

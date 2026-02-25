@@ -15,12 +15,12 @@ interface QuoteCardProps {
 }
 
 const CARD_ACCENT_COLORS = [
-  { light: "bg-[#FFF3B0]", dark: "dark:bg-[#3d3a20]" },
-  { light: "bg-[#C1F0C1]", dark: "dark:bg-[#1a3d1a]" },
-  { light: "bg-[#B8DBFF]", dark: "dark:bg-[#203040]" },
-  { light: "bg-[#FFD1A9]", dark: "dark:bg-[#3d2a1a]" },
-  { light: "bg-[#DDB8FF]", dark: "dark:bg-[#2d1f3d]" },
-  { light: "bg-[#FFB3B3]", dark: "dark:bg-[#4a2020]" },
+  { light: "bg-[#FFF3B0]", dark: "dark:bg-[#7a7020]" },
+  { light: "bg-[#C1F0C1]", dark: "dark:bg-[#1a6a2a]" },
+  { light: "bg-[#B8DBFF]", dark: "dark:bg-[#1a4070]" },
+  { light: "bg-[#FFD1A9]", dark: "dark:bg-[#8a5020]" },
+  { light: "bg-[#DDB8FF]", dark: "dark:bg-[#5a3090]" },
+  { light: "bg-[#FFB3B3]", dark: "dark:bg-[#8a2530]" },
 ];
 
 function getCardColor(id: string): { light: string; dark: string } {
@@ -140,7 +140,7 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
     : quote.author ? `/author/${encodeURIComponent(quote.author)}` : null;
 
   const cardContent = (
-    <div className={`border-4 border-black dark:border-[#555] rounded-lg shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#333] ${cardColor.light} ${cardColor.dark} transition-all duration-100 hover:shadow-[3px_3px_0px_black] dark:hover:shadow-[3px_3px_0px_#333] hover:translate-x-[3px] hover:translate-y-[3px] flex flex-col h-full`} data-testid={`card-quote-${quote.id}`}>
+    <div className={`border-4 border-black dark:border-[#555] rounded-lg shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#444] ${cardColor.light} ${cardColor.dark} transition-all duration-100 hover:shadow-[3px_3px_0px_black] dark:hover:shadow-[3px_3px_0px_#444] hover:translate-x-[3px] hover:translate-y-[3px] flex flex-col h-full`} data-testid={`card-quote-${quote.id}`}>
       <div className="p-5 flex-1 flex flex-col gap-3">
         <div className="flex items-start justify-between gap-2">
           <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold border-2 border-black dark:border-[#555] ${moodColor.bg} ${moodColor.text}`}>
@@ -190,7 +190,7 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
               <button
                 key={r.type}
                 onClick={(e) => handleReaction(e, r.type)}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-full border-2 font-bold text-xs transition-all ${isActive ? "border-black dark:border-[#f5f0e0] bg-white dark:bg-[#3a3a38] scale-110 shadow-[2px_2px_0px_black] dark:shadow-[2px_2px_0px_#333]" : "border-transparent hover:border-black/30 dark:hover:border-[#555] hover:bg-white/60 dark:hover:bg-white/10"}`}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full border-2 font-bold text-xs transition-all ${isActive ? "border-black dark:border-[#f5f0e0] bg-white dark:bg-[#32324a] scale-110 shadow-[2px_2px_0px_black] dark:shadow-[2px_2px_0px_#444]" : "border-transparent hover:border-black/30 dark:hover:border-[#555] hover:bg-white/60 dark:hover:bg-white/10"}`}
                 data-testid={`button-react-${r.type}-${quote.id}`}
               >
                 <span className="text-base">{r.emoji}</span>

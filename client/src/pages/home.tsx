@@ -10,7 +10,7 @@ import { MOODS, MOOD_LABELS, MOOD_COLORS } from "@shared/schema";
 
 function QuoteCardSkeleton() {
   return (
-    <div className="border-4 border-black dark:border-[#555] rounded-lg shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#333] bg-gray-100 dark:bg-[#2a2a28] h-52 animate-pulse" />
+    <div className="border-4 border-black dark:border-[#555] rounded-lg shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#444] bg-gray-100 dark:bg-[#22222e] h-52 animate-pulse" />
   );
 }
 
@@ -77,7 +77,7 @@ export default function Home() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <section className="mb-10">
-        <div className="border-4 border-black dark:border-[#555] bg-[#FFF3B0] dark:bg-[#3d3a20] rounded-xl p-6 md:p-10 shadow-[8px_8px_0px_black] dark:shadow-[8px_8px_0px_#333] relative overflow-hidden">
+        <div className="border-4 border-black dark:border-[#555] bg-[#FFF3B0] dark:bg-[#7a7020] rounded-xl p-6 md:p-10 shadow-[8px_8px_0px_black] dark:shadow-[8px_8px_0px_#444] relative overflow-hidden">
           <div className="absolute top-4 right-4 opacity-20 text-8xl font-black select-none text-black dark:text-[#f5f0e0]">"</div>
           <div className="flex items-center gap-2 mb-3">
             <Zap className="w-5 h-5 fill-black dark:fill-[#f5f0e0] text-black dark:text-[#f5f0e0]" />
@@ -92,13 +92,13 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Link href="/explore">
-              <button className="px-6 py-3 bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#1a1a18] font-black border-3 border-black dark:border-[#555] rounded-lg shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm" data-testid="button-explore-hero">
+              <button className="px-6 py-3 bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#141420] font-black border-3 border-black dark:border-[#555] rounded-lg shadow-[4px_4px_0px_#444] hover:shadow-[2px_2px_0px_#444] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm" data-testid="button-explore-hero">
                 <TrendingUp className="w-4 h-4 inline mr-1" />
                 Jelajahi Semua
               </button>
             </Link>
             <Link href="/submit">
-              <button className="px-6 py-3 bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0] font-black border-3 border-black dark:border-[#555] rounded-lg shadow-[4px_4px_0px_black] dark:shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_black] dark:hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm" data-testid="button-submit-hero">
+              <button className="px-6 py-3 bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0] font-black border-3 border-black dark:border-[#555] rounded-lg shadow-[4px_4px_0px_black] dark:shadow-[4px_4px_0px_#444] hover:shadow-[2px_2px_0px_black] dark:hover:shadow-[2px_2px_0px_#444] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm" data-testid="button-submit-hero">
                 <Sparkles className="w-4 h-4 inline mr-1" />
                 Submit Quote
               </button>
@@ -121,12 +121,12 @@ export default function Home() {
 
       <div className="flex flex-wrap gap-3 mb-8">
         <Link href="/trending">
-          <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FFD1A9] dark:bg-[#3d2a1a] font-black text-sm border-3 border-black dark:border-[#555] rounded-lg shadow-[4px_4px_0px_black] dark:shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_black] dark:hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer text-black dark:text-[#f5f0e0]" data-testid="link-trending">
+          <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FFD1A9] dark:bg-[#8a5020] font-black text-sm border-3 border-black dark:border-[#555] rounded-lg shadow-[4px_4px_0px_black] dark:shadow-[4px_4px_0px_#444] hover:shadow-[2px_2px_0px_black] dark:hover:shadow-[2px_2px_0px_#444] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer text-black dark:text-[#f5f0e0]" data-testid="link-trending">
             <TrendingUp className="w-4 h-4" /> Trending
           </span>
         </Link>
         <Link href="/maker">
-          <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#DDB8FF] dark:bg-[#2d1f3d] font-black text-sm border-3 border-black dark:border-[#555] rounded-lg shadow-[4px_4px_0px_black] dark:shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_black] dark:hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer text-black dark:text-[#f5f0e0]" data-testid="link-maker">
+          <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#DDB8FF] dark:bg-[#5a3090] font-black text-sm border-3 border-black dark:border-[#555] rounded-lg shadow-[4px_4px_0px_black] dark:shadow-[4px_4px_0px_#444] hover:shadow-[2px_2px_0px_black] dark:hover:shadow-[2px_2px_0px_#444] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer text-black dark:text-[#f5f0e0]" data-testid="link-maker">
             <Palette className="w-4 h-4" /> Quote Maker
           </span>
         </Link>
@@ -139,7 +139,7 @@ export default function Home() {
           placeholder="Cari quote atau penulis..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 border-3 border-black dark:border-[#555] rounded-lg font-semibold bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0] shadow-[4px_4px_0px_black] dark:shadow-[4px_4px_0px_#333] focus:outline-none focus:shadow-[2px_2px_0px_black] dark:focus:shadow-[2px_2px_0px_#333] focus:translate-x-[2px] focus:translate-y-[2px] transition-all text-sm placeholder:text-black/40 dark:placeholder:text-[#f5f0e0]/40"
+          className="w-full pl-12 pr-4 py-3 border-3 border-black dark:border-[#555] rounded-lg font-semibold bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0] shadow-[4px_4px_0px_black] dark:shadow-[4px_4px_0px_#444] focus:outline-none focus:shadow-[2px_2px_0px_black] dark:focus:shadow-[2px_2px_0px_#444] focus:translate-x-[2px] focus:translate-y-[2px] transition-all text-sm placeholder:text-black/40 dark:placeholder:text-[#f5f0e0]/40"
           data-testid="input-search"
         />
       </div>
@@ -149,7 +149,7 @@ export default function Home() {
           <button
             onClick={() => setActiveMood("")}
             className={`px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md transition-all duration-100 ${
-              activeMood === "" ? "bg-black dark:bg-[#f5f0e0] text-white dark:text-[#1a1a18] shadow-[2px_2px_0px_#FFF3B0] dark:shadow-[2px_2px_0px_#555]" : "bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px]"
+              activeMood === "" ? "bg-black dark:bg-[#f5f0e0] text-white dark:text-[#141420] shadow-[2px_2px_0px_#FFF3B0] dark:shadow-[2px_2px_0px_#555]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#444] hover:translate-x-[2px] hover:translate-y-[2px]"
             }`}
             data-testid="button-mood-all"
           >
@@ -160,7 +160,7 @@ export default function Home() {
               key={mood}
               onClick={() => setActiveMood(mood === activeMood ? "" : mood)}
               className={`px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md transition-all duration-100 ${
-                activeMood === mood ? "bg-black dark:bg-[#f5f0e0] text-white dark:text-[#1a1a18] shadow-[2px_2px_0px_#FFF3B0] dark:shadow-[2px_2px_0px_#555]" : "bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px]"
+                activeMood === mood ? "bg-black dark:bg-[#f5f0e0] text-white dark:text-[#141420] shadow-[2px_2px_0px_#FFF3B0] dark:shadow-[2px_2px_0px_#555]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#444] hover:translate-x-[2px] hover:translate-y-[2px]"
               }`}
               data-testid={`button-mood-${mood}`}
             >
@@ -175,7 +175,7 @@ export default function Home() {
           {Array.from({ length: 6 }).map((_, i) => <QuoteCardSkeleton key={i} />)}
         </div>
       ) : quotes.length === 0 ? (
-        <div className="border-4 border-black dark:border-[#555] rounded-xl bg-white dark:bg-[#2a2a28] p-12 text-center shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#333]">
+        <div className="border-4 border-black dark:border-[#555] rounded-xl bg-white dark:bg-[#22222e] p-12 text-center shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#444]">
           <div className="text-6xl mb-4 font-black text-gray-200 dark:text-gray-600">"</div>
           <h3 className="text-xl font-black mb-2 text-black dark:text-[#f5f0e0]">Tidak ada quote ditemukan</h3>
           <p className="text-gray-500 dark:text-gray-400 font-semibold">Coba cari dengan kata kunci lain atau ganti filter mood</p>
@@ -201,18 +201,18 @@ export default function Home() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="w-10 h-10 border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center font-bold"
+            className="w-10 h-10 border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#444] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center font-bold"
             data-testid="button-prev-page"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <span className="font-black text-sm border-2 border-black dark:border-[#555] px-4 py-2 bg-[#FFF3B0] dark:bg-[#3d3a20] text-black dark:text-[#f5f0e0] rounded-md shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333]">
+          <span className="font-black text-sm border-2 border-black dark:border-[#555] px-4 py-2 bg-[#FFF3B0] dark:bg-[#7a7020] text-black dark:text-[#f5f0e0] rounded-md shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444]">
             {page} / {totalPages}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="w-10 h-10 border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#2a2a28] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#333] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center font-bold"
+            className="w-10 h-10 border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#444] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center font-bold"
             data-testid="button-next-page"
           >
             <ChevronRight className="w-5 h-5" />
