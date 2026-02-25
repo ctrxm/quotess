@@ -156,6 +156,11 @@ export default function Layout({ children }: LayoutProps) {
                         <Flower className="w-4 h-4 text-yellow-500" /> Top Up Bunga
                       </div>
                     </Link>
+                    <Link href="/donate" onClick={() => setUserMenuOpen(false)}>
+                      <div className="flex items-center gap-2 px-4 py-2.5 font-semibold text-sm cursor-pointer hover:bg-gray-50 border-b border-gray-100" data-testid="link-donate">
+                        <Heart className="w-4 h-4 text-red-500" /> Donasi
+                      </div>
+                    </Link>
                     {user.isGiveEnabled && (
                       <Link href="/withdraw" onClick={() => setUserMenuOpen(false)}>
                         <div className="flex items-center gap-2 px-4 py-2.5 font-semibold text-sm cursor-pointer hover:bg-gray-50 border-b border-gray-100" data-testid="link-withdraw">
@@ -177,11 +182,18 @@ export default function Layout({ children }: LayoutProps) {
                 )}
               </div>
             ) : (
-              <Link href="/auth">
-                <span className="px-4 py-2 font-bold text-sm border-2 border-black rounded-md cursor-pointer bg-black text-[#FFF3B0] shadow-[3px_3px_0px_#FFF3B0] hover:shadow-[1px_1px_0px_#FFF3B0] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="link-login">
-                  Masuk
-                </span>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link href="/donate">
+                  <span className="px-3 py-2 font-bold text-sm border-2 border-black rounded-md cursor-pointer bg-red-50 shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-1" data-testid="link-donate-guest">
+                    <Heart className="w-3.5 h-3.5 text-red-500" /> Donasi
+                  </span>
+                </Link>
+                <Link href="/auth">
+                  <span className="px-4 py-2 font-bold text-sm border-2 border-black rounded-md cursor-pointer bg-black text-[#FFF3B0] shadow-[3px_3px_0px_#FFF3B0] hover:shadow-[1px_1px_0px_#FFF3B0] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="link-login">
+                    Masuk
+                  </span>
+                </Link>
+              </div>
             )}
           </div>
 
@@ -229,6 +241,11 @@ export default function Layout({ children }: LayoutProps) {
                 <Link href="/topup" onClick={() => setMenuOpen(false)}>
                   <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-yellow-50">Top Up Bunga</span>
                 </Link>
+                <Link href="/donate" onClick={() => setMenuOpen(false)}>
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-red-50 flex items-center gap-1">
+                    <Heart className="w-3.5 h-3.5 text-red-500" /> Donasi
+                  </span>
+                </Link>
                 {user.isGiveEnabled && (
                   <Link href="/withdraw" onClick={() => setMenuOpen(false)}>
                     <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-white">Tarik Bunga ({user.flowersBalance})</span>
@@ -244,9 +261,16 @@ export default function Layout({ children }: LayoutProps) {
                 </button>
               </>
             ) : (
-              <Link href="/auth" onClick={() => setMenuOpen(false)}>
-                <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-black text-[#FFF3B0] text-center">Masuk / Daftar</span>
-              </Link>
+              <>
+                <Link href="/donate" onClick={() => setMenuOpen(false)}>
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-red-50 flex items-center gap-1">
+                    <Heart className="w-3.5 h-3.5 text-red-500" /> Donasi
+                  </span>
+                </Link>
+                <Link href="/auth" onClick={() => setMenuOpen(false)}>
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black rounded-md bg-black text-[#FFF3B0] text-center">Masuk / Daftar</span>
+                </Link>
+              </>
             )}
           </div>
         )}

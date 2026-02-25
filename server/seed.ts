@@ -275,6 +275,25 @@ async function runMigrations() {
     )
   `);
 
+  await ensureTable("topup_invoice_id", `ALTER TABLE topup_requests ADD COLUMN IF NOT EXISTS invoice_id text`);
+  await ensureTable("topup_payment_url", `ALTER TABLE topup_requests ADD COLUMN IF NOT EXISTS payment_url text`);
+  await ensureTable("topup_final_amount", `ALTER TABLE topup_requests ADD COLUMN IF NOT EXISTS final_amount integer`);
+  await ensureTable("topup_payment_expiry", `ALTER TABLE topup_requests ADD COLUMN IF NOT EXISTS payment_expiry timestamptz`);
+
+  await ensureTable("donations", `
+    CREATE TABLE IF NOT EXISTS donations (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      donor_name text NOT NULL DEFAULT 'Anonim',
+      message text,
+      amount integer NOT NULL,
+      invoice_id text,
+      payment_url text,
+      final_amount integer,
+      status text NOT NULL DEFAULT 'pending',
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+
   await ensureTable("idx_quotes_status", `CREATE INDEX IF NOT EXISTS idx_quotes_status ON quotes(status)`);
   await ensureTable("idx_quotes_mood", `CREATE INDEX IF NOT EXISTS idx_quotes_mood ON quotes(mood)`);
   await ensureTable("idx_quotes_author", `CREATE INDEX IF NOT EXISTS idx_quotes_author ON quotes(author)`);

@@ -43,6 +43,7 @@ waitForPort = 5000
 
 [userenv.shared]
 SUPABASE_DATABASE_URL = "postgresql://postgres.uezfhtiddyewufyxcgtn:HendraWahyu@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres"
+BAYAR_GG_API_KEY = "API-121ecbdc4bbcddd7926da347ace71c91aff2babc333e6b37"
 
 [agent]
 expertMode = true

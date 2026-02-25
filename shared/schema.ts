@@ -165,10 +165,28 @@ export const topupRequests = pgTable("topup_requests", {
   priceIdr: integer("price_idr").notNull(),
   status: text("status").notNull().default("pending"),
   adminNote: text("admin_note"),
+  invoiceId: text("invoice_id"),
+  paymentUrl: text("payment_url"),
+  finalAmount: integer("final_amount"),
+  paymentExpiry: timestamp("payment_expiry", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`),
 });
 export type TopupRequest = typeof topupRequests.$inferSelect;
+
+// ─── DONATIONS ──────────────────────────────────────────
+export const donations = pgTable("donations", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  donorName: text("donor_name").notNull().default("Anonim"),
+  message: text("message"),
+  amount: integer("amount").notNull(),
+  invoiceId: text("invoice_id"),
+  paymentUrl: text("payment_url"),
+  finalAmount: integer("final_amount"),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+export type Donation = typeof donations.$inferSelect;
 
 // ─── GIFT ROLE APPLICATIONS ──────────────────────────────
 export const giftRoleApplications = pgTable("gift_role_applications", {

@@ -6,6 +6,7 @@ import { requireAuth, requireAdmin } from "./auth";
 import { randomUUID } from "crypto";
 import type { TopupPackage } from "@shared/schema";
 import { sendBetaCodeEmail } from "./email";
+import { createQrisPayment, checkPaymentStatus } from "./bayar";
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 function checkRateLimit(ip: string, max = 5, windowMs = 10 * 60 * 1000): boolean {
@@ -410,9 +411,54 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     try {
       const { packageId } = req.body;
       if (!packageId) return res.status(400).json({ error: "PackageId wajib diisi" });
-      const result = await storage.createTopupRequest(req.user!.id, packageId);
+      const packages = await storage.getTopupPackages();
+      const pkg = packages.find(p => p.id === packageId);
+      if (!pkg) return res.status(400).json({ error: "Paket tidak ditemukan" });
+
+      const protocol = req.headers["x-forwarded-proto"] || "https";
+      const host = req.headers.host || "localhost";
+      const callbackUrl = `${protocol}://${host}/api/topup/callback`;
+
+      const qris = await createQrisPayment(pkg.priceIdr, callbackUrl);
+      if (!qris.success || !qris.data) {
+        const result = await storage.createTopupRequest(req.user!.id, packageId);
+        return res.json(result);
+      }
+
+      const result = await storage.createTopupRequest(req.user!.id, packageId, {
+        invoiceId: qris.data.invoice_id,
+        paymentUrl: qris.data.payment_url,
+        finalAmount: qris.data.final_amount,
+        expiresAt: qris.data.expires_at,
+      });
       res.json(result);
     } catch (e: any) { res.status(400).json({ error: e.message }); }
+  });
+
+  app.get("/api/topup/check/:invoiceId", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { invoiceId } = req.params;
+      const topupReq = await storage.getTopupRequestByInvoice(invoiceId);
+      if (!topupReq || topupReq.userId !== req.user!.id) return res.status(404).json({ error: "Not found" });
+      const status = await checkPaymentStatus(invoiceId);
+      if (status.success && status.status === "paid" && topupReq.status === "pending") {
+        await storage.updateTopupStatus(topupReq.id, "confirmed", "Pembayaran otomatis via QRIS");
+      }
+      res.json({ status: status.status, paid_at: status.paid_at });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/topup/callback", async (req: Request, res: Response) => {
+    try {
+      const { invoice_id, status } = req.body;
+      if (status === "paid" && invoice_id) {
+        const topupReq = await storage.getTopupRequestByInvoice(invoice_id);
+        if (topupReq && topupReq.status === "pending") {
+          await storage.updateTopupStatus(topupReq.id, "confirmed", "Pembayaran otomatis via QRIS");
+        }
+      }
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
   app.get("/api/topup/my", requireAuth, async (req: Request, res: Response) => {
@@ -714,6 +760,57 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const q = result.quotes[0];
       res.json({ text: q.text, author: q.author, mood: q.mood, id: q.id });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── DONATIONS ─────────────────────────────────────────
+  app.post("/api/donate", async (req: Request, res: Response) => {
+    try {
+      const { donorName, amount, message } = req.body;
+      const numAmount = parseInt(amount);
+      if (!numAmount || numAmount < 1000) return res.status(400).json({ error: "Minimal donasi Rp 1.000" });
+
+      const protocol = req.headers["x-forwarded-proto"] || "https";
+      const host = req.headers.host || "localhost";
+      const callbackUrl = `${protocol}://${host}/api/donate/callback`;
+
+      const qris = await createQrisPayment(numAmount, callbackUrl);
+      if (!qris.success || !qris.data) return res.status(500).json({ error: "Gagal membuat pembayaran QRIS" });
+
+      const donation = await storage.createDonation(donorName || "Anonim", numAmount, message, {
+        invoiceId: qris.data.invoice_id,
+        paymentUrl: qris.data.payment_url,
+        finalAmount: qris.data.final_amount,
+      });
+      res.json(donation);
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.get("/api/donate/check/:invoiceId", async (req: Request, res: Response) => {
+    try {
+      const { invoiceId } = req.params;
+      const donation = await storage.getDonationByInvoice(invoiceId);
+      if (!donation) return res.status(404).json({ error: "Not found" });
+      const status = await checkPaymentStatus(invoiceId);
+      if (status.success && status.status === "paid" && donation.status === "pending") {
+        await storage.updateDonationStatus(invoiceId, "paid");
+      }
+      res.json({ status: status.status, paid_at: status.paid_at });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/donate/callback", async (req: Request, res: Response) => {
+    try {
+      const { invoice_id, status } = req.body;
+      if (status === "paid" && invoice_id) {
+        await storage.updateDonationStatus(invoice_id, "paid");
+      }
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.get("/api/donate/recent", async (_req: Request, res: Response) => {
+    try { res.json(await storage.getRecentDonations()); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
   return httpServer;

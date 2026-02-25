@@ -31,7 +31,8 @@ client/src/
     waitlist.tsx      - Waitlist signup page
     profile.tsx       - User profile: badges, streak, bookmarks tab, flower balance, gift role
     withdraw.tsx      - Flower withdrawal page
-    topup.tsx         - Flower top-up purchase page
+    topup.tsx         - Flower top-up purchase page (QRIS auto-payment via bayar.gg)
+    donate.tsx        - Public donation page (QRIS payment, no login required)
     admin.tsx         - Full admin panel
     verification.tsx  - Blue checkmark request page
   components/
@@ -51,6 +52,7 @@ server/
   auth.ts            - loadUser/requireAuth/requireAdmin middleware
   seed.ts            - Database seed + migrations (all tables + indexes)
   email.ts           - Brevo SMTP email utility (sends beta code on waitlist approval)
+  bayar.ts           - bayar.gg QRIS payment API helper (create + check payment)
 
 shared/
   schema.ts          - Drizzle tables, Zod schemas, types, constants, badge definitions
@@ -91,6 +93,16 @@ shared/
 - Flower transaction history
 - Withdrawal: 100 flowers = Rp 1,000, min 1,000 flowers
 - Referral bonus: 50 flowers for both referrer and referred
+
+### Payment (bayar.gg QRIS)
+- **Top Up**: Auto-creates QRIS payment via bayar.gg API when user selects a package
+- **Donation**: Public donation page (no login needed) with QRIS payment
+- Payment method: `gopay_qris` via bayar.gg
+- API: POST create-payment.php, GET check-payment (apiKey as query param)
+- Auto-polls payment status every 5 seconds; auto-confirms on paid
+- Callback URL registered for server-side webhook confirmation
+- Env var: `BAYAR_GG_API_KEY`
+- Tables: `topup_requests` (invoiceId, paymentUrl, finalAmount, paymentExpiry columns), `donations`
 
 ### Verified Badge System
 - `isVerified` boolean on users table

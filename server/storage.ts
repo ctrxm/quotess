@@ -9,7 +9,7 @@ import {
   quoteComments, quoteBookmarks, authorFollows,
   collections, collectionQuotes, quoteBattles, battleVotes,
   userBadges, userStreaks, referralCodes, referralUses,
-  verificationRequests,
+  verificationRequests, donations,
   REFERRAL_BONUS_FLOWERS,
   type Quote, type Tag, type QuoteWithTags, type InsertQuote,
   type User, type PublicUser, type Setting, type GiftType,
@@ -17,6 +17,7 @@ import {
   type GiftTransaction, type FlowerTransaction,
   type TopupPackage, type TopupRequest, type BetaCode, type GiftRoleApplication, type Ad,
   type QuoteCommentWithUser, type CollectionWithMeta, type QuoteBattleWithQuotes, type UserBadge, type UserStreak,
+  type Donation,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
@@ -451,14 +452,30 @@ export async function updateTopupPackage(id: string, data: Partial<TopupPackage>
   await db.update(topupPackages).set(data).where(eq(topupPackages.id, id));
 }
 
-export async function createTopupRequest(userId: string, packageId: string): Promise<TopupRequest> {
+export async function createTopupRequest(userId: string, packageId: string, invoice?: { invoiceId: string; paymentUrl: string; finalAmount: number; expiresAt: string }): Promise<TopupRequest> {
   const pkg = await db.select().from(topupPackages).where(eq(topupPackages.id, packageId)).limit(1);
   if (!pkg.length) throw new Error("Paket tidak ditemukan");
-  const [req] = await db.insert(topupRequests).values({
+  const values: any = {
     id: randomUUID(), userId, packageId,
     flowersAmount: pkg[0].flowersAmount, priceIdr: pkg[0].priceIdr, status: "pending",
-  }).returning();
+  };
+  if (invoice) {
+    values.invoiceId = invoice.invoiceId;
+    values.paymentUrl = invoice.paymentUrl;
+    values.finalAmount = invoice.finalAmount;
+    values.paymentExpiry = new Date(invoice.expiresAt);
+  }
+  const [req] = await db.insert(topupRequests).values(values).returning();
   return req;
+}
+
+export async function getTopupRequestByInvoice(invoiceId: string): Promise<TopupRequest | null> {
+  const rows = await db.select().from(topupRequests).where(eq(topupRequests.invoiceId, invoiceId)).limit(1);
+  return rows[0] || null;
+}
+
+export async function updateTopupInvoiceStatus(invoiceId: string, status: string): Promise<void> {
+  await db.update(topupRequests).set({ status, updatedAt: new Date() }).where(eq(topupRequests.invoiceId, invoiceId));
 }
 
 export async function getTopupRequests(userId?: string): Promise<TopupRequest[]> {
@@ -931,7 +948,8 @@ export const storage = {
   getWithdrawalMethods, getAllWithdrawalMethods, createWithdrawalMethod, updateWithdrawalMethod,
   requestWithdrawal, getWithdrawalRequests, updateWithdrawalStatus,
   getTopupPackages, getAllTopupPackages, createTopupPackage, updateTopupPackage,
-  createTopupRequest, getTopupRequests, updateTopupStatus,
+  createTopupRequest, getTopupRequests, updateTopupStatus, getTopupRequestByInvoice, updateTopupInvoiceStatus,
+  createDonation, getDonationByInvoice, updateDonationStatus, getRecentDonations,
   generateBetaCode, getBetaCodes, validateBetaCodeStandalone, markBetaCodeUsed,
   applyForGiftRole, getMyGiftRoleApplication, getAllGiftRoleApplications, updateGiftRoleApplication,
   getActiveAds, getAllAds, createAd, updateAd, deleteAd, incrementAdClicks,
@@ -998,4 +1016,33 @@ export async function updateVerificationRequest(id: string, status: "approved" |
   }
 }
 
-export type { User, PublicUser, Tag, Quote, QuoteWithTags, GiftType, WithdrawalMethod, WithdrawalRequest, Waitlist, FlowerTransaction, TopupPackage, TopupRequest, BetaCode, GiftRoleApplication, Ad, QuoteCommentWithUser, CollectionWithMeta, QuoteBattleWithQuotes, UserBadge, UserStreak };
+// ─── DONATIONS ──────────────────────────────────────────
+
+export async function createDonation(donorName: string, amount: number, message?: string, invoice?: { invoiceId: string; paymentUrl: string; finalAmount: number }): Promise<Donation> {
+  const [row] = await db.insert(donations).values({
+    id: randomUUID(),
+    donorName: donorName || "Anonim",
+    message: message || null,
+    amount,
+    invoiceId: invoice?.invoiceId || null,
+    paymentUrl: invoice?.paymentUrl || null,
+    finalAmount: invoice?.finalAmount || null,
+    status: "pending",
+  }).returning();
+  return row;
+}
+
+export async function getDonationByInvoice(invoiceId: string): Promise<Donation | null> {
+  const rows = await db.select().from(donations).where(eq(donations.invoiceId, invoiceId)).limit(1);
+  return rows[0] || null;
+}
+
+export async function updateDonationStatus(invoiceId: string, status: string): Promise<void> {
+  await db.update(donations).set({ status }).where(eq(donations.invoiceId, invoiceId));
+}
+
+export async function getRecentDonations(limit: number = 20): Promise<Donation[]> {
+  return db.select().from(donations).where(eq(donations.status, "paid")).orderBy(desc(donations.createdAt)).limit(limit);
+}
+
+export type { User, PublicUser, Tag, Quote, QuoteWithTags, GiftType, WithdrawalMethod, WithdrawalRequest, Waitlist, FlowerTransaction, TopupPackage, TopupRequest, BetaCode, GiftRoleApplication, Ad, QuoteCommentWithUser, CollectionWithMeta, QuoteBattleWithQuotes, UserBadge, UserStreak, Donation };
