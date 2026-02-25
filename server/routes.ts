@@ -421,8 +421,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       const qris = await createQrisPayment(pkg.priceIdr, callbackUrl);
       if (!qris.success || !qris.data) {
-        const result = await storage.createTopupRequest(req.user!.id, packageId);
-        return res.json(result);
+        console.error("[topup] QRIS payment creation failed:", qris.error || "Unknown error");
+        return res.status(500).json({ error: "Gagal membuat pembayaran QRIS. Silakan coba lagi." });
       }
 
       const result = await storage.createTopupRequest(req.user!.id, packageId, {
