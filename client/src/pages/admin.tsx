@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Check, X, Clock, Users, Settings, Flower, Wallet, ListOrdered, Lock, Mail, Toggle, ArrowRight, Copy, Plus, KeyRound, ShoppingBag, Gift, Megaphone, ExternalLink, Pencil, Trash2, BadgeCheck } from "lucide-react";
-import type { QuoteWithTags, User, Waitlist, GiftType, WithdrawalRequest, WithdrawalMethod, TopupPackage, TopupRequest, BetaCode, Ad } from "@shared/schema";
+import { Shield, Check, X, Clock, Users, Settings, Flower, Wallet, ListOrdered, Lock, Mail, Toggle, ArrowRight, Copy, Plus, KeyRound, ShoppingBag, Gift, Megaphone, ExternalLink, Pencil, Trash2, BadgeCheck, Ticket } from "lucide-react";
+import type { QuoteWithTags, User, Waitlist, GiftType, WithdrawalRequest, WithdrawalMethod, TopupPackage, TopupRequest, BetaCode, Ad, RedeemCode } from "@shared/schema";
 import { MOOD_LABELS, MOOD_COLORS } from "@shared/schema";
 import type { Mood } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { Link, useLocation } from "wouter";
 
-type Tab = "quotes" | "users" | "waitlist" | "gifts" | "giftroles" | "withdrawals" | "topup" | "betacodes" | "ads" | "verifications" | "settings";
+type Tab = "quotes" | "users" | "waitlist" | "gifts" | "giftroles" | "withdrawals" | "topup" | "betacodes" | "redeemcodes" | "ads" | "verifications" | "settings";
 
 export default function Admin() {
   const { user, isLoading: authLoading } = useAuth();
@@ -41,6 +41,7 @@ export default function Admin() {
     { id: "withdrawals", label: "Tarik Dana", icon: Wallet },
     { id: "topup", label: "Top Up", icon: ShoppingBag },
     { id: "betacodes", label: "Beta Code", icon: KeyRound },
+    { id: "redeemcodes", label: "Redeem", icon: Ticket },
     { id: "ads", label: "Iklan", icon: Megaphone },
     { id: "verifications", label: "Verifikasi", icon: BadgeCheck },
     { id: "settings", label: "Pengaturan", icon: Settings },
@@ -72,6 +73,7 @@ export default function Admin() {
       {tab === "withdrawals" && <WithdrawalsTab qc={qc} toast={toast} />}
       {tab === "topup" && <TopupTab qc={qc} toast={toast} />}
       {tab === "betacodes" && <BetaCodesTab qc={qc} toast={toast} />}
+      {tab === "redeemcodes" && <RedeemCodesTab qc={qc} toast={toast} />}
       {tab === "ads" && <AdsTab qc={qc} toast={toast} />}
       {tab === "verifications" && <VerificationsTab qc={qc} toast={toast} />}
       {tab === "settings" && <SettingsTab qc={qc} toast={toast} />}
@@ -127,6 +129,8 @@ function UsersTab({ qc, toast, currentUserId }: any) {
     queryKey: ["/api/admin/users"],
     queryFn: () => fetch("/api/admin/users", { credentials: "include" }).then((r) => r.json()),
   });
+  const [flowerInputs, setFlowerInputs] = useState<Record<string, string>>({});
+  const [searchUser, setSearchUser] = useState("");
 
   const { mutate: update } = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => apiRequest("PATCH", `/api/admin/users/${id}`, data),
@@ -134,12 +138,25 @@ function UsersTab({ qc, toast, currentUserId }: any) {
     onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
   });
 
+  const { mutate: addFlowers, isPending: addingFlowers } = useMutation({
+    mutationFn: ({ id, amount }: { id: string; amount: number }) => apiRequest("POST", `/api/admin/users/${id}/flowers`, { amount, reason: "Penambahan manual oleh admin" }),
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      setFlowerInputs(prev => ({ ...prev, [vars.id]: "" }));
+      toast({ title: "Bunga ditambahkan!" });
+    },
+    onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
+  });
+
   if (isLoading) return <LoadingBox />;
   if (!users.length) return <EmptyBox msg="Tidak ada user" />;
 
+  const filtered = searchUser ? users.filter((u: User) => u.username.toLowerCase().includes(searchUser.toLowerCase()) || u.email.toLowerCase().includes(searchUser.toLowerCase())) : users;
+
   return (
     <div className="flex flex-col gap-3">
-      {users.map((u) => (
+      <input value={searchUser} onChange={(e) => setSearchUser(e.target.value)} placeholder="Cari username atau email..." className="w-full px-4 py-2.5 border-3 border-black rounded-xl text-sm font-semibold shadow-[3px_3px_0px_black]" data-testid="input-search-users" />
+      {filtered.map((u: User) => (
         <div key={u.id} className="border-3 border-black rounded-xl bg-white p-4 shadow-[4px_4px_0px_black]" data-testid={`row-user-${u.id}`}>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
@@ -162,12 +179,18 @@ function UsersTab({ qc, toast, currentUserId }: any) {
               </div>
             )}
           </div>
-          {u.isGiveEnabled && (
-            <div className="mt-2 pt-2 border-t border-gray-100 flex items-center gap-2">
+          <div className="mt-2 pt-2 border-t border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
               <Flower className="w-3 h-3 text-pink-500" />
               <span className="text-sm font-bold">{u.flowersBalance} bunga</span>
             </div>
-          )}
+            <div className="flex gap-2 items-center">
+              <input type="number" min="1" placeholder="Jumlah" value={flowerInputs[u.id] || ""} onChange={(e) => setFlowerInputs(prev => ({ ...prev, [u.id]: e.target.value }))} className="w-24 px-2 py-1.5 border-2 border-black rounded-lg text-xs font-semibold" data-testid={`input-flowers-${u.id}`} />
+              <button onClick={() => { const amt = parseInt(flowerInputs[u.id]); if (!amt || amt <= 0) { toast({ title: "Masukkan jumlah yang valid" }); return; } addFlowers({ id: u.id, amount: amt }); }} disabled={addingFlowers} className="px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-[#FFDD00] shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all disabled:opacity-50" data-testid={`button-add-flowers-${u.id}`}>
+                + Tambah Bunga
+              </button>
+            </div>
+          </div>
         </div>
       ))}
     </div>
@@ -352,6 +375,9 @@ function SettingsTab({ qc, toast }: any) {
           </p>
         </div>
       )}
+
+      <SettingToggle label="QRIS Otomatis" desc="Aktifkan pembayaran QRIS otomatis via Bayar.gg" icon={<ShoppingBag className="w-5 h-5" />} enabled={s.qris_enabled !== "false"} onChange={(v: boolean) => save({ key: "qris_enabled", value: String(v) })} testId="toggle-qris" />
+      <SettingToggle label="Pembayaran Manual" desc="Aktifkan metode transfer manual untuk top up bunga" icon={<Wallet className="w-5 h-5" />} enabled={s.manual_payment_enabled === "true"} onChange={(v: boolean) => save({ key: "manual_payment_enabled", value: String(v) })} testId="toggle-manual-payment" />
 
       <NotificationSettings s={s} save={save} />
       <SiteInfoSettings s={s} save={save} />
@@ -885,6 +911,78 @@ const COLOR_PRESETS = [
   { color: "#FFFFFF", label: "Putih" },
   { color: "#1a1a1a", label: "Hitam" },
 ];
+
+function RedeemCodesTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast: ReturnType<typeof useToast>["toast"] }) {
+  const { data: codes = [], isLoading } = useQuery<RedeemCode[]>({
+    queryKey: ["/api/admin/redeem-codes"],
+    queryFn: () => fetch("/api/admin/redeem-codes", { credentials: "include" }).then((r) => r.json()),
+  });
+  const [newCode, setNewCode] = useState({ code: "", flowersAmount: "", maxUses: "1", expiresAt: "" });
+
+  const { mutate: create, isPending } = useMutation({
+    mutationFn: (data: any) => apiRequest("POST", "/api/admin/redeem-codes", data).then(r => r.json()),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["/api/admin/redeem-codes"] });
+      setNewCode({ code: "", flowersAmount: "", maxUses: "1", expiresAt: "" });
+      toast({ title: "Kode redeem dibuat!" });
+    },
+    onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
+  });
+
+  const { mutate: toggleActive } = useMutation({
+    mutationFn: (id: string) => apiRequest("PATCH", `/api/admin/redeem-codes/${id}/toggle`),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["/api/admin/redeem-codes"] }); toast({ title: "Status diperbarui!" }); },
+  });
+
+  const { mutate: deleteCode } = useMutation({
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/admin/redeem-codes/${id}`),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["/api/admin/redeem-codes"] }); toast({ title: "Kode dihapus!" }); },
+  });
+
+  if (isLoading) return <LoadingBox />;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="border-4 border-black rounded-xl bg-[#FFDD00] p-5 shadow-[6px_6px_0px_black]">
+        <h3 className="font-black mb-3 flex items-center gap-2"><Ticket className="w-4 h-4" /> Buat Kode Redeem</h3>
+        <div className="grid grid-cols-2 gap-2">
+          <input value={newCode.code} onChange={(e) => setNewCode(p => ({ ...p, code: e.target.value.toUpperCase() }))} placeholder="KODE (mis: BONUS100)" className="px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold bg-white" data-testid="input-redeem-code" />
+          <input type="number" value={newCode.flowersAmount} onChange={(e) => setNewCode(p => ({ ...p, flowersAmount: e.target.value }))} placeholder="Jumlah Bunga" className="px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold bg-white" data-testid="input-redeem-flowers" />
+          <input type="number" value={newCode.maxUses} onChange={(e) => setNewCode(p => ({ ...p, maxUses: e.target.value }))} placeholder="Max Pakai" className="px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold bg-white" data-testid="input-redeem-max" />
+          <input type="datetime-local" value={newCode.expiresAt} onChange={(e) => setNewCode(p => ({ ...p, expiresAt: e.target.value }))} className="px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold bg-white" data-testid="input-redeem-expires" />
+        </div>
+        <button onClick={() => { if (!newCode.code || !newCode.flowersAmount) { toast({ title: "Isi kode dan jumlah bunga" }); return; } create(newCode); }} disabled={isPending} className="mt-3 w-full py-2.5 bg-black text-[#FFDD00] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_#FFDD00] disabled:opacity-50" data-testid="button-create-redeem">
+          {isPending ? "Membuat..." : "Buat Kode Redeem"}
+        </button>
+      </div>
+
+      {codes.length === 0 ? <EmptyBox msg="Belum ada kode redeem" /> : (
+        <div className="flex flex-col gap-3">
+          {codes.map((c) => (
+            <div key={c.id} className="border-3 border-black rounded-xl bg-white p-4 shadow-[4px_4px_0px_black]" data-testid={`row-redeem-${c.id}`}>
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <p className="font-black text-lg font-mono">{c.code}</p>
+                  <p className="text-sm font-bold text-pink-600">🌸 {c.flowersAmount} bunga</p>
+                  <p className="text-xs text-gray-500 font-semibold">Dipakai: {c.usedCount}/{c.maxUses}</p>
+                  {c.expiresAt && <p className="text-xs text-gray-400">Kadaluarsa: {new Date(c.expiresAt).toLocaleDateString("id-ID")}</p>}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => toggleActive(c.id)} className={`px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all ${c.isActive ? "bg-green-100" : "bg-red-100"}`} data-testid={`button-toggle-redeem-${c.id}`}>
+                    {c.isActive ? "Aktif ✓" : "Nonaktif"}
+                  </button>
+                  <button onClick={() => deleteCode(c.id)} className="px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-red-50 shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid={`button-delete-redeem-${c.id}`}>
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function AdsTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast: ReturnType<typeof useToast>["toast"] }) {
   const [form, setForm] = useState<Partial<Ad>>({ ...BLANK_AD });

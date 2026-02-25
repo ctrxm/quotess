@@ -10,6 +10,7 @@ import {
   collections, collectionQuotes, quoteBattles, battleVotes,
   userBadges, userStreaks, referralCodes, referralUses,
   verificationRequests, donations, quoteReactions, notifications,
+  redeemCodes, redeemUses,
   REFERRAL_BONUS_FLOWERS,
   type Quote, type Tag, type QuoteWithTags, type InsertQuote,
   type User, type PublicUser, type Setting, type GiftType,
@@ -17,7 +18,7 @@ import {
   type GiftTransaction, type FlowerTransaction,
   type TopupPackage, type TopupRequest, type BetaCode, type GiftRoleApplication, type Ad,
   type QuoteCommentWithUser, type CollectionWithMeta, type QuoteBattleWithQuotes, type UserBadge, type UserStreak,
-  type Donation, type QuoteReaction, type Notification,
+  type Donation, type QuoteReaction, type Notification, type RedeemCode, type RedeemUse,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
@@ -1136,4 +1137,57 @@ export async function getUserDashboardStats(userId: string) {
   return { totalQuotes, totalLikes, totalViews, totalComments, totalReactions, bestQuote, moodBreakdown };
 }
 
-export type { User, PublicUser, Tag, Quote, QuoteWithTags, GiftType, WithdrawalMethod, WithdrawalRequest, Waitlist, FlowerTransaction, TopupPackage, TopupRequest, BetaCode, GiftRoleApplication, Ad, QuoteCommentWithUser, CollectionWithMeta, QuoteBattleWithQuotes, UserBadge, UserStreak, Donation, QuoteReaction, Notification };
+// ─── REDEEM CODES ──────────────────────────────────────
+
+export async function getRedeemCodes(): Promise<RedeemCode[]> {
+  return db.select().from(redeemCodes).orderBy(desc(redeemCodes.createdAt));
+}
+
+export async function createRedeemCode(data: { code: string; flowersAmount: number; maxUses: number; expiresAt?: string }): Promise<RedeemCode> {
+  const id = randomUUID();
+  const values: any = { id, code: data.code.toUpperCase(), flowersAmount: data.flowersAmount, maxUses: data.maxUses };
+  if (data.expiresAt) values.expiresAt = new Date(data.expiresAt);
+  const [row] = await db.insert(redeemCodes).values(values).returning();
+  return row;
+}
+
+export async function deleteRedeemCode(id: string): Promise<void> {
+  await db.delete(redeemCodes).where(eq(redeemCodes.id, id));
+}
+
+export async function toggleRedeemCode(id: string): Promise<void> {
+  const [existing] = await db.select().from(redeemCodes).where(eq(redeemCodes.id, id));
+  if (existing) await db.update(redeemCodes).set({ isActive: !existing.isActive }).where(eq(redeemCodes.id, id));
+}
+
+export async function redeemCode(userId: string, code: string): Promise<{ success: boolean; message: string; flowersAmount?: number }> {
+  const [codeRow] = await db.select().from(redeemCodes).where(eq(redeemCodes.code, code.toUpperCase()));
+  if (!codeRow) return { success: false, message: "Kode tidak ditemukan" };
+  if (!codeRow.isActive) return { success: false, message: "Kode sudah tidak aktif" };
+  if (codeRow.usedCount >= codeRow.maxUses) return { success: false, message: "Kode sudah habis dipakai" };
+  if (codeRow.expiresAt && new Date(codeRow.expiresAt) < new Date()) return { success: false, message: "Kode sudah kedaluwarsa" };
+
+  const [alreadyUsed] = await db.select().from(redeemUses)
+    .where(and(eq(redeemUses.codeId, codeRow.id), eq(redeemUses.userId, userId)));
+  if (alreadyUsed) return { success: false, message: "Kamu sudah pernah memakai kode ini" };
+
+  await db.insert(redeemUses).values({ id: randomUUID(), codeId: codeRow.id, userId });
+  await db.update(redeemCodes).set({ usedCount: codeRow.usedCount + 1 }).where(eq(redeemCodes.id, codeRow.id));
+  await db.update(users).set({ flowersBalance: sql`${users.flowersBalance} + ${codeRow.flowersAmount}` }).where(eq(users.id, userId));
+  await db.insert(flowerTransactions).values({
+    id: randomUUID(), userId, type: "redeem", amount: codeRow.flowersAmount,
+    description: `Redeem kode ${codeRow.code}`,
+  });
+
+  return { success: true, message: `Berhasil! ${codeRow.flowersAmount} bunga ditambahkan`, flowersAmount: codeRow.flowersAmount };
+}
+
+export async function adminAddFlowers(userId: string, amount: number, reason: string): Promise<void> {
+  await db.update(users).set({ flowersBalance: sql`${users.flowersBalance} + ${amount}` }).where(eq(users.id, userId));
+  await db.insert(flowerTransactions).values({
+    id: randomUUID(), userId, type: "admin_add", amount,
+    description: reason || `Penambahan manual oleh admin`,
+  });
+}
+
+export type { User, PublicUser, Tag, Quote, QuoteWithTags, GiftType, WithdrawalMethod, WithdrawalRequest, Waitlist, FlowerTransaction, TopupPackage, TopupRequest, BetaCode, GiftRoleApplication, Ad, QuoteCommentWithUser, CollectionWithMeta, QuoteBattleWithQuotes, UserBadge, UserStreak, Donation, QuoteReaction, Notification, RedeemCode, RedeemUse };

@@ -12,6 +12,8 @@ interface PublicSettings {
   notificationMessage: string;
   notificationBg: string;
   notificationTextColor: string;
+  qrisEnabled: boolean;
+  manualPaymentEnabled: boolean;
 }
 
 const SettingsContext = createContext<PublicSettings | null>(null);
@@ -28,6 +30,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     siteName: "CTRXL.ID", siteDescription: "Platform Quote Indonesia",
     notificationEnabled: false, notificationType: "banner",
     notificationMessage: "", notificationBg: "#FFDD00", notificationTextColor: "#000000",
+    qrisEnabled: true, manualPaymentEnabled: false,
   };
 
   return <SettingsContext.Provider value={settings}>{children}</SettingsContext.Provider>;

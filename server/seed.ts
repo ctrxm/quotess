@@ -331,6 +331,29 @@ async function runMigrations() {
   `);
   await ensureTable("idx_notifications_user", `CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read, created_at DESC)`);
 
+  await ensureTable("redeem_codes", `
+    CREATE TABLE IF NOT EXISTS redeem_codes (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      code text NOT NULL UNIQUE,
+      flowers_amount integer NOT NULL,
+      max_uses integer NOT NULL DEFAULT 1,
+      used_count integer NOT NULL DEFAULT 0,
+      is_active boolean NOT NULL DEFAULT true,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      expires_at timestamptz
+    )
+  `);
+
+  await ensureTable("redeem_uses", `
+    CREATE TABLE IF NOT EXISTS redeem_uses (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      code_id uuid NOT NULL REFERENCES redeem_codes(id) ON DELETE CASCADE,
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+  await ensureTable("idx_redeem_uses_user", `CREATE INDEX IF NOT EXISTS idx_redeem_uses_user ON redeem_uses(user_id, code_id)`);
+
   console.log("[migrate] Tables ensured.");
 }
 

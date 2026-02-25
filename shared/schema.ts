@@ -441,3 +441,24 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
 });
 export type Notification = typeof notifications.$inferSelect;
+
+// ─── REDEEM CODES ──────────────────────────────────────
+export const redeemCodes = pgTable("redeem_codes", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  code: text("code").notNull().unique(),
+  flowersAmount: integer("flowers_amount").notNull(),
+  maxUses: integer("max_uses").notNull().default(1),
+  usedCount: integer("used_count").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+});
+export type RedeemCode = typeof redeemCodes.$inferSelect;
+
+export const redeemUses = pgTable("redeem_uses", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  codeId: uuid("code_id").notNull().references(() => redeemCodes.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+});
+export type RedeemUse = typeof redeemUses.$inferSelect;

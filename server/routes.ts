@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
-import { storage, getSetting, setSetting, toggleReaction, createNotification, getNotifications, getUnreadCount, markAllNotificationsRead, getUserDashboardStats } from "./storage";
+import { storage, getSetting, setSetting, toggleReaction, createNotification, getNotifications, getUnreadCount, markAllNotificationsRead, getUserDashboardStats, getRedeemCodes, createRedeemCode, deleteRedeemCode, toggleRedeemCode, redeemCode, adminAddFlowers } from "./storage";
 import { submitQuoteSchema, registerSchema, loginSchema, FLOWERS_TO_IDR_RATE, MIN_WITHDRAWAL_FLOWERS } from "@shared/schema";
 import { requireAuth, requireAdmin } from "./auth";
 import { randomUUID } from "crypto";
@@ -105,6 +105,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         notificationMessage: s.notification_message || "",
         notificationBg: s.notification_bg || "#FFE34D",
         notificationTextColor: s.notification_text_color || "#000000",
+        qrisEnabled: s.qris_enabled !== "false",
+        manualPaymentEnabled: s.manual_payment_enabled === "true",
       });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
@@ -416,11 +418,21 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   app.post("/api/topup/request", requireAuth, async (req: Request, res: Response) => {
     try {
-      const { packageId } = req.body;
+      const { packageId, method } = req.body;
       if (!packageId) return res.status(400).json({ error: "PackageId wajib diisi" });
       const packages = await storage.getTopupPackages();
       const pkg = packages.find(p => p.id === packageId);
       if (!pkg) return res.status(400).json({ error: "Paket tidak ditemukan" });
+
+      if (method === "manual") {
+        const manualEnabled = await getSetting("manual_payment_enabled", "false");
+        if (manualEnabled !== "true") return res.status(400).json({ error: "Metode pembayaran manual tidak tersedia" });
+        const result = await storage.createTopupRequest(req.user!.id, packageId, {});
+        return res.json(result);
+      }
+
+      const qrisEnabled = await getSetting("qris_enabled", "true");
+      if (qrisEnabled === "false") return res.status(400).json({ error: "Metode pembayaran QRIS tidak tersedia" });
 
       const protocol = req.headers["x-forwarded-proto"] || "https";
       const host = req.headers.host || "localhost";
@@ -869,6 +881,51 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/donate/recent", async (_req: Request, res: Response) => {
     try { res.json(await storage.getRecentDonations()); }
     catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── ADMIN: MANUAL FLOWER ADD ────────────────────────
+  app.post("/api/admin/users/:id/flowers", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const { amount, reason } = req.body;
+      if (!amount || isNaN(amount) || amount <= 0) return res.status(400).json({ error: "Jumlah bunga harus lebih dari 0" });
+      await adminAddFlowers(req.params.id, parseInt(amount), reason || "");
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── REDEEM CODES ────────────────────────────────────
+  app.get("/api/admin/redeem-codes", requireAdmin, async (_req: Request, res: Response) => {
+    try { res.json(await getRedeemCodes()); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/admin/redeem-codes", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const { code, flowersAmount, maxUses, expiresAt } = req.body;
+      if (!code || !flowersAmount) return res.status(400).json({ error: "Kode dan jumlah bunga wajib diisi" });
+      const result = await createRedeemCode({ code, flowersAmount: parseInt(flowersAmount), maxUses: parseInt(maxUses) || 1, expiresAt });
+      res.json(result);
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.delete("/api/admin/redeem-codes/:id", requireAdmin, async (req: Request, res: Response) => {
+    try { await deleteRedeemCode(req.params.id); res.json({ success: true }); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.patch("/api/admin/redeem-codes/:id/toggle", requireAdmin, async (req: Request, res: Response) => {
+    try { await toggleRedeemCode(req.params.id); res.json({ success: true }); }
+    catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/redeem", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { code } = req.body;
+      if (!code) return res.status(400).json({ success: false, message: "Kode wajib diisi" });
+      const result = await redeemCode(req.user!.id, code);
+      if (!result.success) return res.status(400).json(result);
+      res.json(result);
+    } catch (e: any) { res.status(500).json({ success: false, message: e.message }); }
   });
 
   return httpServer;

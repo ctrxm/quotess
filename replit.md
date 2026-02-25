@@ -31,9 +31,10 @@ client/src/
     waitlist.tsx      - Waitlist signup page
     profile.tsx       - User profile: badges, streak, bookmarks tab, flower balance, gift role
     withdraw.tsx      - Flower withdrawal page
-    topup.tsx         - Flower top-up purchase page (QRIS auto-payment via bayar.gg)
+    topup.tsx         - Flower top-up purchase page (QRIS auto + manual transfer toggle)
     donate.tsx        - Public donation page (QRIS payment, no login required)
-    admin.tsx         - Full admin panel
+    redeem.tsx        - Redeem code page (enter code to receive flowers)
+    admin.tsx         - Full admin panel (12 tabs including Redeem Codes)
     verification.tsx  - Blue checkmark request page
     stats.tsx         - User stats dashboard (total quotes/likes/views/reactions, mood breakdown, streak)
   components/
@@ -96,8 +97,12 @@ shared/
 - Withdrawal: 100 flowers = Rp 1,000, min 1,000 flowers
 - Referral bonus: 50 flowers for both referrer and referred
 
-### Payment (bayar.gg QRIS)
-- **Top Up**: Auto-creates QRIS payment via bayar.gg API when user selects a package
+### Payment (bayar.gg QRIS + Manual Transfer)
+- **Top Up**: Supports QRIS auto-payment and/or manual transfer (admin toggleable)
+- **Payment Method Toggle**: Admin can enable/disable QRIS and Manual payment independently
+  - Settings keys: `qris_enabled` (default true), `manual_payment_enabled` (default false)
+  - Top-up page shows payment method selector when both enabled
+  - Manual transfer shows bank account info set in admin settings
 - **Donation**: Public donation page (no login needed) with QRIS payment
 - Payment method: `gopay_qris` via bayar.gg
 - API: POST create-payment.php, GET check-payment (apiKey as query param)
@@ -105,6 +110,13 @@ shared/
 - Callback URL registered for server-side webhook confirmation
 - Env var: `BAYAR_GG_API_KEY`
 - Tables: `topup_requests` (invoiceId, paymentUrl, finalAmount, paymentExpiry columns), `donations`
+
+### Redeem Codes
+- Admin creates redeem codes with flower amount, max uses, optional expiry
+- Users enter codes at /redeem page to receive flowers
+- Each code can only be used once per user
+- Admin tab: Create/toggle/delete redeem codes, see usage stats
+- Tables: `redeem_codes` (code, flowersAmount, maxUses, usedCount, isActive, expiresAt), `redeem_uses`
 
 ### Dark Mode
 - Toggle between light/dark themes via Sun/Moon button in header
@@ -138,14 +150,15 @@ shared/
 - Verification request flow: user applies at /verification → admin reviews in admin panel (Verifikasi tab)
 - Admin can approve/reject with optional note
 
-### Admin Panel
+### Admin Panel (12 tabs)
 - Quote moderation + auto-approve toggle
-- User management (set role, active, verified, flowers balance)
+- User management (set role, active, verified, flowers balance, **manual flower add**)
 - Waitlist management (with Brevo SMTP email notifications)
 - Gift type / withdrawal methods management
-- Site settings (maintenance, beta, notifications)
-- Ads management, Beta codes
+- **Payment method toggles** (QRIS on/off, Manual on/off) in Settings tab
+- Ads management, Beta codes, **Redeem codes management**
 - Verification requests management (approve/reject with notes)
+- User search in Users tab
 
 ### Access Control
 - Maintenance mode, Beta mode (open/code/waitlist)
@@ -168,6 +181,7 @@ shared/
 - user_badges, user_streaks
 - referral_codes, referral_uses
 - quote_reactions, notifications
+- redeem_codes, redeem_uses
 
 ### Verification
 - verification_requests
@@ -223,6 +237,9 @@ shared/
 - GET /api/bookmarks
 - POST /api/gifts/send, GET /api/flowers/history
 - POST /api/withdrawal/request
+- POST /api/redeem
 
 ### Admin only
 - All /api/admin/* endpoints
+- POST /api/admin/users/:id/flowers (manual flower add)
+- GET/POST/DELETE/PATCH /api/admin/redeem-codes

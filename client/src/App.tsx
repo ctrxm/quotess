@@ -25,6 +25,7 @@ import Embed from "@/pages/embed";
 import Verification from "@/pages/verification";
 import Donate from "@/pages/donate";
 import Stats from "@/pages/stats";
+import Redeem from "@/pages/redeem";
 import Layout from "@/components/layout";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { SettingsProvider } from "@/lib/settings";
@@ -68,6 +69,7 @@ function AppContent() {
           <Route path="/verification" component={Verification} />
           <Route path="/donate" component={Donate} />
           <Route path="/stats" component={Stats} />
+          <Route path="/redeem" component={Redeem} />
           <Route component={NotFound} />
         </Switch>
       </Layout>

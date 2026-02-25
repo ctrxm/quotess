@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Menu, X, Feather, Heart, User, LogOut, Shield, Flower, ChevronDown, Swords, Trophy, BookOpen, Users, Code, BadgeCheck, TrendingUp, Compass, Home, Sun, Moon, Bell, BarChart3 } from "lucide-react";
+import { Menu, X, Feather, Heart, User, LogOut, Shield, Flower, ChevronDown, ChevronRight, Swords, Trophy, BookOpen, Users, Code, BadgeCheck, TrendingUp, Compass, Home, Sun, Moon, Bell, BarChart3, Ticket, Wallet } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { useSettings } from "@/lib/settings";
@@ -33,6 +33,7 @@ export default function Layout({ children }: LayoutProps) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [exploreOpen, setExploreOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileSection, setMobileSection] = useState<string | null>(null);
   const { user, logout } = useAuth();
   const settings = useSettings();
   const { theme, toggleTheme } = useTheme();
@@ -230,6 +231,7 @@ export default function Layout({ children }: LayoutProps) {
                         { href: "/maker", icon: <Feather className="w-4 h-4 text-orange-500" />, label: "Quote Maker", id: "link-maker" },
                         { href: "/embed", icon: <Code className="w-4 h-4 text-blue-500" />, label: "Widget Embed", id: "link-embed" },
                         { href: "/topup", icon: <Flower className="w-4 h-4 text-yellow-500" />, label: "Top Up Bunga", id: "link-topup" },
+                        { href: "/redeem", icon: <Ticket className="w-4 h-4 text-purple-500" />, label: "Redeem Kode", id: "link-redeem" },
                         { href: "/donate", icon: <Heart className="w-4 h-4 text-red-500" />, label: "Donasi", id: "link-donate" },
                       ].map((item) => (
                         <Link key={item.href} href={item.href} onClick={() => setUserMenuOpen(false)}>
@@ -304,77 +306,133 @@ export default function Layout({ children }: LayoutProps) {
         </div>
 
         {menuOpen && (
-          <div className="md:hidden border-t-4 border-black dark:border-[#555] bg-[#FFFFFF] dark:bg-[#141420] px-4 py-3 flex flex-col gap-2">
+          <div className="md:hidden border-t-4 border-black dark:border-[#555] bg-[#FFFFFF] dark:bg-[#141420] px-4 py-3 flex flex-col gap-1.5">
             <Link href="/" onClick={() => setMenuOpen(false)}>
-              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer ${isActive("/") && location === "/" ? "bg-black dark:bg-[#f5f0e0] text-[#FFDD00] dark:text-[#141420]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0]"}`}>Beranda</span>
-            </Link>
-            {exploreLinks.map((link) => (
-              <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)}>
-                <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer flex items-center gap-2 ${isActive(link.href) ? "bg-black dark:bg-[#f5f0e0] text-[#FFDD00] dark:text-[#141420]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0]"}`}>
-                  {link.icon} {link.label}
-                </span>
-              </Link>
-            ))}
-            <Link href="/battle" onClick={() => setMenuOpen(false)}>
-              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer flex items-center gap-2 ${isActive("/battle") ? "bg-black dark:bg-[#f5f0e0] text-[#FFDD00] dark:text-[#141420]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0]"}`}>
-                <Swords className="w-3.5 h-3.5" /> Battle
+              <span className={`block px-4 py-2.5 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer flex items-center gap-2 ${isActive("/") && location === "/" ? "bg-black dark:bg-[#f5f0e0] text-[#FFDD00] dark:text-[#141420]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0]"}`}>
+                <Home className="w-3.5 h-3.5" /> Beranda
               </span>
             </Link>
+
+            <div>
+              <button onClick={() => setMobileSection(mobileSection === "explore" ? null : "explore")} className="w-full px-4 py-2.5 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0] flex items-center justify-between" data-testid="button-mobile-explore">
+                <span className="flex items-center gap-2"><Compass className="w-3.5 h-3.5" /> Jelajahi</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${mobileSection === "explore" ? "rotate-180" : ""}`} />
+              </button>
+              {mobileSection === "explore" && (
+                <div className="ml-3 mt-1 flex flex-col gap-1 border-l-3 border-black dark:border-[#555] pl-3">
+                  {exploreLinks.map((link) => (
+                    <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)}>
+                      <span className={`block px-3 py-2 font-semibold text-sm rounded-md cursor-pointer flex items-center gap-2 ${isActive(link.href) ? "bg-[#FFDD00] dark:bg-[#B8960F] text-black" : "text-black dark:text-[#f5f0e0] hover:bg-gray-50 dark:hover:bg-[#2a2a3a]"}`}>
+                        {link.icon} {link.label}
+                      </span>
+                    </Link>
+                  ))}
+                  <Link href="/battle" onClick={() => setMenuOpen(false)}>
+                    <span className={`block px-3 py-2 font-semibold text-sm rounded-md cursor-pointer flex items-center gap-2 ${isActive("/battle") ? "bg-[#FFDD00] dark:bg-[#B8960F] text-black" : "text-black dark:text-[#f5f0e0] hover:bg-gray-50 dark:hover:bg-[#2a2a3a]"}`}>
+                      <Swords className="w-3.5 h-3.5" /> Battle
+                    </span>
+                  </Link>
+                </div>
+              )}
+            </div>
+
             <Link href="/submit" onClick={() => setMenuOpen(false)}>
-              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer text-black dark:text-[#f5f0e0] ${isActive("/submit") ? "bg-black dark:bg-[#f5f0e0] text-[#FFDD00] dark:text-[#141420]" : "bg-white dark:bg-[#22222e]"}`}>Submit Quote</span>
+              <span className={`block px-4 py-2.5 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer flex items-center gap-2 ${isActive("/submit") ? "bg-black dark:bg-[#f5f0e0] text-[#FFDD00] dark:text-[#141420]" : "bg-[#FFDD00] dark:bg-[#B8960F] text-black"}`}>
+                <Feather className="w-3.5 h-3.5" /> Submit Quote
+              </span>
             </Link>
+
             {user ? (
               <>
-                <Link href="/profile" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#22222e] flex items-center gap-1 text-black dark:text-[#f5f0e0]">
-                    Profil (@{user.username})
-                    {user.isVerified && <BadgeCheck className="w-4 h-4 text-blue-500 fill-blue-500" />}
-                  </span>
-                </Link>
-                <Link href="/stats" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-[#4ADE80] dark:bg-[#16A34A] flex items-center gap-1 text-black dark:text-[#f5f0e0]">
-                    <BarChart3 className="w-3.5 h-3.5" /> Statistik
-                  </span>
-                </Link>
-                <Link href="/verification" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-[#60A5FA] dark:bg-[#1D4ED8] flex items-center gap-1 text-black dark:text-[#f5f0e0]">
-                    <BadgeCheck className="w-3.5 h-3.5" /> Centang Biru
-                  </span>
-                </Link>
-                <Link href="/referral" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-[#A855F7] dark:bg-[#7C3AED] text-black dark:text-[#f5f0e0]">Referral</span>
-                </Link>
-                <Link href="/topup" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-yellow-50 dark:bg-[#B8960F] text-black dark:text-[#f5f0e0]">Top Up Bunga</span>
-                </Link>
+                <div>
+                  <button onClick={() => setMobileSection(mobileSection === "akun" ? null : "akun")} className="w-full px-4 py-2.5 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0] flex items-center justify-between" data-testid="button-mobile-akun">
+                    <span className="flex items-center gap-2">
+                      <User className="w-3.5 h-3.5" /> @{user.username}
+                      {user.isVerified && <BadgeCheck className="w-3.5 h-3.5 text-blue-500 fill-blue-500" />}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${mobileSection === "akun" ? "rotate-180" : ""}`} />
+                  </button>
+                  {mobileSection === "akun" && (
+                    <div className="ml-3 mt-1 flex flex-col gap-1 border-l-3 border-black dark:border-[#555] pl-3">
+                      <Link href="/profile" onClick={() => setMenuOpen(false)}>
+                        <span className="block px-3 py-2 font-semibold text-sm rounded-md flex items-center gap-2 text-black dark:text-[#f5f0e0] hover:bg-gray-50 dark:hover:bg-[#2a2a3a]">
+                          <User className="w-3.5 h-3.5" /> Profil
+                        </span>
+                      </Link>
+                      <Link href="/stats" onClick={() => setMenuOpen(false)}>
+                        <span className="block px-3 py-2 font-semibold text-sm rounded-md flex items-center gap-2 text-black dark:text-[#f5f0e0] hover:bg-gray-50 dark:hover:bg-[#2a2a3a]">
+                          <BarChart3 className="w-3.5 h-3.5" /> Statistik
+                        </span>
+                      </Link>
+                      <Link href="/verification" onClick={() => setMenuOpen(false)}>
+                        <span className="block px-3 py-2 font-semibold text-sm rounded-md flex items-center gap-2 text-black dark:text-[#f5f0e0] hover:bg-gray-50 dark:hover:bg-[#2a2a3a]">
+                          <BadgeCheck className="w-3.5 h-3.5" /> Centang Biru
+                        </span>
+                      </Link>
+                      <Link href="/referral" onClick={() => setMenuOpen(false)}>
+                        <span className="block px-3 py-2 font-semibold text-sm rounded-md flex items-center gap-2 text-black dark:text-[#f5f0e0] hover:bg-gray-50 dark:hover:bg-[#2a2a3a]">
+                          <Users className="w-3.5 h-3.5" /> Referral
+                        </span>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <button onClick={() => setMobileSection(mobileSection === "bunga" ? null : "bunga")} className="w-full px-4 py-2.5 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0] flex items-center justify-between" data-testid="button-mobile-bunga">
+                    <span className="flex items-center gap-2"><Flower className="w-3.5 h-3.5 text-pink-500" /> Bunga ({user.flowersBalance})</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${mobileSection === "bunga" ? "rotate-180" : ""}`} />
+                  </button>
+                  {mobileSection === "bunga" && (
+                    <div className="ml-3 mt-1 flex flex-col gap-1 border-l-3 border-black dark:border-[#555] pl-3">
+                      <Link href="/topup" onClick={() => setMenuOpen(false)}>
+                        <span className="block px-3 py-2 font-semibold text-sm rounded-md flex items-center gap-2 text-black dark:text-[#f5f0e0] hover:bg-gray-50 dark:hover:bg-[#2a2a3a]">
+                          <Wallet className="w-3.5 h-3.5" /> Top Up Bunga
+                        </span>
+                      </Link>
+                      <Link href="/redeem" onClick={() => setMenuOpen(false)}>
+                        <span className="block px-3 py-2 font-semibold text-sm rounded-md flex items-center gap-2 text-black dark:text-[#f5f0e0] hover:bg-gray-50 dark:hover:bg-[#2a2a3a]">
+                          <Ticket className="w-3.5 h-3.5" /> Redeem Kode
+                        </span>
+                      </Link>
+                      {user.isGiveEnabled && (
+                        <Link href="/withdraw" onClick={() => setMenuOpen(false)}>
+                          <span className="block px-3 py-2 font-semibold text-sm rounded-md flex items-center gap-2 text-black dark:text-[#f5f0e0] hover:bg-gray-50 dark:hover:bg-[#2a2a3a]">
+                            <Wallet className="w-3.5 h-3.5" /> Tarik Bunga
+                          </span>
+                        </Link>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <Link href="/donate" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-red-50 dark:bg-red-900/20 flex items-center gap-1 text-black dark:text-[#f5f0e0]">
+                  <span className="block px-4 py-2.5 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-red-50 dark:bg-red-900/20 flex items-center gap-2 text-black dark:text-[#f5f0e0]">
                     <Heart className="w-3.5 h-3.5 text-red-500" /> Donasi
                   </span>
                 </Link>
-                {user.isGiveEnabled && (
-                  <Link href="/withdraw" onClick={() => setMenuOpen(false)}>
-                    <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0]">Tarik Bunga ({user.flowersBalance})</span>
-                  </Link>
-                )}
+
                 {user.role === "admin" && (
                   <Link href="/admin" onClick={() => setMenuOpen(false)}>
-                    <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-blue-50 dark:bg-blue-900/20 text-black dark:text-[#f5f0e0]">Admin Panel</span>
+                    <span className="block px-4 py-2.5 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-blue-50 dark:bg-blue-900/20 flex items-center gap-2 text-black dark:text-[#f5f0e0]">
+                      <Shield className="w-3.5 h-3.5" /> Admin Panel
+                    </span>
                   </Link>
                 )}
-                <button onClick={handleLogout} className="px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-red-50 dark:bg-red-900/20 text-red-600 text-left">
-                  Keluar
+
+                <button onClick={handleLogout} className="px-4 py-2.5 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-red-50 dark:bg-red-900/20 text-red-600 text-left flex items-center gap-2">
+                  <LogOut className="w-3.5 h-3.5" /> Keluar
                 </button>
               </>
             ) : (
               <>
                 <Link href="/donate" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-red-50 dark:bg-red-900/20 flex items-center gap-1 text-black dark:text-[#f5f0e0]">
+                  <span className="block px-4 py-2.5 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-red-50 dark:bg-red-900/20 flex items-center gap-2 text-black dark:text-[#f5f0e0]">
                     <Heart className="w-3.5 h-3.5 text-red-500" /> Donasi
                   </span>
                 </Link>
                 <Link href="/auth" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-black dark:bg-[#f5f0e0] text-[#FFDD00] dark:text-[#141420] text-center">Masuk / Daftar</span>
+                  <span className="block px-4 py-2.5 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-black dark:bg-[#f5f0e0] text-[#FFDD00] dark:text-[#141420] text-center">Masuk / Daftar</span>
                 </Link>
               </>
             )}
