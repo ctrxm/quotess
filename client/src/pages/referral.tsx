@@ -55,7 +55,7 @@ export default function Referral() {
   return (
     <div className="max-w-lg mx-auto px-4 py-8 flex flex-col gap-5">
       <div className="text-center mb-4">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#DDB8FF] border-3 border-black rounded-xl shadow-[4px_4px_0px_black] mb-4">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#A855F7] border-3 border-black rounded-xl shadow-[4px_4px_0px_black] mb-4">
           <Users className="w-5 h-5" />
           <span className="font-black text-sm uppercase tracking-widest">Referral</span>
         </div>
@@ -67,7 +67,7 @@ export default function Referral() {
         <div className="border-4 border-black rounded-xl h-48 bg-gray-100 animate-pulse shadow-[6px_6px_0px_black]" />
       ) : stats && (
         <>
-          <div className="border-4 border-black rounded-xl bg-[#FFF3B0] p-6 shadow-[8px_8px_0px_black]">
+          <div className="border-4 border-black rounded-xl bg-[#FFDD00] p-6 shadow-[8px_8px_0px_black]">
             <h3 className="font-black text-sm uppercase tracking-widest mb-3">Kode Referralmu</h3>
             <div className="flex items-center gap-2 mb-4">
               <div className="flex-1 px-4 py-3 bg-white border-2 border-black rounded-lg font-mono font-black text-xl text-center" data-testid="text-referral-code">
@@ -75,7 +75,7 @@ export default function Referral() {
               </div>
               <button
                 onClick={handleCopy}
-                className="px-3 py-3 bg-black text-[#FFF3B0] border-2 border-black rounded-lg shadow-[3px_3px_0px_#FFF3B0] hover:shadow-[1px_1px_0px_#FFF3B0] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                className="px-3 py-3 bg-black text-[#FFDD00] border-2 border-black rounded-lg shadow-[3px_3px_0px_#FFDD00] hover:shadow-[1px_1px_0px_#FFDD00] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                 data-testid="button-copy-referral"
               >
                 {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
@@ -90,12 +90,12 @@ export default function Referral() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="border-4 border-black rounded-xl bg-[#C1F0C1] p-4 shadow-[4px_4px_0px_black] text-center">
+            <div className="border-4 border-black rounded-xl bg-[#4ADE80] p-4 shadow-[4px_4px_0px_black] text-center">
               <Users className="w-6 h-6 mx-auto mb-2" />
               <div className="font-black text-3xl" data-testid="text-total-referred">{stats.totalReferred}</div>
               <div className="text-xs font-bold text-black/60">Teman Terdaftar</div>
             </div>
-            <div className="border-4 border-black rounded-xl bg-[#FFD1A9] p-4 shadow-[4px_4px_0px_black] text-center">
+            <div className="border-4 border-black rounded-xl bg-[#FB923C] p-4 shadow-[4px_4px_0px_black] text-center">
               <Flower className="w-6 h-6 mx-auto mb-2 text-pink-500" />
               <div className="font-black text-3xl" data-testid="text-total-flowers">{stats.totalFlowers}</div>
               <div className="text-xs font-bold text-black/60">Bunga Bonus</div>
@@ -119,7 +119,7 @@ export default function Referral() {
           <button
             onClick={() => inputCode.trim() && useCode(inputCode.trim())}
             disabled={isPending || !inputCode.trim()}
-            className="px-4 py-2 bg-[#DDB8FF] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+            className="px-4 py-2 bg-[#A855F7] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
             data-testid="button-use-referral"
           >
             {isPending ? "..." : "Pakai"}

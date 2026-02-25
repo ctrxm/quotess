@@ -4,17 +4,17 @@ import { useToast } from "@/hooks/use-toast";
 import { MOODS, MOOD_LABELS, type Mood } from "@shared/schema";
 
 const BG_PRESETS = [
-  { name: "Kuning", value: "#FFF3B0", text: "#000000" },
-  { name: "Hijau", value: "#C1F0C1", text: "#000000" },
-  { name: "Biru", value: "#B8DBFF", text: "#000000" },
-  { name: "Oranye", value: "#FFD1A9", text: "#000000" },
-  { name: "Ungu", value: "#DDB8FF", text: "#000000" },
-  { name: "Merah", value: "#FFB3B3", text: "#000000" },
+  { name: "Kuning", value: "#FFDD00", text: "#000000" },
+  { name: "Hijau", value: "#4ADE80", text: "#000000" },
+  { name: "Biru", value: "#60A5FA", text: "#000000" },
+  { name: "Oranye", value: "#FB923C", text: "#000000" },
+  { name: "Ungu", value: "#A855F7", text: "#000000" },
+  { name: "Merah", value: "#F87171", text: "#000000" },
   { name: "Hitam", value: "#1a1a1a", text: "#FFFFFF" },
   { name: "Navy", value: "#1e3a5f", text: "#FFFFFF" },
-  { name: "Gradient Pink", value: "linear-gradient(135deg, #FFB3B3, #DDB8FF)", text: "#000000" },
-  { name: "Gradient Biru", value: "linear-gradient(135deg, #B8DBFF, #C1F0C1)", text: "#000000" },
-  { name: "Gradient Sunset", value: "linear-gradient(135deg, #FFD1A9, #FFB3B3)", text: "#000000" },
+  { name: "Gradient Pink", value: "linear-gradient(135deg, #F87171, #A855F7)", text: "#000000" },
+  { name: "Gradient Biru", value: "linear-gradient(135deg, #60A5FA, #4ADE80)", text: "#000000" },
+  { name: "Gradient Sunset", value: "linear-gradient(135deg, #FB923C, #F87171)", text: "#000000" },
   { name: "Gradient Gelap", value: "linear-gradient(135deg, #1a1a1a, #1e3a5f)", text: "#FFFFFF" },
 ];
 
@@ -146,7 +146,7 @@ export default function QuoteMaker() {
                 <button
                   key={i}
                   onClick={() => setFontIndex(i)}
-                  className={`px-3 py-2 text-sm font-bold border-2 border-black rounded-md transition-all ${fontIndex === i ? "bg-black text-white shadow-[2px_2px_0px_#FFF3B0]" : "bg-white hover:shadow-[2px_2px_0px_black]"}`}
+                  className={`px-3 py-2 text-sm font-bold border-2 border-black rounded-md transition-all ${fontIndex === i ? "bg-black text-white shadow-[2px_2px_0px_#FFDD00]" : "bg-white hover:shadow-[2px_2px_0px_black]"}`}
                   style={{ fontFamily: f.value }}
                   data-testid={`button-font-${i}`}
                 >
@@ -163,7 +163,7 @@ export default function QuoteMaker() {
                 <button
                   key={i}
                   onClick={() => setSizeIndex(i)}
-                  className={`px-3 py-2 text-sm font-bold border-2 border-black rounded-md transition-all ${sizeIndex === i ? "bg-black text-white shadow-[2px_2px_0px_#FFF3B0]" : "bg-white hover:shadow-[2px_2px_0px_black]"}`}
+                  className={`px-3 py-2 text-sm font-bold border-2 border-black rounded-md transition-all ${sizeIndex === i ? "bg-black text-white shadow-[2px_2px_0px_#FFDD00]" : "bg-white hover:shadow-[2px_2px_0px_black]"}`}
                   data-testid={`button-size-${i}`}
                 >
                   {s.name}
@@ -203,7 +203,7 @@ export default function QuoteMaker() {
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
                 onClick={handleDownload}
-                className="flex items-center justify-center gap-2 px-4 py-3 bg-black text-[#FFF3B0] font-black text-sm border-3 border-black rounded-lg shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                className="flex items-center justify-center gap-2 px-4 py-3 bg-black text-[#FFDD00] font-black text-sm border-3 border-black rounded-lg shadow-[4px_4px_0px_#333] hover:shadow-[2px_2px_0px_#333] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                 data-testid="button-download"
               >
                 <Download className="w-4 h-4" /> Unduh

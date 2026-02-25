@@ -138,10 +138,10 @@ export default function Profile() {
   return (
     <div className="max-w-lg mx-auto px-4 py-8 flex flex-col gap-5">
 
-      <div className="border-4 border-black rounded-xl bg-[#FFF3B0] p-6 shadow-[8px_8px_0px_black]">
+      <div className="border-4 border-black rounded-xl bg-[#FFDD00] p-6 shadow-[8px_8px_0px_black]">
         <div className="flex items-start gap-4">
           <div className="w-16 h-16 bg-black border-2 border-black rounded-xl flex items-center justify-center flex-shrink-0">
-            <User className="w-8 h-8 text-[#FFF3B0]" />
+            <User className="w-8 h-8 text-[#FFDD00]" />
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-black truncate flex items-center gap-2" data-testid="text-username">
@@ -150,14 +150,14 @@ export default function Profile() {
             </h1>
             <p className="text-black/60 font-semibold text-sm truncate" data-testid="text-email">{user.email}</p>
             <div className="flex flex-wrap gap-2 mt-2">
-              <span className="px-2 py-1 bg-black text-[#FFF3B0] text-xs font-black rounded border-2 border-black" data-testid="badge-role">
+              <span className="px-2 py-1 bg-black text-[#FFDD00] text-xs font-black rounded border-2 border-black" data-testid="badge-role">
                 {user.role === "admin" ? "Admin" : "Member"}
               </span>
               {user.hasBetaAccess && (
-                <span className="px-2 py-1 bg-[#B8DBFF] text-black text-xs font-black rounded border-2 border-black">Beta</span>
+                <span className="px-2 py-1 bg-[#60A5FA] text-black text-xs font-black rounded border-2 border-black">Beta</span>
               )}
               {user.isGiveEnabled && (
-                <span className="px-2 py-1 bg-[#C1F0C1] text-black text-xs font-black rounded border-2 border-black">Give Aktif</span>
+                <span className="px-2 py-1 bg-[#4ADE80] text-black text-xs font-black rounded border-2 border-black">Give Aktif</span>
               )}
             </div>
           </div>
@@ -165,7 +165,7 @@ export default function Profile() {
       </div>
 
       {streak && (
-        <div className="border-4 border-black rounded-xl bg-[#FFD1A9] p-4 shadow-[6px_6px_0px_black]">
+        <div className="border-4 border-black rounded-xl bg-[#FB923C] p-4 shadow-[6px_6px_0px_black]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-white border-2 border-black rounded-xl flex items-center justify-center">
@@ -196,7 +196,7 @@ export default function Profile() {
               const def = BADGE_DEFINITIONS[b.badgeType];
               if (!def) return null;
               return (
-                <div key={b.id} className="flex items-center gap-2 p-2 bg-[#FFF3B0] border-2 border-black rounded-lg" data-testid={`badge-${b.badgeType}`}>
+                <div key={b.id} className="flex items-center gap-2 p-2 bg-[#FFDD00] border-2 border-black rounded-lg" data-testid={`badge-${b.badgeType}`}>
                   <div className="w-8 h-8 bg-white border-2 border-black rounded-lg flex items-center justify-center flex-shrink-0">
                     {BADGE_ICONS[def.icon] || <Award className="w-5 h-5" />}
                   </div>
@@ -214,14 +214,14 @@ export default function Profile() {
       <div className="flex gap-2">
         <button
           onClick={() => setTab("overview")}
-          className={`flex-1 py-2 font-black text-sm border-2 border-black rounded-lg transition-all ${tab === "overview" ? "bg-black text-[#FFF3B0] shadow-[3px_3px_0px_#FFF3B0]" : "bg-white shadow-[3px_3px_0px_black]"}`}
+          className={`flex-1 py-2 font-black text-sm border-2 border-black rounded-lg transition-all ${tab === "overview" ? "bg-black text-[#FFDD00] shadow-[3px_3px_0px_#FFDD00]" : "bg-white shadow-[3px_3px_0px_black]"}`}
           data-testid="tab-overview"
         >
           Overview
         </button>
         <button
           onClick={() => setTab("bookmarks")}
-          className={`flex-1 py-2 font-black text-sm border-2 border-black rounded-lg transition-all flex items-center justify-center gap-1 ${tab === "bookmarks" ? "bg-black text-[#FFF3B0] shadow-[3px_3px_0px_#FFF3B0]" : "bg-white shadow-[3px_3px_0px_black]"}`}
+          className={`flex-1 py-2 font-black text-sm border-2 border-black rounded-lg transition-all flex items-center justify-center gap-1 ${tab === "bookmarks" ? "bg-black text-[#FFDD00] shadow-[3px_3px_0px_#FFDD00]" : "bg-white shadow-[3px_3px_0px_black]"}`}
           data-testid="tab-bookmarks"
         >
           <Bookmark className="w-4 h-4" /> Bookmark
@@ -260,12 +260,12 @@ export default function Profile() {
               {user.isGiveEnabled && (
                 <div className="flex flex-col gap-2">
                   <Link href="/topup">
-                    <button className="flex items-center gap-1.5 px-3 py-2 bg-[#C1F0C1] border-2 border-black rounded-lg font-black text-xs shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="button-go-topup">
+                    <button className="flex items-center gap-1.5 px-3 py-2 bg-[#4ADE80] border-2 border-black rounded-lg font-black text-xs shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="button-go-topup">
                       <Plus className="w-3 h-3" /> Top Up
                     </button>
                   </Link>
                   <Link href="/withdraw">
-                    <button className="flex items-center gap-1.5 px-3 py-2 bg-[#FFF3B0] border-2 border-black rounded-lg font-black text-xs shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="button-go-withdraw">
+                    <button className="flex items-center gap-1.5 px-3 py-2 bg-[#FFDD00] border-2 border-black rounded-lg font-black text-xs shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="button-go-withdraw">
                       <Wallet className="w-3 h-3" /> Tarik Dana
                     </button>
                   </Link>
@@ -277,7 +277,7 @@ export default function Profile() {
           {user.isGiveEnabled && (
             <div className="grid grid-cols-2 gap-3">
               <Link href="/topup">
-                <div className="border-4 border-black rounded-xl bg-[#B8DBFF] p-4 shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer" data-testid="card-topup-link">
+                <div className="border-4 border-black rounded-xl bg-[#60A5FA] p-4 shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer" data-testid="card-topup-link">
                   <Plus className="w-5 h-5 mb-2" />
                   <p className="font-black text-sm">Top Up Bunga</p>
                   <p className="text-xs text-black/60 font-semibold">Beli bunga untuk kirim hadiah</p>
@@ -347,7 +347,7 @@ export default function Profile() {
                       </div>
                       <button
                         onClick={() => setShowApplyForm(true)}
-                        className="w-full py-3 bg-[#C1F0C1] border-2 border-black rounded-lg font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                        className="w-full py-3 bg-[#4ADE80] border-2 border-black rounded-lg font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                         data-testid="button-open-apply"
                       >
                         <Gift className="w-4 h-4 inline mr-2" />
@@ -416,7 +416,7 @@ export default function Profile() {
                           <button
                             type="submit"
                             disabled={isApplying}
-                            className="flex-[2] py-2.5 bg-[#C1F0C1] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                            className="flex-[2] py-2.5 bg-[#4ADE80] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                             data-testid="button-submit-apply"
                           >
                             <Send className="w-4 h-4" />

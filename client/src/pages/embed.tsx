@@ -14,7 +14,7 @@ export default function Embed() {
     .then(r=>r.json())
     .then(q=>{
       var d=document.getElementById('kataviral-widget');
-      d.innerHTML='<div style="border:3px solid #000;border-radius:12px;padding:20px;background:#FFF3B0;box-shadow:5px 5px 0 #000">'
+      d.innerHTML='<div style="border:3px solid #000;border-radius:12px;padding:20px;background:#FFDD00;box-shadow:5px 5px 0 #000">'
         +'<p style="font-weight:700;font-size:18px;margin:0 0 12px">&ldquo;'+q.text+'&rdquo;</p>'
         +(q.author?'<p style="font-weight:600;color:#555;margin:0 0 8px">&mdash; '+q.author+'</p>':'')
         +'<a href="${origin}/q/'+q.id+'" target="_blank" style="font-size:12px;font-weight:700;color:#000;text-decoration:underline">CTRXL.ID</a>'
@@ -33,7 +33,7 @@ export default function Embed() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#B8DBFF] border-3 border-black rounded-xl shadow-[4px_4px_0px_black] mb-4">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#60A5FA] border-3 border-black rounded-xl shadow-[4px_4px_0px_black] mb-4">
           <Code className="w-5 h-5" />
           <span className="font-black text-sm uppercase tracking-widest">Widget Embed</span>
         </div>
@@ -46,7 +46,7 @@ export default function Embed() {
           <h3 className="font-black text-sm uppercase tracking-widest">Kode Embed</h3>
           <button
             onClick={handleCopy}
-            className="flex items-center gap-2 px-3 py-1.5 bg-[#C1F0C1] border-2 border-black rounded-lg font-black text-xs shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            className="flex items-center gap-2 px-3 py-1.5 bg-[#4ADE80] border-2 border-black rounded-lg font-black text-xs shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
             data-testid="button-copy-embed"
           >
             {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
@@ -58,9 +58,9 @@ export default function Embed() {
         </pre>
       </div>
 
-      <div className="border-4 border-black rounded-xl bg-[#FFF3B0] p-5 shadow-[6px_6px_0px_black] mb-6">
+      <div className="border-4 border-black rounded-xl bg-[#FFDD00] p-5 shadow-[6px_6px_0px_black] mb-6">
         <h3 className="font-black text-sm uppercase tracking-widest mb-3">Preview</h3>
-        <div className="border-3 border-black rounded-xl p-5 bg-[#FFF3B0] shadow-[5px_5px_0px_black]">
+        <div className="border-3 border-black rounded-xl p-5 bg-[#FFDD00] shadow-[5px_5px_0px_black]">
           <p className="font-bold text-lg mb-3">&ldquo;Hidup itu seperti naik sepeda. Untuk menjaga keseimbangan, kamu harus terus bergerak.&rdquo;</p>
           <p className="font-semibold text-black/60 mb-2">&mdash; Albert Einstein</p>
           <a href={origin} target="_blank" rel="noopener noreferrer" className="text-xs font-bold underline flex items-center gap-1">

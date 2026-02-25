@@ -18,7 +18,7 @@ export default function Trending() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <div className="border-4 border-black bg-[#FFD1A9] rounded-xl p-6 md:p-10 shadow-[8px_8px_0px_black] relative overflow-hidden">
+        <div className="border-4 border-black bg-[#FB923C] rounded-xl p-6 md:p-10 shadow-[8px_8px_0px_black] relative overflow-hidden">
           <div className="absolute top-4 right-4 opacity-20">
             <Flame className="w-24 h-24" />
           </div>
@@ -49,7 +49,7 @@ export default function Trending() {
         <div className="space-y-4">
           {quotes.map((quote, index) => (
             <div key={quote.id} className="flex gap-4 items-start" data-testid={`trending-item-${index}`}>
-              <div className={`flex-shrink-0 w-12 h-12 border-3 border-black rounded-lg flex items-center justify-center font-black text-lg shadow-[3px_3px_0px_black] ${index < 3 ? "bg-[#FFF3B0]" : "bg-white"}`}>
+              <div className={`flex-shrink-0 w-12 h-12 border-3 border-black rounded-lg flex items-center justify-center font-black text-lg shadow-[3px_3px_0px_black] ${index < 3 ? "bg-[#FFDD00]" : "bg-white"}`}>
                 #{index + 1}
               </div>
               <div className="flex-1 min-w-0">

@@ -91,7 +91,7 @@ export default function Topup() {
         </button>
       </Link>
 
-      <div className="border-4 border-black rounded-xl bg-[#FFF3B0] p-5 shadow-[8px_8px_0px_black] mb-6">
+      <div className="border-4 border-black rounded-xl bg-[#FFDD00] p-5 shadow-[8px_8px_0px_black] mb-6">
         <h1 className="text-2xl font-black mb-1 flex items-center gap-2">🌸 Top Up Bunga</h1>
         <p className="font-semibold text-sm text-black/70">Beli bunga untuk dikirim sebagai hadiah ke penulis quote favorit kamu</p>
         <div className="flex items-center gap-2 mt-2 bg-white/70 border-2 border-black rounded-lg px-3 py-2 w-fit">
@@ -115,7 +115,7 @@ export default function Topup() {
                 <button
                   key={pkg.id}
                   onClick={() => setSelectedPkg(pkg.id)}
-                  className={`flex flex-col gap-1.5 p-4 border-3 border-black rounded-xl text-left transition-all ${selectedPkg === pkg.id ? "bg-[#FFF3B0] shadow-[3px_3px_0px_black] translate-x-[3px] translate-y-[3px]" : "bg-white shadow-[6px_6px_0px_black] hover:shadow-[3px_3px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px]"}`}
+                  className={`flex flex-col gap-1.5 p-4 border-3 border-black rounded-xl text-left transition-all ${selectedPkg === pkg.id ? "bg-[#FFDD00] shadow-[3px_3px_0px_black] translate-x-[3px] translate-y-[3px]" : "bg-white shadow-[6px_6px_0px_black] hover:shadow-[3px_3px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px]"}`}
                   data-testid={`button-pkg-${pkg.id}`}
                 >
                   <span className="text-3xl">{pkg.icon}</span>
@@ -134,7 +134,7 @@ export default function Topup() {
               createRequest(selectedPkg);
             }}
             disabled={!selectedPkg || isPending}
-            className="w-full py-3 bg-black text-[#FFF3B0] border-3 border-black rounded-lg font-black shadow-[5px_5px_0px_#FFF3B0] hover:shadow-[2px_2px_0px_#FFF3B0] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-50 text-sm"
+            className="w-full py-3 bg-black text-[#FFDD00] border-3 border-black rounded-lg font-black shadow-[5px_5px_0px_#FFDD00] hover:shadow-[2px_2px_0px_#FFDD00] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-50 text-sm"
             data-testid="button-topup-pay"
           >
             {isPending ? "Membuat Pembayaran..." : "Bayar dengan QRIS →"}
@@ -147,7 +147,7 @@ export default function Topup() {
           <h2 className="font-black text-lg mb-4 flex items-center gap-2">
             <QrCode className="w-5 h-5" /> Pembayaran QRIS
           </h2>
-          <div className="bg-[#FFF3B0] border-2 border-black rounded-lg p-4 mb-4">
+          <div className="bg-[#FFDD00] border-2 border-black rounded-lg p-4 mb-4">
             <p className="font-bold text-sm">🌸 {activeRequest.flowersAmount.toLocaleString("id-ID")} bunga</p>
             <p className="font-black text-xl mt-1">Rp {(activeRequest.finalAmount || activeRequest.priceIdr).toLocaleString("id-ID")}</p>
             {activeRequest.finalAmount && activeRequest.finalAmount !== activeRequest.priceIdr && (

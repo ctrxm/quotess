@@ -38,13 +38,13 @@ export default function Waitlist() {
   if (submitted) {
     return (
       <div className="max-w-md mx-auto px-4 py-16 text-center">
-        <div className="border-4 border-black rounded-xl bg-[#C1F0C1] p-10 shadow-[8px_8px_0px_black]">
+        <div className="border-4 border-black rounded-xl bg-[#4ADE80] p-10 shadow-[8px_8px_0px_black]">
           <CheckCircle className="w-16 h-16 mx-auto mb-4 text-black" />
           <h2 className="text-2xl font-black mb-2">Berhasil Terdaftar!</h2>
           <p className="font-semibold text-black/70 mb-4">
             Email kamu sudah masuk waitlist. Kami akan menghubungi kamu saat beta access tersedia.
           </p>
-          <a href="/" className="px-6 py-3 bg-black text-[#C1F0C1] font-black border-3 border-black rounded-lg shadow-[4px_4px_0px_#333] inline-block">
+          <a href="/" className="px-6 py-3 bg-black text-[#4ADE80] font-black border-3 border-black rounded-lg shadow-[4px_4px_0px_#333] inline-block">
             Kembali ke Beranda
           </a>
         </div>
@@ -55,7 +55,7 @@ export default function Waitlist() {
   return (
     <div className="max-w-md mx-auto px-4 py-12">
       <div className="text-center mb-8">
-        <div className="w-14 h-14 bg-[#B8DBFF] border-3 border-black rounded-xl flex items-center justify-center mx-auto mb-4 shadow-[5px_5px_0px_black]">
+        <div className="w-14 h-14 bg-[#60A5FA] border-3 border-black rounded-xl flex items-center justify-center mx-auto mb-4 shadow-[5px_5px_0px_black]">
           <Clock className="w-7 h-7 text-black" />
         </div>
         <h1 className="text-3xl font-black">Waitlist Beta</h1>
@@ -65,7 +65,7 @@ export default function Waitlist() {
       </div>
 
       <div className="border-4 border-black rounded-xl bg-white shadow-[8px_8px_0px_black] p-6">
-        <div className="bg-[#FFF3B0] border-2 border-black rounded-lg p-3 mb-5 text-sm font-semibold flex items-start gap-2">
+        <div className="bg-[#FFDD00] border-2 border-black rounded-lg p-3 mb-5 text-sm font-semibold flex items-start gap-2">
           <Mail className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <span>Kami akan mengirim kode akses beta ke email kamu saat slot tersedia.</span>
         </div>
@@ -90,7 +90,7 @@ export default function Waitlist() {
                 <FormMessage />
               </FormItem>
             )} />
-            <button type="submit" disabled={isLoading} className="w-full py-3 bg-[#FFF3B0] border-3 border-black rounded-lg font-black shadow-[5px_5px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-60 text-sm" data-testid="button-join-waitlist">
+            <button type="submit" disabled={isLoading} className="w-full py-3 bg-[#FFDD00] border-3 border-black rounded-lg font-black shadow-[5px_5px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-60 text-sm" data-testid="button-join-waitlist">
               {isLoading ? "Mendaftar..." : "Daftar Waitlist"}
             </button>
           </form>

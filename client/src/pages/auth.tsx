@@ -109,7 +109,7 @@ export default function Auth() {
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-[#FFF3B0] border-[3px] border-black rounded-xl flex items-center justify-center mx-auto mb-4 shadow-[5px_5px_0px_black]">
+          <div className="w-14 h-14 bg-[#FFDD00] border-[3px] border-black rounded-xl flex items-center justify-center mx-auto mb-4 shadow-[5px_5px_0px_black]">
             <Feather className="w-7 h-7 text-black" />
           </div>
           <h1 className="text-3xl font-black">{settings.siteName}</h1>
@@ -119,7 +119,7 @@ export default function Auth() {
         <div className="border-4 border-black rounded-xl bg-white shadow-[8px_8px_0px_black] overflow-hidden">
           <div className="grid grid-cols-2 border-b-4 border-black">
             {(["login", "register"] as const).map((t) => (
-              <button key={t} type="button" onClick={() => setTab(t)} className={`py-3 font-black text-sm transition-colors ${tab === t ? "bg-[#FFF3B0] text-black" : "bg-white text-black/50 hover:bg-gray-50"}`} data-testid={`button-tab-${t}`}>
+              <button key={t} type="button" onClick={() => setTab(t)} className={`py-3 font-black text-sm transition-colors ${tab === t ? "bg-[#FFDD00] text-black" : "bg-white text-black/50 hover:bg-gray-50"}`} data-testid={`button-tab-${t}`}>
                 {t === "login" ? "Masuk" : "Daftar"}
               </button>
             ))}
@@ -130,7 +130,7 @@ export default function Auth() {
               <form onSubmit={handleLogin} className="flex flex-col gap-4" noValidate>
                 <InputField id="login-email" label="Email" type="email" placeholder="email@kamu.com" value={loginEmail} onChange={setLoginEmail} error={loginErrors.email} data-testid="input-login-email" />
                 <InputField id="login-password" label="Password" type="password" placeholder="Password kamu..." value={loginPassword} onChange={setLoginPassword} error={loginErrors.password} data-testid="input-login-password" />
-                <button type="submit" disabled={isLoading} className="w-full py-3 bg-[#FFF3B0] border-[3px] border-black rounded-lg font-black shadow-[5px_5px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-60 mt-2 text-sm" data-testid="button-login">
+                <button type="submit" disabled={isLoading} className="w-full py-3 bg-[#FFDD00] border-[3px] border-black rounded-lg font-black shadow-[5px_5px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-60 mt-2 text-sm" data-testid="button-login">
                   {isLoading ? "Memuat..." : "Masuk"}
                 </button>
               </form>
@@ -145,7 +145,7 @@ export default function Auth() {
                 )}
 
                 {settings.betaMode && (
-                  <div className="bg-[#FFF3B0] border-2 border-black rounded-lg p-3 text-sm font-semibold flex items-start gap-2">
+                  <div className="bg-[#FFDD00] border-2 border-black rounded-lg p-3 text-sm font-semibold flex items-start gap-2">
                     <Lock className="w-4 h-4 mt-0.5 flex-shrink-0" />
                     <div>
                       Website dalam mode Beta. {settings.betaAccessType === "waitlist" ? "Hanya pengguna waitlist yang bisa daftar." : settings.betaAccessType === "code" ? "Masukkan kode beta untuk mendaftar." : "Registrasi terbuka."}
@@ -156,7 +156,7 @@ export default function Auth() {
                   </div>
                 )}
 
-                <button type="submit" disabled={isLoading} className="w-full py-3 bg-black text-[#FFF3B0] border-[3px] border-black rounded-lg font-black shadow-[5px_5px_0px_#FFF3B0] hover:shadow-[2px_2px_0px_#FFF3B0] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-60 mt-2 text-sm" data-testid="button-register">
+                <button type="submit" disabled={isLoading} className="w-full py-3 bg-black text-[#FFDD00] border-[3px] border-black rounded-lg font-black shadow-[5px_5px_0px_#FFDD00] hover:shadow-[2px_2px_0px_#FFDD00] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-60 mt-2 text-sm" data-testid="button-register">
                   {isLoading ? "Memuat..." : "Buat Akun"}
                 </button>
               </form>

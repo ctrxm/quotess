@@ -46,10 +46,10 @@ export default function Stats() {
   const maxMood = Math.max(...Object.values(stats.moodBreakdown), 1);
 
   const statCards = [
-    { label: "Total Quote", value: stats.totalQuotes, icon: FileText, color: "bg-[#FFF3B0] dark:bg-[#7a7020]" },
-    { label: "Total Like", value: stats.totalLikes, icon: Heart, color: "bg-[#FFB3B3] dark:bg-[#8a2530]" },
-    { label: "Total View", value: stats.totalViews, icon: Eye, color: "bg-[#B8DBFF] dark:bg-[#1a4070]" },
-    { label: "Total Reaksi", value: stats.totalReactions, icon: Flame, color: "bg-[#FFD1A9] dark:bg-[#8a5020]" },
+    { label: "Total Quote", value: stats.totalQuotes, icon: FileText, color: "bg-[#FFDD00] dark:bg-[#B8960F]" },
+    { label: "Total Like", value: stats.totalLikes, icon: Heart, color: "bg-[#F87171] dark:bg-[#DC2626]" },
+    { label: "Total View", value: stats.totalViews, icon: Eye, color: "bg-[#60A5FA] dark:bg-[#1D4ED8]" },
+    { label: "Total Reaksi", value: stats.totalReactions, icon: Flame, color: "bg-[#FB923C] dark:bg-[#C2410C]" },
   ];
 
   return (
@@ -60,7 +60,7 @@ export default function Stats() {
         </button>
       </Link>
 
-      <div className="border-4 border-black dark:border-[#555] rounded-xl bg-[#DDB8FF] dark:bg-[#5a3090] p-5 shadow-[8px_8px_0px_black] dark:shadow-[8px_8px_0px_#444] mb-6">
+      <div className="border-4 border-black dark:border-[#555] rounded-xl bg-[#A855F7] dark:bg-[#7C3AED] p-5 shadow-[8px_8px_0px_black] dark:shadow-[8px_8px_0px_#444] mb-6">
         <h1 className="text-2xl font-black text-black dark:text-[#f5f0e0] flex items-center gap-2" data-testid="text-stats-title">
           <TrendingUp className="w-6 h-6" /> Statistik Kamu
         </h1>
@@ -81,7 +81,7 @@ export default function Stats() {
       </div>
 
       {streak && (
-        <div className="border-4 border-black dark:border-[#555] rounded-xl bg-[#C1F0C1] dark:bg-[#1a6a2a] p-5 shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#444] mb-6">
+        <div className="border-4 border-black dark:border-[#555] rounded-xl bg-[#4ADE80] dark:bg-[#16A34A] p-5 shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#444] mb-6">
           <h2 className="font-black text-sm uppercase tracking-widest mb-3 text-black dark:text-[#f5f0e0] flex items-center gap-2">
             <Flame className="w-4 h-4" /> Streak Harian
           </h2>
@@ -105,7 +105,7 @@ export default function Stats() {
             <Trophy className="w-4 h-4" /> Quote Terpopuler
           </h2>
           <Link href={`/q/${stats.bestQuote.id}`}>
-            <div className="border-2 border-black dark:border-[#555] rounded-lg p-4 bg-[#FFF3B0] dark:bg-[#7a7020] cursor-pointer hover:shadow-[2px_2px_0px_black] transition-all" data-testid="card-best-quote">
+            <div className="border-2 border-black dark:border-[#555] rounded-lg p-4 bg-[#FFDD00] dark:bg-[#B8960F] cursor-pointer hover:shadow-[2px_2px_0px_black] transition-all" data-testid="card-best-quote">
               <blockquote className="font-bold text-sm text-black dark:text-[#f5f0e0] leading-snug">&ldquo;{stats.bestQuote.text}&rdquo;</blockquote>
               <div className="flex items-center gap-2 mt-2">
                 <Heart className="w-3 h-3 text-red-500 fill-red-500" />

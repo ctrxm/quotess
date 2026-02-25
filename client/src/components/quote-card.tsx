@@ -15,12 +15,12 @@ interface QuoteCardProps {
 }
 
 const CARD_ACCENT_COLORS = [
-  { light: "bg-[#FFF3B0]", dark: "dark:bg-[#7a7020]" },
-  { light: "bg-[#C1F0C1]", dark: "dark:bg-[#1a6a2a]" },
-  { light: "bg-[#B8DBFF]", dark: "dark:bg-[#1a4070]" },
-  { light: "bg-[#FFD1A9]", dark: "dark:bg-[#8a5020]" },
-  { light: "bg-[#DDB8FF]", dark: "dark:bg-[#5a3090]" },
-  { light: "bg-[#FFB3B3]", dark: "dark:bg-[#8a2530]" },
+  { light: "bg-[#FFDD00]", dark: "dark:bg-[#B8960F]" },
+  { light: "bg-[#4ADE80]", dark: "dark:bg-[#16A34A]" },
+  { light: "bg-[#60A5FA]", dark: "dark:bg-[#1D4ED8]" },
+  { light: "bg-[#FB923C]", dark: "dark:bg-[#C2410C]" },
+  { light: "bg-[#A855F7]", dark: "dark:bg-[#7C3AED]" },
+  { light: "bg-[#F87171]", dark: "dark:bg-[#DC2626]" },
 ];
 
 function getCardColor(id: string): { light: string; dark: string } {

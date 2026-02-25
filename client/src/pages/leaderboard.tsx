@@ -10,7 +10,7 @@ interface AuthorRank {
   score: number;
 }
 
-const RANK_COLORS = ["bg-[#FFF3B0]", "bg-[#C1F0C1]", "bg-[#B8DBFF]"];
+const RANK_COLORS = ["bg-[#FFDD00]", "bg-[#4ADE80]", "bg-[#60A5FA]"];
 const RANK_ICONS = [
   <Crown className="w-6 h-6 text-yellow-600" />,
   <Medal className="w-6 h-6 text-gray-500" />,
@@ -25,7 +25,7 @@ export default function Leaderboard() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FFF3B0] border-3 border-black rounded-xl shadow-[4px_4px_0px_black] mb-4">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FFDD00] border-3 border-black rounded-xl shadow-[4px_4px_0px_black] mb-4">
           <Trophy className="w-5 h-5" />
           <span className="font-black text-sm uppercase tracking-widest">Leaderboard</span>
         </div>

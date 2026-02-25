@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import type { CollectionWithMeta, QuoteWithTags } from "@shared/schema";
 
-const COVER_COLORS = ["#FFF3B0", "#C1F0C1", "#B8DBFF", "#FFD1A9", "#DDB8FF", "#FFB3B3"];
+const COVER_COLORS = ["#FFDD00", "#4ADE80", "#60A5FA", "#FB923C", "#A855F7", "#F87171"];
 
 function CollectionsList() {
   const { user } = useAuth();
@@ -46,7 +46,7 @@ function CollectionsList() {
         {user && (
           <button
             onClick={() => setShowCreate(!showCreate)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#C1F0C1] border-3 border-black rounded-lg font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-[#4ADE80] border-3 border-black rounded-lg font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
             data-testid="button-create-collection"
           >
             <Plus className="w-4 h-4" /> Buat Koleksi
@@ -82,7 +82,7 @@ function CollectionsList() {
             <button
               onClick={() => name.trim() && createCollection({ name: name.trim(), description: description.trim(), coverColor })}
               disabled={isPending || !name.trim()}
-              className="px-4 py-2 bg-black text-[#FFF3B0] font-black text-sm rounded-lg border-2 border-black shadow-[4px_4px_0px_#FFF3B0] hover:shadow-[2px_2px_0px_#FFF3B0] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+              className="px-4 py-2 bg-black text-[#FFDD00] font-black text-sm rounded-lg border-2 border-black shadow-[4px_4px_0px_#FFDD00] hover:shadow-[2px_2px_0px_#FFDD00] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
               data-testid="button-submit-collection"
             >
               {isPending ? "Membuat..." : "Buat Koleksi"}
@@ -110,7 +110,7 @@ function CollectionsList() {
               <div className="border-4 border-black rounded-xl shadow-[6px_6px_0px_black] hover:shadow-[3px_3px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] transition-all cursor-pointer overflow-hidden h-full" data-testid={`card-collection-${col.id}`}>
                 <div className="h-24 flex items-center justify-center relative" style={{ backgroundColor: col.coverColor }}>
                   {col.isPremium && (
-                    <div className="absolute top-2 right-2 px-2 py-1 bg-black text-[#FFF3B0] text-xs font-black rounded flex items-center gap-1">
+                    <div className="absolute top-2 right-2 px-2 py-1 bg-black text-[#FFDD00] text-xs font-black rounded flex items-center gap-1">
                       <Sparkles className="w-3 h-3" /> Premium
                     </div>
                   )}
@@ -156,7 +156,7 @@ function CollectionDetail() {
         <div className="border-4 border-black rounded-xl bg-white p-12 shadow-[6px_6px_0px_black]">
           <h2 className="text-2xl font-black mb-2">Koleksi tidak ditemukan</h2>
           <Link href="/collections">
-            <button className="px-6 py-2 bg-black text-white font-black border-2 border-black rounded-lg shadow-[4px_4px_0px_#FFF3B0] mt-4">
+            <button className="px-6 py-2 bg-black text-white font-black border-2 border-black rounded-lg shadow-[4px_4px_0px_#FFDD00] mt-4">
               Kembali
             </button>
           </Link>

@@ -84,7 +84,7 @@ export default function Author() {
       </Link>
 
       <div className="mb-8">
-        <div className="border-4 border-black bg-[#DDB8FF] rounded-xl p-6 md:p-10 shadow-[8px_8px_0px_black] relative overflow-hidden">
+        <div className="border-4 border-black bg-[#A855F7] rounded-xl p-6 md:p-10 shadow-[8px_8px_0px_black] relative overflow-hidden">
           <div className="absolute top-4 right-4 opacity-20">
             <User className="w-24 h-24" />
           </div>
@@ -107,7 +107,7 @@ export default function Author() {
               <button
                 onClick={() => toggleFollow()}
                 disabled={isFollowPending}
-                className={`flex items-center gap-2 px-4 py-2 border-3 border-black rounded-lg font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all ${isFollowing ? "bg-black text-[#FFF3B0]" : "bg-white"}`}
+                className={`flex items-center gap-2 px-4 py-2 border-3 border-black rounded-lg font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all ${isFollowing ? "bg-black text-[#FFDD00]" : "bg-white"}`}
                 data-testid="button-follow"
               >
                 {isFollowing ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}

@@ -71,11 +71,11 @@ export default function Withdraw() {
   if (!user) return null;
   if (!user.isGiveEnabled) return (
     <div className="max-w-lg mx-auto px-4 py-12 text-center">
-      <div className="border-4 border-black rounded-xl bg-[#FFF3B0] p-10 shadow-[8px_8px_0px_black]">
+      <div className="border-4 border-black rounded-xl bg-[#FFDD00] p-10 shadow-[8px_8px_0px_black]">
         <Flower className="w-16 h-16 mx-auto mb-4" />
         <h2 className="text-2xl font-black mb-2">Fitur Give Belum Aktif</h2>
         <p className="font-semibold text-black/70">Fitur Give belum diaktifkan untuk akun kamu. Hubungi admin.</p>
-        <Link href="/profile"><button className="mt-4 px-6 py-2 bg-black text-[#FFF3B0] font-black border-2 border-black rounded-lg shadow-[4px_4px_0px_#FFF3B0]">Kembali</button></Link>
+        <Link href="/profile"><button className="mt-4 px-6 py-2 bg-black text-[#FFDD00] font-black border-2 border-black rounded-lg shadow-[4px_4px_0px_#FFDD00]">Kembali</button></Link>
       </div>
     </div>
   );
@@ -92,7 +92,7 @@ export default function Withdraw() {
         </button>
       </Link>
 
-      <div className="border-4 border-black rounded-xl bg-[#FFF3B0] p-5 shadow-[6px_6px_0px_black] mb-6">
+      <div className="border-4 border-black rounded-xl bg-[#FFDD00] p-5 shadow-[6px_6px_0px_black] mb-6">
         <h1 className="text-2xl font-black mb-1 flex items-center gap-2"><Flower className="w-6 h-6" /> Tukar Bunga</h1>
         <p className="font-semibold text-sm text-black/70">Saldo: <strong>{user.flowersBalance} bunga</strong> = Rp {(user.flowersBalance * FLOWERS_TO_IDR_RATE).toLocaleString("id-ID")}</p>
         <p className="text-xs font-semibold text-black/50 mt-1">Rate: 100 bunga = Rp 1.000 | Minimum: {MIN_WITHDRAWAL_FLOWERS} bunga</p>
@@ -163,7 +163,7 @@ export default function Withdraw() {
 
             <div className="border-t-2 border-black pt-4">
               <p className="text-xs text-gray-400 font-semibold mb-3">Proses 1-3 hari kerja. Bunga akan dikurangi saat submit.</p>
-              <button type="submit" disabled={isPending || (user.flowersBalance || 0) < MIN_WITHDRAWAL_FLOWERS} className="w-full py-3 bg-[#FFF3B0] border-3 border-black rounded-lg font-black shadow-[5px_5px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-50 text-sm" data-testid="button-submit-withdrawal">
+              <button type="submit" disabled={isPending || (user.flowersBalance || 0) < MIN_WITHDRAWAL_FLOWERS} className="w-full py-3 bg-[#FFDD00] border-3 border-black rounded-lg font-black shadow-[5px_5px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-50 text-sm" data-testid="button-submit-withdrawal">
                 {isPending ? "Memproses..." : "Ajukan Penarikan"}
               </button>
             </div>

@@ -27,7 +27,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     maintenanceMode: false, betaMode: false, betaAccessType: "open",
     siteName: "CTRXL.ID", siteDescription: "Platform Quote Indonesia",
     notificationEnabled: false, notificationType: "banner",
-    notificationMessage: "", notificationBg: "#FFF3B0", notificationTextColor: "#000000",
+    notificationMessage: "", notificationBg: "#FFDD00", notificationTextColor: "#000000",
   };
 
   return <SettingsContext.Provider value={settings}>{children}</SettingsContext.Provider>;

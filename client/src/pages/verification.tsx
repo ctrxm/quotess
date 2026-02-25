@@ -70,7 +70,7 @@ export default function Verification() {
             <ArrowLeft className="w-4 h-4" /> Kembali
           </span>
         </Link>
-        <div className="border-4 border-black rounded-xl bg-[#B8DBFF] p-8 shadow-[8px_8px_0px_black] text-center">
+        <div className="border-4 border-black rounded-xl bg-[#60A5FA] p-8 shadow-[8px_8px_0px_black] text-center">
           <BadgeCheck className="w-16 h-16 text-blue-500 fill-blue-500 mx-auto mb-4" />
           <h2 className="text-2xl font-black mb-2">Akun Terverifikasi</h2>
           <p className="font-semibold text-black/70">Akunmu sudah mendapatkan centang biru. Terima kasih!</p>
@@ -87,7 +87,7 @@ export default function Verification() {
         </span>
       </Link>
 
-      <div className="border-4 border-black rounded-xl bg-[#B8DBFF] p-6 shadow-[8px_8px_0px_black]">
+      <div className="border-4 border-black rounded-xl bg-[#60A5FA] p-6 shadow-[8px_8px_0px_black]">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-14 h-14 bg-white border-3 border-black rounded-xl flex items-center justify-center shadow-[4px_4px_0px_black]">
             <BadgeCheck className="w-8 h-8 text-blue-500" />
@@ -160,7 +160,7 @@ export default function Verification() {
               </div>
               <button
                 onClick={() => setShowForm(true)}
-                className="w-full py-3 bg-[#B8DBFF] border-2 border-black rounded-lg font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 bg-[#60A5FA] border-2 border-black rounded-lg font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2"
                 data-testid="button-open-verify"
               >
                 <BadgeCheck className="w-4 h-4" />
@@ -207,7 +207,7 @@ export default function Verification() {
                 <button
                   type="submit"
                   disabled={isPending || reason.length < 10}
-                  className="flex-[2] py-2.5 bg-[#B8DBFF] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-[2] py-2.5 bg-[#60A5FA] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   data-testid="button-submit-verify"
                 >
                   <Send className="w-4 h-4" />

@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { QuoteBattleWithQuotes, Mood } from "@shared/schema";
 import { MOOD_LABELS, MOOD_COLORS } from "@shared/schema";
 
-const CARD_ACCENT_COLORS = ["bg-[#FFF3B0]", "bg-[#C1F0C1]", "bg-[#B8DBFF]", "bg-[#FFD1A9]", "bg-[#DDB8FF]", "bg-[#FFB3B3]"];
+const CARD_ACCENT_COLORS = ["bg-[#FFDD00]", "bg-[#4ADE80]", "bg-[#60A5FA]", "bg-[#FB923C]", "bg-[#A855F7]", "bg-[#F87171]"];
 function getCardColor(id: string): string {
   let hash = 0;
   for (let i = 0; i < id.length; i++) hash = (hash + id.charCodeAt(i)) % CARD_ACCENT_COLORS.length;
@@ -70,7 +70,7 @@ export default function Battle() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FFB3B3] border-3 border-black rounded-xl shadow-[4px_4px_0px_black] mb-4">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#F87171] border-3 border-black rounded-xl shadow-[4px_4px_0px_black] mb-4">
           <Swords className="w-5 h-5" />
           <span className="font-black text-sm uppercase tracking-widest">Quote Battle</span>
         </div>
@@ -110,7 +110,7 @@ export default function Battle() {
                     <span className="font-black text-sm">{pct}%</span>
                   </div>
                   <div className="h-3 bg-gray-200">
-                    <div className={`h-full ${side === "A" ? "bg-[#FFB3B3]" : "bg-[#B8DBFF]"} transition-all duration-500`} style={{ width: `${pct}%` }} />
+                    <div className={`h-full ${side === "A" ? "bg-[#F87171]" : "bg-[#60A5FA]"} transition-all duration-500`} style={{ width: `${pct}%` }} />
                   </div>
                   {isMyVote && (
                     <div className="text-center py-1 text-xs font-black text-yellow-700 bg-yellow-100">
@@ -122,7 +122,7 @@ export default function Battle() {
                 <button
                   onClick={() => handleVote(quote.id)}
                   disabled={isPending}
-                  className={`py-3 font-black text-sm border-3 border-black rounded-lg shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all ${side === "A" ? "bg-[#FFB3B3]" : "bg-[#B8DBFF]"} disabled:opacity-50`}
+                  className={`py-3 font-black text-sm border-3 border-black rounded-lg shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all ${side === "A" ? "bg-[#F87171]" : "bg-[#60A5FA]"} disabled:opacity-50`}
                   data-testid={`button-vote-${side}`}
                 >
                   Pilih Quote Ini

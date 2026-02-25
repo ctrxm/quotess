@@ -22,11 +22,11 @@ export default function Admin() {
   if (!user || user.role !== "admin") {
     return (
       <div className="max-w-md mx-auto px-4 py-16 text-center">
-        <div className="border-4 border-black rounded-xl bg-[#FFF3B0] p-10 shadow-[8px_8px_0px_black]">
+        <div className="border-4 border-black rounded-xl bg-[#FFDD00] p-10 shadow-[8px_8px_0px_black]">
           <Shield className="w-16 h-16 mx-auto mb-4" />
           <h2 className="text-2xl font-black mb-2">Akses Ditolak</h2>
           <p className="font-semibold text-black/70 mb-4">Halaman ini hanya untuk admin.</p>
-          {!user && <Link href="/auth"><button className="px-6 py-2 bg-black text-[#FFF3B0] font-black border-3 border-black rounded-lg shadow-[4px_4px_0px_#FFF3B0]">Login</button></Link>}
+          {!user && <Link href="/auth"><button className="px-6 py-2 bg-black text-[#FFDD00] font-black border-3 border-black rounded-lg shadow-[4px_4px_0px_#FFDD00]">Login</button></Link>}
         </div>
       </div>
     );
@@ -48,7 +48,7 @@ export default function Admin() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
-      <div className="border-4 border-black rounded-xl bg-[#FFF3B0] p-5 shadow-[8px_8px_0px_black] mb-6 flex items-center gap-3">
+      <div className="border-4 border-black rounded-xl bg-[#FFDD00] p-5 shadow-[8px_8px_0px_black] mb-6 flex items-center gap-3">
         <Shield className="w-8 h-8" />
         <div>
           <h1 className="text-2xl font-black">Admin Panel</h1>
@@ -58,7 +58,7 @@ export default function Admin() {
 
       <div className="flex gap-2 mb-6 flex-wrap">
         {TABS.map(({ id, label, icon: Icon }) => (
-          <button key={id} onClick={() => setTab(id)} className={`flex items-center gap-1.5 px-4 py-2 font-bold text-sm border-2 border-black rounded-lg transition-all ${tab === id ? "bg-black text-[#FFF3B0] shadow-[3px_3px_0px_#FFF3B0]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"}`} data-testid={`tab-admin-${id}`}>
+          <button key={id} onClick={() => setTab(id)} className={`flex items-center gap-1.5 px-4 py-2 font-bold text-sm border-2 border-black rounded-lg transition-all ${tab === id ? "bg-black text-[#FFDD00] shadow-[3px_3px_0px_#FFDD00]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px]"}`} data-testid={`tab-admin-${id}`}>
             <Icon className="w-4 h-4" />{label}
           </button>
         ))}
@@ -108,10 +108,10 @@ function QuotesTab({ qc, toast }: any) {
             <blockquote className="font-bold text-lg mb-1">&ldquo;{q.text}&rdquo;</blockquote>
             {q.author && <p className="text-sm text-gray-500 font-semibold mb-3">— {q.author}</p>}
             <div className="flex gap-2">
-              <button onClick={() => updateStatus({ id: q.id, status: "approved" })} disabled={isPending} className="flex items-center gap-1.5 px-4 py-2 bg-[#C1F0C1] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid={`button-approve-${q.id}`}>
+              <button onClick={() => updateStatus({ id: q.id, status: "approved" })} disabled={isPending} className="flex items-center gap-1.5 px-4 py-2 bg-[#4ADE80] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid={`button-approve-${q.id}`}>
                 <Check className="w-4 h-4" /> Setujui
               </button>
-              <button onClick={() => updateStatus({ id: q.id, status: "rejected" })} disabled={isPending} className="flex items-center gap-1.5 px-4 py-2 bg-[#FFB3B3] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid={`button-reject-${q.id}`}>
+              <button onClick={() => updateStatus({ id: q.id, status: "rejected" })} disabled={isPending} className="flex items-center gap-1.5 px-4 py-2 bg-[#F87171] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid={`button-reject-${q.id}`}>
                 <X className="w-4 h-4" /> Tolak
               </button>
             </div>
@@ -206,10 +206,10 @@ function WaitlistTab({ qc, toast }: any) {
           <div className="flex gap-2">
             {w.status === "pending" ? (
               <>
-                <button onClick={() => update({ id: w.id, status: "approved" })} className="px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-[#C1F0C1] shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid={`button-approve-waitlist-${w.id}`}>
+                <button onClick={() => update({ id: w.id, status: "approved" })} className="px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-[#4ADE80] shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid={`button-approve-waitlist-${w.id}`}>
                   Approve
                 </button>
-                <button onClick={() => update({ id: w.id, status: "rejected" })} className="px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-[#FFB3B3] shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid={`button-reject-waitlist-${w.id}`}>
+                <button onClick={() => update({ id: w.id, status: "rejected" })} className="px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-[#F87171] shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid={`button-reject-waitlist-${w.id}`}>
                   Reject
                 </button>
               </>
@@ -240,13 +240,13 @@ function GiftsTab({ qc, toast }: any) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="border-4 border-black rounded-xl bg-[#FFF3B0] p-5 shadow-[6px_6px_0px_black]">
+      <div className="border-4 border-black rounded-xl bg-[#FFDD00] p-5 shadow-[6px_6px_0px_black]">
         <h3 className="font-black mb-3">Tambah Jenis Hadiah</h3>
         <div className="flex gap-2 flex-wrap">
           <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Nama hadiah" className="px-3 py-2 border-2 border-black rounded-lg font-semibold text-sm flex-1 min-w-[120px]" data-testid="input-gift-name" />
           <input value={form.icon} onChange={(e) => setForm((p) => ({ ...p, icon: e.target.value }))} placeholder="Icon (rose/star/diamond)" className="px-3 py-2 border-2 border-black rounded-lg font-semibold text-sm w-36" data-testid="input-gift-icon" />
           <input type="number" value={form.costFlowers} onChange={(e) => setForm((p) => ({ ...p, costFlowers: e.target.value }))} placeholder="Harga bunga" className="px-3 py-2 border-2 border-black rounded-lg font-semibold text-sm w-28" data-testid="input-gift-cost" />
-          <button onClick={() => create()} disabled={!form.name} className="px-4 py-2 bg-black text-[#FFF3B0] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_#333]" data-testid="button-add-gift">Tambah</button>
+          <button onClick={() => create()} disabled={!form.name} className="px-4 py-2 bg-black text-[#FFDD00] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_#333]" data-testid="button-add-gift">Tambah</button>
         </div>
       </div>
 
@@ -296,9 +296,9 @@ function WithdrawalsTab({ qc, toast }: any) {
             <div className="flex flex-col gap-2">
               <input value={notes[req.id] || ""} onChange={(e) => setNotes((p) => ({ ...p, [req.id]: e.target.value }))} placeholder="Catatan admin (opsional)" className="px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid={`input-admin-note-${req.id}`} />
               <div className="flex gap-2">
-                <button onClick={() => update({ id: req.id, status: "approved" })} className="px-4 py-2 bg-[#B8DBFF] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black]" data-testid={`button-approve-withdrawal-${req.id}`}>Setujui</button>
-                <button onClick={() => update({ id: req.id, status: "paid" })} className="px-4 py-2 bg-[#C1F0C1] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black]" data-testid={`button-paid-withdrawal-${req.id}`}>Tandai Dibayar</button>
-                <button onClick={() => update({ id: req.id, status: "rejected" })} className="px-4 py-2 bg-[#FFB3B3] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black]" data-testid={`button-reject-withdrawal-${req.id}`}>Tolak</button>
+                <button onClick={() => update({ id: req.id, status: "approved" })} className="px-4 py-2 bg-[#60A5FA] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black]" data-testid={`button-approve-withdrawal-${req.id}`}>Setujui</button>
+                <button onClick={() => update({ id: req.id, status: "paid" })} className="px-4 py-2 bg-[#4ADE80] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black]" data-testid={`button-paid-withdrawal-${req.id}`}>Tandai Dibayar</button>
+                <button onClick={() => update({ id: req.id, status: "rejected" })} className="px-4 py-2 bg-[#F87171] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black]" data-testid={`button-reject-withdrawal-${req.id}`}>Tolak</button>
               </div>
             </div>
           )}
@@ -342,7 +342,7 @@ function SettingsTab({ qc, toast }: any) {
           <h3 className="font-black mb-3">Tipe Akses Beta</h3>
           <div className="flex gap-2 flex-wrap">
             {[{ v: "open", l: "Terbuka" }, { v: "code", l: "Pakai Kode" }, { v: "waitlist", l: "Waitlist" }].map(({ v, l }) => (
-              <button key={v} onClick={() => save({ key: "beta_access_type", value: v })} className={`px-4 py-2 border-2 border-black rounded-lg font-bold text-sm transition-all ${betaAccessType === v ? "bg-black text-[#FFF3B0] shadow-[2px_2px_0px_#FFF3B0]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black]"}`} data-testid={`button-beta-type-${v}`}>
+              <button key={v} onClick={() => save({ key: "beta_access_type", value: v })} className={`px-4 py-2 border-2 border-black rounded-lg font-bold text-sm transition-all ${betaAccessType === v ? "bg-black text-[#FFDD00] shadow-[2px_2px_0px_#FFDD00]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black]"}`} data-testid={`button-beta-type-${v}`}>
                 {l}
               </button>
             ))}
@@ -362,10 +362,10 @@ function SettingsTab({ qc, toast }: any) {
 
 function SettingToggle({ label, desc, icon, enabled, onChange, testId }: any) {
   return (
-    <div className={`border-4 border-black rounded-xl p-5 shadow-[6px_6px_0px_black] transition-colors ${enabled ? "bg-[#FFF3B0]" : "bg-white"}`}>
+    <div className={`border-4 border-black rounded-xl p-5 shadow-[6px_6px_0px_black] transition-colors ${enabled ? "bg-[#FFDD00]" : "bg-white"}`}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-start gap-3">
-          <div className={`w-10 h-10 border-3 border-black rounded-lg flex items-center justify-center flex-shrink-0 ${enabled ? "bg-black text-[#FFF3B0]" : "bg-gray-100"}`}>{icon}</div>
+          <div className={`w-10 h-10 border-3 border-black rounded-lg flex items-center justify-center flex-shrink-0 ${enabled ? "bg-black text-[#FFDD00]" : "bg-gray-100"}`}>{icon}</div>
           <div>
             <h3 className="font-black">{label}</h3>
             <p className="text-sm font-semibold text-black/60">{desc}</p>
@@ -381,17 +381,17 @@ function SettingToggle({ label, desc, icon, enabled, onChange, testId }: any) {
 
 function NotificationSettings({ s, save }: { s: Record<string, string>; save: (args: { key: string; value: string }) => void }) {
   const [msg, setMsg] = useState(s.notification_message || "");
-  const [bg, setBg] = useState(s.notification_bg || "#FFF3B0");
+  const [bg, setBg] = useState(s.notification_bg || "#FFDD00");
   const [textColor, setTextColor] = useState(s.notification_text_color || "#000000");
   const isEnabled = s.notification_enabled === "true";
   const currentType = s.notification_type || "banner";
 
   const PRESETS = [
-    { bg: "#FFF3B0", text: "#000000", label: "Kuning" },
-    { bg: "#C1F0C1", text: "#000000", label: "Hijau" },
-    { bg: "#B8DBFF", text: "#000000", label: "Biru" },
-    { bg: "#FFB3B3", text: "#ffffff", label: "Merah" },
-    { bg: "#000000", text: "#FFF3B0", label: "Hitam" },
+    { bg: "#FFDD00", text: "#000000", label: "Kuning" },
+    { bg: "#4ADE80", text: "#000000", label: "Hijau" },
+    { bg: "#60A5FA", text: "#000000", label: "Biru" },
+    { bg: "#F87171", text: "#ffffff", label: "Merah" },
+    { bg: "#000000", text: "#FFDD00", label: "Hitam" },
     { bg: "#ffffff", text: "#000000", label: "Putih" },
   ];
 
@@ -419,7 +419,7 @@ function NotificationSettings({ s, save }: { s: Record<string, string>; save: (a
               <button
                 key={v}
                 onClick={() => save({ key: "notification_type", value: v })}
-                className={`flex-1 px-3 py-2 border-2 border-black rounded-lg font-bold text-xs transition-all ${currentType === v ? "bg-black text-[#FFF3B0] shadow-[2px_2px_0px_#FFF3B0]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black]"}`}
+                className={`flex-1 px-3 py-2 border-2 border-black rounded-lg font-bold text-xs transition-all ${currentType === v ? "bg-black text-[#FFDD00] shadow-[2px_2px_0px_#FFDD00]" : "bg-white shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black]"}`}
                 data-testid={`button-notif-type-${v}`}
               >
                 {l}
@@ -440,7 +440,7 @@ function NotificationSettings({ s, save }: { s: Record<string, string>; save: (a
             />
             <button
               onClick={() => save({ key: "notification_message", value: msg })}
-              className="px-3 py-2 bg-[#FFF3B0] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all"
+              className="px-3 py-2 bg-[#FFDD00] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all"
               data-testid="button-save-notification-message"
             >
               Simpan
@@ -513,7 +513,7 @@ function NotificationSettings({ s, save }: { s: Record<string, string>; save: (a
             save({ key: "notification_bg", value: bg });
             save({ key: "notification_text_color", value: textColor });
           }}
-          className="py-2 bg-[#B8DBFF] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all"
+          className="py-2 bg-[#60A5FA] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all"
           data-testid="button-save-notif-colors"
         >
           Simpan Warna
@@ -547,14 +547,14 @@ function SiteInfoSettings({ s, save }: { s: Record<string, string>; save: (args:
             <label className="font-bold text-xs text-gray-500 mb-1 block">Nama Site</label>
             <input value={siteName} onChange={(e) => setSiteName(e.target.value)} className="w-full px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid="input-setting-site_name" />
           </div>
-          <button onClick={() => save({ key: "site_name", value: siteName })} className="px-3 py-2 bg-[#FFF3B0] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid="button-save-setting-site_name">Simpan</button>
+          <button onClick={() => save({ key: "site_name", value: siteName })} className="px-3 py-2 bg-[#FFDD00] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid="button-save-setting-site_name">Simpan</button>
         </div>
         <div className="flex gap-2 items-end">
           <div className="flex-1">
             <label className="font-bold text-xs text-gray-500 mb-1 block">Deskripsi</label>
             <input value={siteDesc} onChange={(e) => setSiteDesc(e.target.value)} className="w-full px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid="input-setting-site_description" />
           </div>
-          <button onClick={() => save({ key: "site_description", value: siteDesc })} className="px-3 py-2 bg-[#FFF3B0] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid="button-save-setting-site_description">Simpan</button>
+          <button onClick={() => save({ key: "site_description", value: siteDesc })} className="px-3 py-2 bg-[#FFDD00] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid="button-save-setting-site_description">Simpan</button>
         </div>
       </div>
     </div>
@@ -574,21 +574,21 @@ function TopupPaymentSettings({ s, save }: { s: Record<string, string>; save: (a
             <label className="font-bold text-xs text-gray-500 mb-1 block">Nama Bank/E-Wallet</label>
             <input value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="Contoh: BCA, GoPay" className="w-full px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid="input-setting-topup_bank_name" />
           </div>
-          <button onClick={() => save({ key: "topup_bank_name", value: bankName })} className="px-3 py-2 bg-[#FFF3B0] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black]" data-testid="button-save-topup-bank">Simpan</button>
+          <button onClick={() => save({ key: "topup_bank_name", value: bankName })} className="px-3 py-2 bg-[#FFDD00] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black]" data-testid="button-save-topup-bank">Simpan</button>
         </div>
         <div className="flex gap-2 items-end">
           <div className="flex-1">
             <label className="font-bold text-xs text-gray-500 mb-1 block">Nomor Rekening/Akun</label>
             <input value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="Nomor rekening" className="w-full px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid="input-setting-topup_account_number" />
           </div>
-          <button onClick={() => save({ key: "topup_account_number", value: accountNumber })} className="px-3 py-2 bg-[#FFF3B0] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black]" data-testid="button-save-topup-account-number">Simpan</button>
+          <button onClick={() => save({ key: "topup_account_number", value: accountNumber })} className="px-3 py-2 bg-[#FFDD00] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black]" data-testid="button-save-topup-account-number">Simpan</button>
         </div>
         <div className="flex gap-2 items-end">
           <div className="flex-1">
             <label className="font-bold text-xs text-gray-500 mb-1 block">Nama Pemilik Rekening</label>
             <input value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="Nama pemilik" className="w-full px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid="input-setting-topup_account_name" />
           </div>
-          <button onClick={() => save({ key: "topup_account_name", value: accountName })} className="px-3 py-2 bg-[#FFF3B0] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black]" data-testid="button-save-topup-account-name">Simpan</button>
+          <button onClick={() => save({ key: "topup_account_name", value: accountName })} className="px-3 py-2 bg-[#FFDD00] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black]" data-testid="button-save-topup-account-name">Simpan</button>
         </div>
       </div>
     </div>
@@ -642,7 +642,7 @@ function TopupTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast:
     <div>
       <div className="flex gap-2 mb-4">
         {(["requests", "packages"] as const).map((s) => (
-          <button key={s} onClick={() => setSubtab(s)} className={`px-4 py-2 font-bold text-sm border-2 border-black rounded-lg transition-all ${subtab === s ? "bg-black text-[#FFF3B0]" : "bg-white shadow-[2px_2px_0px_black]"}`} data-testid={`tab-topup-${s}`}>
+          <button key={s} onClick={() => setSubtab(s)} className={`px-4 py-2 font-bold text-sm border-2 border-black rounded-lg transition-all ${subtab === s ? "bg-black text-[#FFDD00]" : "bg-white shadow-[2px_2px_0px_black]"}`} data-testid={`tab-topup-${s}`}>
             {s === "requests" ? "Permintaan" : "Paket"}
           </button>
         ))}
@@ -688,7 +688,7 @@ function TopupTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast:
 
       {subtab === "packages" && (
         <div className="flex flex-col gap-4">
-          <div className="border-4 border-black rounded-xl bg-[#FFF3B0] p-4 shadow-[5px_5px_0px_black]">
+          <div className="border-4 border-black rounded-xl bg-[#FFDD00] p-4 shadow-[5px_5px_0px_black]">
             <h3 className="font-black mb-3 flex items-center gap-2"><Plus className="w-4 h-4" /> Tambah Paket</h3>
             <div className="grid grid-cols-2 gap-2">
               <input placeholder="Nama paket" value={newPkg.name} onChange={(e) => setNewPkg((p) => ({ ...p, name: e.target.value }))} className="px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold" data-testid="input-newpkg-name" />
@@ -698,7 +698,7 @@ function TopupTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast:
               <input placeholder="Deskripsi" value={newPkg.description} onChange={(e) => setNewPkg((p) => ({ ...p, description: e.target.value }))} className="px-3 py-2 border-2 border-black rounded-lg text-sm font-semibold col-span-2" data-testid="input-newpkg-description" />
             </div>
             <button onClick={() => addPkg.mutate()} disabled={addPkg.isPending || !newPkg.name || !newPkg.flowersAmount || !newPkg.priceIdr}
-              className="mt-2 px-4 py-2 bg-black text-[#FFF3B0] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_#FFF3B0] disabled:opacity-50" data-testid="button-newpkg-add">
+              className="mt-2 px-4 py-2 bg-black text-[#FFDD00] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_#FFDD00] disabled:opacity-50" data-testid="button-newpkg-add">
               {addPkg.isPending ? "..." : "Tambah Paket"}
             </button>
           </div>
@@ -748,11 +748,11 @@ function BetaCodesTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; to
 
   return (
     <div>
-      <div className="border-4 border-black rounded-xl bg-[#FFF3B0] p-5 shadow-[6px_6px_0px_black] mb-4">
+      <div className="border-4 border-black rounded-xl bg-[#FFDD00] p-5 shadow-[6px_6px_0px_black] mb-4">
         <h3 className="font-black text-lg mb-2 flex items-center gap-2"><KeyRound className="w-5 h-5" /> Generator Kode Beta</h3>
         <p className="text-sm font-semibold text-black/70 mb-3">Buat kode unik untuk mengundang pengguna beta baru</p>
         <button onClick={() => generate.mutate()} disabled={generate.isPending}
-          className="flex items-center gap-2 px-5 py-2.5 bg-black text-[#FFF3B0] border-2 border-black rounded-lg font-black shadow-[4px_4px_0px_#FFF3B0] hover:shadow-[2px_2px_0px_#FFF3B0] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+          className="flex items-center gap-2 px-5 py-2.5 bg-black text-[#FFDD00] border-2 border-black rounded-lg font-black shadow-[4px_4px_0px_#FFDD00] hover:shadow-[2px_2px_0px_#FFDD00] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
           data-testid="button-generate-betacode">
           <Plus className="w-4 h-4" /> {generate.isPending ? "Membuat..." : "Buat Kode Baru"}
         </button>
@@ -760,7 +760,7 @@ function BetaCodesTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; to
 
       {isLoading ? <LoadingBox /> : codes.length === 0 ? <EmptyBox msg="Belum ada kode beta" /> : (
         <div className="border-4 border-black rounded-xl bg-white shadow-[6px_6px_0px_black] overflow-hidden">
-          <div className="grid grid-cols-3 gap-0 bg-black text-[#FFF3B0] text-xs font-black uppercase px-4 py-2">
+          <div className="grid grid-cols-3 gap-0 bg-black text-[#FFDD00] text-xs font-black uppercase px-4 py-2">
             <span>Kode</span>
             <span>Status</span>
             <span>Dibuat</span>
@@ -823,7 +823,7 @@ function GiftRolesTab({ qc, toast }: any) {
               <p className="font-black">@{app.username || app.userId}</p>
               <p className="text-xs text-gray-400">{app.email}</p>
               <div className="flex gap-2 mt-1">
-                <span className="text-xs font-bold px-2 py-0.5 bg-[#FFF3B0] border border-black rounded">{TYPE_LABELS[app.type] ?? app.type}</span>
+                <span className="text-xs font-bold px-2 py-0.5 bg-[#FFDD00] border border-black rounded">{TYPE_LABELS[app.type] ?? app.type}</span>
                 <span className={`text-xs font-bold px-2 py-0.5 border rounded ${STATUS_STYLES[app.status]}`}>{app.status}</span>
               </div>
             </div>
@@ -847,10 +847,10 @@ function GiftRolesTab({ qc, toast }: any) {
                 data-testid={`input-admin-note-${app.id}`}
               />
               <div className="flex gap-2">
-                <button onClick={() => update({ id: app.id, status: "approved" })} disabled={isPending} className="flex-1 px-4 py-2 bg-[#C1F0C1] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50" data-testid={`button-approve-giftrole-${app.id}`}>
+                <button onClick={() => update({ id: app.id, status: "approved" })} disabled={isPending} className="flex-1 px-4 py-2 bg-[#4ADE80] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50" data-testid={`button-approve-giftrole-${app.id}`}>
                   <Check className="w-4 h-4 inline mr-1" /> Setujui
                 </button>
-                <button onClick={() => update({ id: app.id, status: "rejected" })} disabled={isPending} className="flex-1 px-4 py-2 bg-[#FFB3B3] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50" data-testid={`button-reject-giftrole-${app.id}`}>
+                <button onClick={() => update({ id: app.id, status: "rejected" })} disabled={isPending} className="flex-1 px-4 py-2 bg-[#F87171] border-2 border-black rounded-lg font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50" data-testid={`button-reject-giftrole-${app.id}`}>
                   <X className="w-4 h-4 inline mr-1" /> Tolak
                 </button>
               </div>
@@ -868,19 +868,19 @@ function LoadingBox() {
 
 function EmptyBox({ msg }: { msg: string }) {
   return (
-    <div className="border-4 border-black rounded-xl bg-[#FFF3B0] p-8 text-center shadow-[6px_6px_0px_black]">
+    <div className="border-4 border-black rounded-xl bg-[#FFDD00] p-8 text-center shadow-[6px_6px_0px_black]">
       <Clock className="w-12 h-12 mx-auto mb-2 opacity-40" />
       <p className="font-black">{msg}</p>
     </div>
   );
 }
 
-const BLANK_AD: Partial<Ad> = { type: "text", title: "", description: "", imageUrl: "", linkUrl: "", isActive: true, position: "inline", bgColor: "#B8DBFF", textColor: "#000000", sortOrder: 0 };
+const BLANK_AD: Partial<Ad> = { type: "text", title: "", description: "", imageUrl: "", linkUrl: "", isActive: true, position: "inline", bgColor: "#60A5FA", textColor: "#000000", sortOrder: 0 };
 const COLOR_PRESETS = [
-  { color: "#FFF3B0", label: "Kuning" },
-  { color: "#B8DBFF", label: "Biru" },
-  { color: "#C1F0C1", label: "Hijau" },
-  { color: "#FFB3B3", label: "Merah" },
+  { color: "#FFDD00", label: "Kuning" },
+  { color: "#60A5FA", label: "Biru" },
+  { color: "#4ADE80", label: "Hijau" },
+  { color: "#F87171", label: "Merah" },
   { color: "#E8D5FF", label: "Ungu" },
   { color: "#FFFFFF", label: "Putih" },
   { color: "#1a1a1a", label: "Hitam" },
@@ -964,7 +964,7 @@ function AdsTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast: R
         <button
           onClick={() => setShowForm(true)}
           data-testid="button-add-ad"
-          className="flex items-center gap-2 px-5 py-3 bg-[#FFF3B0] border-3 border-black rounded-xl font-black text-sm shadow-[5px_5px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] transition-all w-fit"
+          className="flex items-center gap-2 px-5 py-3 bg-[#FFDD00] border-3 border-black rounded-xl font-black text-sm shadow-[5px_5px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[3px] hover:translate-y-[3px] transition-all w-fit"
         >
           <Plus className="w-4 h-4" /> Tambah Iklan Baru
         </button>
@@ -985,7 +985,7 @@ function AdsTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast: R
                     key={t}
                     type="button"
                     onClick={() => setForm({ ...form, type: t })}
-                    className={`flex-1 py-2 border-2 border-black rounded-lg font-bold text-sm transition-all ${form.type === t ? "bg-black text-[#FFF3B0]" : "bg-white shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black]"}`}
+                    className={`flex-1 py-2 border-2 border-black rounded-lg font-bold text-sm transition-all ${form.type === t ? "bg-black text-[#FFDD00]" : "bg-white shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black]"}`}
                     data-testid={`button-ad-type-${t}`}
                   >
                     {t === "text" ? "Teks" : "Gambar"}
@@ -1001,7 +1001,7 @@ function AdsTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast: R
                     key={p}
                     type="button"
                     onClick={() => setForm({ ...form, position: p })}
-                    className={`flex-1 py-2 border-2 border-black rounded-lg font-bold text-sm transition-all ${form.position === p ? "bg-black text-[#FFF3B0]" : "bg-white shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black]"}`}
+                    className={`flex-1 py-2 border-2 border-black rounded-lg font-bold text-sm transition-all ${form.position === p ? "bg-black text-[#FFDD00]" : "bg-white shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black]"}`}
                     data-testid={`button-ad-pos-${p}`}
                   >
                     {p === "inline" ? "Di antara Quote" : "Bawah Halaman"}
@@ -1050,7 +1050,7 @@ function AdsTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast: R
                 ))}
               </div>
               <div className="flex gap-2 items-center">
-                <input type="color" value={form.bgColor || "#B8DBFF"} onChange={(e) => setForm({ ...form, bgColor: e.target.value })} className="w-10 h-10 border-2 border-black rounded-md cursor-pointer" data-testid="input-ad-bg-color" />
+                <input type="color" value={form.bgColor || "#60A5FA"} onChange={(e) => setForm({ ...form, bgColor: e.target.value })} className="w-10 h-10 border-2 border-black rounded-md cursor-pointer" data-testid="input-ad-bg-color" />
                 <input type="text" value={form.bgColor || ""} onChange={(e) => setForm({ ...form, bgColor: e.target.value })} className="border-2 border-black rounded-lg px-3 py-2 text-sm font-mono w-full" data-testid="input-ad-bg-hex" />
               </div>
             </div>
@@ -1096,7 +1096,7 @@ function AdsTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast: R
               onClick={() => save()}
               disabled={saving}
               data-testid="button-save-ad"
-              className="flex-1 py-3 bg-[#C1F0C1] border-3 border-black rounded-xl font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+              className="flex-1 py-3 bg-[#4ADE80] border-3 border-black rounded-xl font-black text-sm shadow-[4px_4px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
             >
               {saving ? "Menyimpan..." : (editId ? "Perbarui Iklan" : "Simpan Iklan")}
             </button>
@@ -1119,7 +1119,7 @@ function AdsTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast: R
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold opacity-70" style={{ color: ad.textColor }}>{ad.clickCount} klik</span>
-                <span className={`text-xs font-black px-2 py-0.5 rounded-md border-2 border-black ${ad.isActive ? "bg-[#C1F0C1]" : "bg-gray-200"}`}>{ad.isActive ? "Aktif" : "Nonaktif"}</span>
+                <span className={`text-xs font-black px-2 py-0.5 rounded-md border-2 border-black ${ad.isActive ? "bg-[#4ADE80]" : "bg-gray-200"}`}>{ad.isActive ? "Aktif" : "Nonaktif"}</span>
               </div>
             </div>
             <div className="p-4 flex items-start gap-4">
@@ -1135,10 +1135,10 @@ function AdsTab({ qc, toast }: { qc: ReturnType<typeof useQueryClient>; toast: R
                 <button onClick={() => toggle({ id: ad.id, isActive: !ad.isActive })} className="px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-white shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all whitespace-nowrap" data-testid={`button-toggle-ad-${ad.id}`}>
                   {ad.isActive ? "Nonaktifkan" : "Aktifkan"}
                 </button>
-                <button onClick={() => startEdit(ad)} className="flex items-center gap-1 px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-[#FFF3B0] shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid={`button-edit-ad-${ad.id}`}>
+                <button onClick={() => startEdit(ad)} className="flex items-center gap-1 px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-[#FFDD00] shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all" data-testid={`button-edit-ad-${ad.id}`}>
                   <Pencil className="w-3 h-3" /> Edit
                 </button>
-                <button onClick={() => { if (confirm("Hapus iklan ini?")) remove(ad.id); }} disabled={removing} className="flex items-center gap-1 px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-[#FFB3B3] shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all disabled:opacity-50" data-testid={`button-delete-ad-${ad.id}`}>
+                <button onClick={() => { if (confirm("Hapus iklan ini?")) remove(ad.id); }} disabled={removing} className="flex items-center gap-1 px-3 py-1.5 border-2 border-black rounded-lg text-xs font-bold bg-[#F87171] shadow-[2px_2px_0px_black] hover:shadow-[1px_1px_0px_black] transition-all disabled:opacity-50" data-testid={`button-delete-ad-${ad.id}`}>
                   <Trash2 className="w-3 h-3" /> Hapus
                 </button>
               </div>
@@ -1279,7 +1279,7 @@ function VerificationsTab({ qc, toast }: any) {
                       </button>
                       <button
                         onClick={() => setNoteId(req.id)}
-                        className="py-2 px-3 bg-[#FFF3B0] border-2 border-black rounded-lg font-black text-xs shadow-[2px_2px_0px_black]"
+                        className="py-2 px-3 bg-[#FFDD00] border-2 border-black rounded-lg font-black text-xs shadow-[2px_2px_0px_black]"
                         data-testid={`button-note-verify-${req.id}`}
                       >
                         + Catatan

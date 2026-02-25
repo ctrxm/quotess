@@ -54,7 +54,7 @@ export default function QuoteDetail() {
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="border-4 border-black rounded-xl shadow-[8px_8px_0px_black] bg-[#FFF3B0] p-8 animate-pulse h-64" />
+        <div className="border-4 border-black rounded-xl shadow-[8px_8px_0px_black] bg-[#FFDD00] p-8 animate-pulse h-64" />
       </div>
     );
   }
@@ -66,7 +66,7 @@ export default function QuoteDetail() {
           <h2 className="text-2xl font-black mb-2">Quote tidak ditemukan</h2>
           <p className="text-gray-500 font-semibold mb-4">Mungkin sudah dihapus atau ID salah</p>
           <Link href="/">
-            <button className="px-6 py-2 bg-black text-white font-black border-2 border-black rounded-lg shadow-[4px_4px_0px_#FFF3B0]">
+            <button className="px-6 py-2 bg-black text-white font-black border-2 border-black rounded-lg shadow-[4px_4px_0px_#FFDD00]">
               Kembali ke Beranda
             </button>
           </Link>
@@ -113,7 +113,7 @@ export default function QuoteDetail() {
             <button
               onClick={() => commentText.trim() && addComment(commentText.trim())}
               disabled={isAddingComment || !commentText.trim()}
-              className="px-3 py-2 bg-[#C1F0C1] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+              className="px-3 py-2 bg-[#4ADE80] border-2 border-black rounded-lg font-black text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
               data-testid="button-send-comment"
             >
               <Send className="w-4 h-4" />
@@ -132,7 +132,7 @@ export default function QuoteDetail() {
           <div className="flex flex-col gap-3">
             {comments.map((c) => (
               <div key={c.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200" data-testid={`comment-${c.id}`}>
-                <div className="w-8 h-8 bg-[#DDB8FF] border-2 border-black rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-[#A855F7] border-2 border-black rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-xs font-black">{c.username[0]?.toUpperCase()}</span>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -168,7 +168,7 @@ export default function QuoteDetail() {
             href={shareUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-2 border-2 border-black rounded-md bg-[#FFF3B0] hover:bg-[#FFE68A] font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-1 whitespace-nowrap"
+            className="px-3 py-2 border-2 border-black rounded-md bg-[#FFDD00] hover:bg-[#FFE68A] font-bold text-sm shadow-[3px_3px_0px_black] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-1 whitespace-nowrap"
             data-testid="link-open-new"
           >
             <ExternalLink className="w-4 h-4" />

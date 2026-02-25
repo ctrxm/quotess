@@ -80,7 +80,7 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   const navBtnClass = (active: boolean) =>
-    `px-3 py-2 font-bold text-xs border-2 border-black dark:border-[#555] rounded-md cursor-pointer transition-all duration-100 inline-flex items-center gap-1 ${active ? "bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#141420] shadow-[3px_3px_0px_#FFF3B0] dark:shadow-[3px_3px_0px_#555]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#555] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#555] hover:translate-x-[2px] hover:translate-y-[2px]"}`;
+    `px-3 py-2 font-bold text-xs border-2 border-black dark:border-[#555] rounded-md cursor-pointer transition-all duration-100 inline-flex items-center gap-1 ${active ? "bg-black dark:bg-[#f5f0e0] text-[#FFDD00] dark:text-[#141420] shadow-[3px_3px_0px_#FFDD00] dark:shadow-[3px_3px_0px_#555]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#555] hover:shadow-[1px_1px_0px_black] dark:hover:shadow-[1px_1px_0px_#555] hover:translate-x-[2px] hover:translate-y-[2px]"}`;
 
   const exploreLinks = [
     { href: "/explore", label: "Jelajahi", icon: <Compass className="w-3.5 h-3.5" /> },
@@ -93,12 +93,12 @@ export default function Layout({ children }: LayoutProps) {
   const unreadCount = notifCount?.count || 0;
 
   return (
-    <div className="min-h-screen bg-[#FFF8F0] dark:bg-[#141420] flex flex-col transition-colors" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-      <header className="sticky top-0 z-50 bg-[#FFF8F0] dark:bg-[#141420] border-b-4 border-black dark:border-[#555]">
+    <div className="min-h-screen bg-[#FFFFFF] dark:bg-[#141420] flex flex-col transition-colors" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+      <header className="sticky top-0 z-50 bg-[#FFFFFF] dark:bg-[#141420] border-b-4 border-black dark:border-[#555]">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <Link href="/" data-testid="link-logo">
             <div className="flex items-center gap-2 cursor-pointer">
-              <div className="w-9 h-9 bg-[#FFF3B0] dark:bg-[#7a7020] border-3 border-black dark:border-[#555] rounded-md flex items-center justify-center shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444]">
+              <div className="w-9 h-9 bg-[#FFDD00] dark:bg-[#B8960F] border-3 border-black dark:border-[#555] rounded-md flex items-center justify-center shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444]">
                 <Feather className="w-5 h-5 text-black dark:text-[#f5f0e0]" />
               </div>
               <span className="text-xl font-black tracking-tight text-black dark:text-[#f5f0e0] hidden sm:block">
@@ -126,7 +126,7 @@ export default function Layout({ children }: LayoutProps) {
                 <div className="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-[#22222e] border-3 border-black dark:border-[#555] rounded-xl shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#444] overflow-hidden z-50">
                   {exploreLinks.map((link) => (
                     <Link key={link.href} href={link.href} onClick={() => setExploreOpen(false)}>
-                      <div className={`flex items-center gap-2 px-4 py-2.5 font-semibold text-sm cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 text-black dark:text-[#f5f0e0] ${isActive(link.href) ? "bg-[#FFF3B0] dark:bg-[#7a7020] font-black" : "hover:bg-gray-50 dark:hover:bg-[#333]"}`} data-testid={`link-nav-${link.label.toLowerCase()}`}>
+                      <div className={`flex items-center gap-2 px-4 py-2.5 font-semibold text-sm cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 text-black dark:text-[#f5f0e0] ${isActive(link.href) ? "bg-[#FFDD00] dark:bg-[#B8960F] font-black" : "hover:bg-gray-50 dark:hover:bg-[#333]"}`} data-testid={`link-nav-${link.label.toLowerCase()}`}>
                         {link.icon} {link.label}
                       </div>
                     </Link>
@@ -168,7 +168,7 @@ export default function Layout({ children }: LayoutProps) {
                   </button>
                   {notifOpen && (
                     <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-[#22222e] border-3 border-black dark:border-[#555] rounded-xl shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#444] overflow-hidden z-50 max-h-96 overflow-y-auto">
-                      <div className="p-3 border-b-2 border-black dark:border-[#555] bg-[#FFF3B0] dark:bg-[#7a7020]">
+                      <div className="p-3 border-b-2 border-black dark:border-[#555] bg-[#FFDD00] dark:bg-[#B8960F]">
                         <p className="font-black text-sm text-black dark:text-[#f5f0e0]">Notifikasi</p>
                       </div>
                       {notifs.length === 0 ? (
@@ -199,7 +199,7 @@ export default function Layout({ children }: LayoutProps) {
                     className="flex items-center gap-2 px-3 py-2 border-2 border-black dark:border-[#555] rounded-md bg-white dark:bg-[#22222e] shadow-[3px_3px_0px_black] dark:shadow-[3px_3px_0px_#444] hover:shadow-[1px_1px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold text-sm text-black dark:text-[#f5f0e0]"
                     data-testid="button-user-menu"
                   >
-                    <div className="w-6 h-6 bg-[#FFF3B0] dark:bg-[#7a7020] border-2 border-black dark:border-[#555] rounded-full flex items-center justify-center">
+                    <div className="w-6 h-6 bg-[#FFDD00] dark:bg-[#B8960F] border-2 border-black dark:border-[#555] rounded-full flex items-center justify-center">
                       <User className="w-3 h-3" />
                     </div>
                     <span className="max-w-[100px] truncate">{user.username}</span>
@@ -209,7 +209,7 @@ export default function Layout({ children }: LayoutProps) {
                   </button>
                   {userMenuOpen && (
                     <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-[#22222e] border-3 border-black dark:border-[#555] rounded-xl shadow-[6px_6px_0px_black] dark:shadow-[6px_6px_0px_#444] overflow-hidden z-50">
-                      <div className="p-3 border-b-2 border-black dark:border-[#555] bg-[#FFF3B0] dark:bg-[#7a7020]">
+                      <div className="p-3 border-b-2 border-black dark:border-[#555] bg-[#FFDD00] dark:bg-[#B8960F]">
                         <p className="font-black text-sm flex items-center gap-1 text-black dark:text-[#f5f0e0]">
                           {user.username}
                           {user.isVerified && <BadgeCheck className="w-4 h-4 text-blue-500 fill-blue-500" />}
@@ -267,7 +267,7 @@ export default function Layout({ children }: LayoutProps) {
                   </span>
                 </Link>
                 <Link href="/auth">
-                  <span className="px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#141420] shadow-[3px_3px_0px_#FFF3B0] dark:shadow-[3px_3px_0px_#555] hover:shadow-[1px_1px_0px_#FFF3B0] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="link-login">
+                  <span className="px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer bg-black dark:bg-[#f5f0e0] text-[#FFDD00] dark:text-[#141420] shadow-[3px_3px_0px_#FFDD00] dark:shadow-[3px_3px_0px_#555] hover:shadow-[1px_1px_0px_#FFDD00] hover:translate-x-[2px] hover:translate-y-[2px] transition-all" data-testid="link-login">
                     Masuk
                   </span>
                 </Link>
@@ -304,24 +304,24 @@ export default function Layout({ children }: LayoutProps) {
         </div>
 
         {menuOpen && (
-          <div className="md:hidden border-t-4 border-black dark:border-[#555] bg-[#FFF8F0] dark:bg-[#141420] px-4 py-3 flex flex-col gap-2">
+          <div className="md:hidden border-t-4 border-black dark:border-[#555] bg-[#FFFFFF] dark:bg-[#141420] px-4 py-3 flex flex-col gap-2">
             <Link href="/" onClick={() => setMenuOpen(false)}>
-              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer ${isActive("/") && location === "/" ? "bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#141420]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0]"}`}>Beranda</span>
+              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer ${isActive("/") && location === "/" ? "bg-black dark:bg-[#f5f0e0] text-[#FFDD00] dark:text-[#141420]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0]"}`}>Beranda</span>
             </Link>
             {exploreLinks.map((link) => (
               <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)}>
-                <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer flex items-center gap-2 ${isActive(link.href) ? "bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#141420]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0]"}`}>
+                <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer flex items-center gap-2 ${isActive(link.href) ? "bg-black dark:bg-[#f5f0e0] text-[#FFDD00] dark:text-[#141420]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0]"}`}>
                   {link.icon} {link.label}
                 </span>
               </Link>
             ))}
             <Link href="/battle" onClick={() => setMenuOpen(false)}>
-              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer flex items-center gap-2 ${isActive("/battle") ? "bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#141420]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0]"}`}>
+              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer flex items-center gap-2 ${isActive("/battle") ? "bg-black dark:bg-[#f5f0e0] text-[#FFDD00] dark:text-[#141420]" : "bg-white dark:bg-[#22222e] text-black dark:text-[#f5f0e0]"}`}>
                 <Swords className="w-3.5 h-3.5" /> Battle
               </span>
             </Link>
             <Link href="/submit" onClick={() => setMenuOpen(false)}>
-              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer text-black dark:text-[#f5f0e0] ${isActive("/submit") ? "bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#141420]" : "bg-white dark:bg-[#22222e]"}`}>Submit Quote</span>
+              <span className={`block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md cursor-pointer text-black dark:text-[#f5f0e0] ${isActive("/submit") ? "bg-black dark:bg-[#f5f0e0] text-[#FFDD00] dark:text-[#141420]" : "bg-white dark:bg-[#22222e]"}`}>Submit Quote</span>
             </Link>
             {user ? (
               <>
@@ -332,20 +332,20 @@ export default function Layout({ children }: LayoutProps) {
                   </span>
                 </Link>
                 <Link href="/stats" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-[#C1F0C1] dark:bg-[#1a6a2a] flex items-center gap-1 text-black dark:text-[#f5f0e0]">
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-[#4ADE80] dark:bg-[#16A34A] flex items-center gap-1 text-black dark:text-[#f5f0e0]">
                     <BarChart3 className="w-3.5 h-3.5" /> Statistik
                   </span>
                 </Link>
                 <Link href="/verification" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-[#B8DBFF] dark:bg-[#1a4070] flex items-center gap-1 text-black dark:text-[#f5f0e0]">
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-[#60A5FA] dark:bg-[#1D4ED8] flex items-center gap-1 text-black dark:text-[#f5f0e0]">
                     <BadgeCheck className="w-3.5 h-3.5" /> Centang Biru
                   </span>
                 </Link>
                 <Link href="/referral" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-[#DDB8FF] dark:bg-[#5a3090] text-black dark:text-[#f5f0e0]">Referral</span>
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-[#A855F7] dark:bg-[#7C3AED] text-black dark:text-[#f5f0e0]">Referral</span>
                 </Link>
                 <Link href="/topup" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-yellow-50 dark:bg-[#7a7020] text-black dark:text-[#f5f0e0]">Top Up Bunga</span>
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-yellow-50 dark:bg-[#B8960F] text-black dark:text-[#f5f0e0]">Top Up Bunga</span>
                 </Link>
                 <Link href="/donate" onClick={() => setMenuOpen(false)}>
                   <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-red-50 dark:bg-red-900/20 flex items-center gap-1 text-black dark:text-[#f5f0e0]">
@@ -374,7 +374,7 @@ export default function Layout({ children }: LayoutProps) {
                   </span>
                 </Link>
                 <Link href="/auth" onClick={() => setMenuOpen(false)}>
-                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-black dark:bg-[#f5f0e0] text-[#FFF3B0] dark:text-[#141420] text-center">Masuk / Daftar</span>
+                  <span className="block px-4 py-2 font-bold text-sm border-2 border-black dark:border-[#555] rounded-md bg-black dark:bg-[#f5f0e0] text-[#FFDD00] dark:text-[#141420] text-center">Masuk / Daftar</span>
                 </Link>
               </>
             )}
@@ -408,14 +408,14 @@ export default function Layout({ children }: LayoutProps) {
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t-4 border-black dark:border-[#555] bg-black text-[#FFF3B0] py-4 mt-8">
+      <footer className="border-t-4 border-black dark:border-[#555] bg-black text-[#FFDD00] py-4 mt-8">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2 font-bold text-sm">
             <Feather className="w-4 h-4" />
             <span>{settings.siteName}</span>
           </div>
           <p className="text-xs font-medium flex items-center gap-1">
-            Made for sharing quotes <Heart className="w-3 h-3 fill-[#FFF3B0]" /> Indonesia
+            Made for sharing quotes <Heart className="w-3 h-3 fill-[#FFDD00]" /> Indonesia
           </p>
           <div className="flex gap-3">
             <Link href="/embed"><span className="text-xs font-bold underline cursor-pointer">Widget</span></Link>

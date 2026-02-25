@@ -188,10 +188,11 @@ shared/
 
 ## Design System
 
-- Neobrutalism + Playful Pastel: thick black borders, bold shadows, flat bold typography
-- Primary lemon: #FFF3B0, Mint: #C1F0C1, Baby blue: #B8DBFF
-- Peach: #FFD1A9, Lavender: #DDB8FF, Rose: #FFB3B3
-- Background cream: #FFF8F0
+- Pure Neobrutalism: thick black borders, bold shadows, flat bold typography, high-contrast colors
+- Primary yellow: #FFDD00, Green: #4ADE80, Blue: #60A5FA
+- Orange: #FB923C, Purple: #A855F7, Red: #F87171
+- Background: #FFFFFF (white)
+- Dark mode bg: #141420, cards: #22222e, text: #f5f0e0
 
 ## API Endpoints
 
