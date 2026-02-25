@@ -1,5 +1,8 @@
-const BAYAR_GG_API_KEY = process.env.BAYAR_GG_API_KEY || "";
 const BAYAR_GG_BASE = "https://bayar.gg/api";
+
+function getApiKey(): string {
+  return process.env.BAYAR_GG_API_KEY || "";
+}
 
 export interface CreatePaymentResponse {
   success: boolean;
@@ -29,21 +32,40 @@ export interface CheckPaymentResponse {
 }
 
 export async function createQrisPayment(amount: number, callbackUrl?: string): Promise<CreatePaymentResponse> {
-  const url = `${BAYAR_GG_BASE}/create-payment.php?apiKey=${BAYAR_GG_API_KEY}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      amount,
-      payment_method: "gopay_qris",
-      callback_url: callbackUrl || undefined,
-    }),
-  });
-  return res.json();
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    console.error("[bayar.gg] BAYAR_GG_API_KEY not set");
+    return { success: false, error: "API key not configured" };
+  }
+  try {
+    const url = `${BAYAR_GG_BASE}/create-payment.php?apiKey=${apiKey}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount,
+        payment_method: "gopay_qris",
+        callback_url: callbackUrl || undefined,
+      }),
+    });
+    const json = await res.json();
+    console.log("[bayar.gg] create-payment response:", JSON.stringify(json));
+    return json;
+  } catch (e: any) {
+    console.error("[bayar.gg] create-payment error:", e.message);
+    return { success: false, error: e.message };
+  }
 }
 
 export async function checkPaymentStatus(invoiceId: string): Promise<CheckPaymentResponse> {
-  const url = `${BAYAR_GG_BASE}/check-payment?apiKey=${BAYAR_GG_API_KEY}&invoice=${encodeURIComponent(invoiceId)}`;
-  const res = await fetch(url);
-  return res.json();
+  const apiKey = getApiKey();
+  if (!apiKey) return { success: false, error: "API key not configured" };
+  try {
+    const url = `${BAYAR_GG_BASE}/check-payment?apiKey=${apiKey}&invoice=${encodeURIComponent(invoiceId)}`;
+    const res = await fetch(url);
+    return res.json();
+  } catch (e: any) {
+    console.error("[bayar.gg] check-payment error:", e.message);
+    return { success: false, error: e.message };
+  }
 }

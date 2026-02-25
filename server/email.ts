@@ -20,9 +20,9 @@ export async function sendBetaCodeEmail(to: string, name: string | null, betaCod
   });
 
   await transporter.sendMail({
-    from: `"KataViral" <${smtpLogin}>`,
+    from: `"CTRXL.ID" <${smtpLogin}>`,
     to,
-    subject: "Selamat! Kode Beta Akses KataViral Kamu Sudah Siap",
+    subject: "Selamat! Kode Beta Akses CTRXL.ID Kamu Sudah Siap",
     html: `
 <!DOCTYPE html>
 <html>
@@ -37,7 +37,7 @@ export async function sendBetaCodeEmail(to: string, name: string | null, betaCod
         <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border:3px solid #000000;border-radius:12px;box-shadow:6px 6px 0px #000000;">
           <tr>
             <td style="background-color:#FFE066;padding:30px 40px;border-bottom:3px solid #000;border-radius:9px 9px 0 0;">
-              <h1 style="margin:0;font-size:28px;font-weight:800;color:#000;">KataViral</h1>
+              <h1 style="margin:0;font-size:28px;font-weight:800;color:#000;">CTRXL.ID</h1>
             </td>
           </tr>
           <tr>
@@ -46,7 +46,7 @@ export async function sendBetaCodeEmail(to: string, name: string | null, betaCod
                 Hai ${displayName}!
               </h2>
               <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#333;">
-                Selamat! Pendaftaran waitlist kamu sudah di-approve. Kamu sekarang bisa masuk ke KataViral menggunakan kode beta akses di bawah ini:
+                Selamat! Pendaftaran waitlist kamu sudah di-approve. Kamu sekarang bisa masuk ke CTRXL.ID menggunakan kode beta akses di bawah ini:
               </p>
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
@@ -63,7 +63,7 @@ export async function sendBetaCodeEmail(to: string, name: string | null, betaCod
                 Cara pakai:
               </p>
               <ol style="margin:8px 0 20px;padding-left:20px;font-size:15px;line-height:1.8;color:#333;">
-                <li>Buka website KataViral</li>
+                <li>Buka website CTRXL.ID</li>
                 <li>Klik tombol <strong>"Masuk"</strong></li>
                 <li>Daftar akun baru</li>
                 <li>Masukkan kode beta akses di atas saat diminta</li>
@@ -76,7 +76,7 @@ export async function sendBetaCodeEmail(to: string, name: string | null, betaCod
           <tr>
             <td style="background-color:#f5f5f5;padding:20px 40px;border-top:2px solid #eee;border-radius:0 0 9px 9px;">
               <p style="margin:0;font-size:13px;color:#999;text-align:center;">
-                &copy; KataViral — Quote Indonesia yang Bikin Viral
+                &copy; CTRXL.ID — Platform Quote Indonesia
               </p>
             </td>
           </tr>

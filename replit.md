@@ -1,6 +1,6 @@
-# KataViral
+# CTRXL.ID
 
-Quote-sharing website Indonesia dengan desain Neobrutalism. Platform untuk berbagi, menyukai, dan merayakan kata-kata inspiratif berbahasa Indonesia.
+Platform quote-sharing Indonesia dengan desain Neobrutalism. Platform untuk berbagi, menyukai, dan merayakan kata-kata inspiratif berbahasa Indonesia.
 
 ## Tech Stack
 

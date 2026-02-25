@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Users, Copy, Check, Gift, Flower } from "lucide-react";
@@ -13,7 +13,7 @@ interface ReferralStats {
 }
 
 export default function Referral() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -36,7 +36,12 @@ export default function Referral() {
     onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
   });
 
-  if (!user) { navigate("/auth"); return null; }
+  useEffect(() => {
+    if (!authLoading && !user) navigate("/auth");
+  }, [authLoading, user]);
+
+  if (authLoading) return <div className="max-w-lg mx-auto px-4 py-8"><div className="h-48 border-4 border-black rounded-xl bg-gray-100 animate-pulse shadow-[6px_6px_0px_black]" /></div>;
+  if (!user) return null;
 
   const shareUrl = stats ? `${window.location.origin}/auth?ref=${stats.code}` : "";
 

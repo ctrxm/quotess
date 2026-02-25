@@ -30,7 +30,7 @@ export default function Trending() {
             Quote Trending
           </h1>
           <p className="text-black/70 font-semibold max-w-lg">
-            Quote paling populer berdasarkan jumlah views dan likes dari seluruh pengguna KataViral.
+            Quote paling populer berdasarkan jumlah views dan likes dari seluruh pengguna CTRXL.ID.
           </p>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -63,8 +63,12 @@ export default function Withdraw() {
     onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
   });
 
+  useEffect(() => {
+    if (!authLoading && !user) navigate("/auth");
+  }, [authLoading, user]);
+
   if (authLoading) return <div className="max-w-lg mx-auto px-4 py-8"><div className="h-48 bg-gray-100 border-4 border-black rounded-xl animate-pulse shadow-[6px_6px_0px_black]" /></div>;
-  if (!user) { navigate("/auth"); return null; }
+  if (!user) return null;
   if (!user.isGiveEnabled) return (
     <div className="max-w-lg mx-auto px-4 py-12 text-center">
       <div className="border-4 border-black rounded-xl bg-[#FFF3B0] p-10 shadow-[8px_8px_0px_black]">

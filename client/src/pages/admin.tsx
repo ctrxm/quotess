@@ -52,7 +52,7 @@ export default function Admin() {
         <Shield className="w-8 h-8" />
         <div>
           <h1 className="text-2xl font-black">Admin Panel</h1>
-          <p className="text-sm font-semibold text-black/70">KataViral Control Center</p>
+          <p className="text-sm font-semibold text-black/70">CTRXL.ID Control Center</p>
         </div>
       </div>
 

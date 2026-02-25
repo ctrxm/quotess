@@ -50,8 +50,8 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   maintenance_mode: "false",
   beta_mode: "false",
   beta_access_type: "open",
-  site_name: "KataViral",
-  site_description: "Quote Indonesia yang Bikin Viral",
+  site_name: "CTRXL.ID",
+  site_description: "Platform Quote Indonesia",
 };
 
 const DEFAULT_GIFT_TYPES = [

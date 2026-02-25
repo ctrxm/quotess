@@ -123,13 +123,17 @@ export default function Profile() {
     onError: (e: any) => toast({ title: "Gagal", description: e.message, variant: "destructive" }),
   });
 
+  useEffect(() => {
+    if (!authLoading && !user) navigate("/auth");
+  }, [authLoading, user]);
+
   if (authLoading) return (
     <div className="max-w-lg mx-auto px-4 py-8 flex flex-col gap-4">
       {[1, 2, 3].map(i => <div key={i} className="border-4 border-black rounded-xl h-32 bg-gray-100 animate-pulse shadow-[6px_6px_0px_black]" />)}
     </div>
   );
 
-  if (!user) { navigate("/auth"); return null; }
+  if (!user) return null;
 
   return (
     <div className="max-w-lg mx-auto px-4 py-8 flex flex-col gap-5">

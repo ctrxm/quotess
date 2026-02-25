@@ -29,7 +29,7 @@ export default function Leaderboard() {
           <Trophy className="w-5 h-5" />
           <span className="font-black text-sm uppercase tracking-widest">Leaderboard</span>
         </div>
-        <h1 className="text-3xl md:text-4xl font-black" data-testid="text-page-title">Top Penulis KataViral</h1>
+        <h1 className="text-3xl md:text-4xl font-black" data-testid="text-page-title">Top Penulis CTRXL.ID</h1>
         <p className="text-black/60 font-semibold mt-1">Peringkat berdasarkan likes + views</p>
       </div>
 

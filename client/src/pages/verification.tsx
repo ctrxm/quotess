@@ -99,7 +99,7 @@ export default function Verification() {
         </div>
         <div className="bg-white border-2 border-black rounded-lg p-4 space-y-2">
           <p className="text-sm font-semibold text-black/80">
-            Centang biru menandakan bahwa akunmu sudah diverifikasi oleh KataViral. Badge ini akan muncul di samping username kamu di seluruh platform.
+            Centang biru menandakan bahwa akunmu sudah diverifikasi oleh CTRXL.ID. Badge ini akan muncul di samping username kamu di seluruh platform.
           </p>
           <p className="text-xs font-semibold text-black/50">
             Syarat: Akun aktif, konten berkualitas, dan identitas terverifikasi.

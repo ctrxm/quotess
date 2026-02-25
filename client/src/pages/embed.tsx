@@ -17,7 +17,7 @@ export default function Embed() {
       d.innerHTML='<div style="border:3px solid #000;border-radius:12px;padding:20px;background:#FFF3B0;box-shadow:5px 5px 0 #000">'
         +'<p style="font-weight:700;font-size:18px;margin:0 0 12px">&ldquo;'+q.text+'&rdquo;</p>'
         +(q.author?'<p style="font-weight:600;color:#555;margin:0 0 8px">&mdash; '+q.author+'</p>':'')
-        +'<a href="${origin}/q/'+q.id+'" target="_blank" style="font-size:12px;font-weight:700;color:#000;text-decoration:underline">KataViral</a>'
+        +'<a href="${origin}/q/'+q.id+'" target="_blank" style="font-size:12px;font-weight:700;color:#000;text-decoration:underline">CTRXL.ID</a>'
         +'</div>';
     });
 })();
@@ -38,7 +38,7 @@ export default function Embed() {
           <span className="font-black text-sm uppercase tracking-widest">Widget Embed</span>
         </div>
         <h1 className="text-3xl md:text-4xl font-black" data-testid="text-page-title">Pasang Widget Quote</h1>
-        <p className="text-black/60 font-semibold mt-1">Tampilkan quote random dari KataViral di website kamu</p>
+        <p className="text-black/60 font-semibold mt-1">Tampilkan quote random dari CTRXL.ID di website kamu</p>
       </div>
 
       <div className="border-4 border-black rounded-xl bg-white p-5 shadow-[6px_6px_0px_black] mb-6">
@@ -64,7 +64,7 @@ export default function Embed() {
           <p className="font-bold text-lg mb-3">&ldquo;Hidup itu seperti naik sepeda. Untuk menjaga keseimbangan, kamu harus terus bergerak.&rdquo;</p>
           <p className="font-semibold text-black/60 mb-2">&mdash; Albert Einstein</p>
           <a href={origin} target="_blank" rel="noopener noreferrer" className="text-xs font-bold underline flex items-center gap-1">
-            KataViral <ExternalLink className="w-3 h-3" />
+            CTRXL.ID <ExternalLink className="w-3 h-3" />
           </a>
         </div>
       </div>

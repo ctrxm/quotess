@@ -81,7 +81,7 @@ export default function Home() {
           <div className="absolute top-4 right-4 opacity-20 text-8xl font-black select-none">"</div>
           <div className="flex items-center gap-2 mb-3">
             <Zap className="w-5 h-5 fill-black" />
-            <span className="text-sm font-black uppercase tracking-widest">KataViral</span>
+            <span className="text-sm font-black uppercase tracking-widest">CTRXL.ID</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-black leading-tight text-black mb-3">
             Quote Indonesia<br />

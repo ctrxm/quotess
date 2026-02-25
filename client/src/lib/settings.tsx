@@ -25,7 +25,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const settings: PublicSettings = data || {
     maintenanceMode: false, betaMode: false, betaAccessType: "open",
-    siteName: "KataViral", siteDescription: "Quote Indonesia yang Bikin Viral",
+    siteName: "CTRXL.ID", siteDescription: "Platform Quote Indonesia",
     notificationEnabled: false, notificationType: "banner",
     notificationMessage: "", notificationBg: "#FFF3B0", notificationTextColor: "#000000",
   };

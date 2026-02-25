@@ -71,7 +71,7 @@ export default function QuoteMaker() {
   }, [toast]);
 
   const handleCopy = async () => {
-    const text = `"${quoteText}"${author ? ` — ${author}` : ""}\n\n#KataViral`;
+    const text = `"${quoteText}"${author ? ` — ${author}` : ""}\n\n#CTRXLID`;
     await navigator.clipboard.writeText(text);
     setCopied(true);
     toast({ title: "Tersalin!", description: "Teks quote disalin ke clipboard" });
@@ -219,7 +219,7 @@ export default function QuoteMaker() {
                 onClick={async () => {
                   const text = `"${quoteText}"${author ? ` — ${author}` : ""}`;
                   if (navigator.share) {
-                    try { await navigator.share({ title: "KataViral Quote", text }); } catch {}
+                    try { await navigator.share({ title: "CTRXL.ID Quote", text }); } catch {}
                   } else {
                     await navigator.clipboard.writeText(text);
                     toast({ title: "Tersalin!" });

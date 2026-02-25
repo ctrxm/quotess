@@ -67,7 +67,7 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
 
   const handleCopy = async (e: React.MouseEvent) => {
     e.preventDefault(); e.stopPropagation();
-    const text = `"${quote.text}"${quote.author ? ` — ${quote.author}` : ""}\n\n#KataViral`;
+    const text = `"${quote.text}"${quote.author ? ` — ${quote.author}` : ""}\n\n#CTRXLID`;
     await navigator.clipboard.writeText(text);
     setCopied(true);
     toast({ title: "Tersalin!", description: "Quote berhasil disalin ke clipboard" });
@@ -79,7 +79,7 @@ export default function QuoteCard({ quote, variant = "feed" }: QuoteCardProps) {
     const url = `${window.location.origin}/q/${quote.id}`;
     const text = `"${quote.text}"${quote.author ? ` — ${quote.author}` : ""}`;
     if (navigator.share) {
-      try { await navigator.share({ title: "KataViral", text, url }); return; } catch {}
+      try { await navigator.share({ title: "CTRXL.ID", text, url }); return; } catch {}
     }
     await navigator.clipboard.writeText(url);
     toast({ title: "Link disalin!" });

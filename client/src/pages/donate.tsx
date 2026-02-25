@@ -84,7 +84,7 @@ export default function Donate() {
           <Heart className="w-6 h-6 text-red-500 fill-red-500" /> Donasi
         </h1>
         <p className="font-semibold text-sm text-black/70">
-          Dukung KataViral agar terus bisa menyebarkan kutipan inspiratif untuk semua orang
+          Dukung CTRXL.ID agar terus bisa menyebarkan kutipan inspiratif untuk semua orang
         </p>
       </div>
 
@@ -206,7 +206,7 @@ export default function Donate() {
           <div className="text-5xl mb-3">🎉</div>
           <h2 className="font-black text-xl mb-2 text-green-700">Terima Kasih!</h2>
           <p className="font-semibold text-sm text-green-600 mb-4">
-            Donasimu sudah diterima. Dukunganmu sangat berarti bagi KataViral!
+            Donasimu sudah diterima. Dukunganmu sangat berarti bagi CTRXL.ID!
           </p>
           <button
             onClick={resetForm}
